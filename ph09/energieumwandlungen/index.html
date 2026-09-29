@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Energieumwandlungen üben</title>
+<!--
+  Ph09 AB02 – digitale Übung zu I/01 Energieformen und Energieumwandlung.
+  Eine Datei ohne Nachladen; die vier Trampolinbilder liegen als SVG daneben
+  (erzeugt von "AB02 Bilder zeichnen.py"). Veröffentlicht im öffentlichen
+  Repo Unterricht unter ph09/energieumwandlungen/ (CLAUDE.md §5b).
+  Keine Anmeldung, keine Speicherung, keine Übertragung: Der Text in Aufgabe 4
+  verlässt das Gerät nur, wenn die Schülerin oder der Schüler ihn selbst
+  kopiert und in das KI-Werkzeug der Schule einfügt.
+-->
+<style>
+:root {
+  --text: #222; --grau: #595959; --linie: #A5A5A5; --grund: #F6F7F9; --karte: #FFFFFF;
+  --gruen: #70AD47; --gruen-hell: #E2EFD9; --rot: #C00000; --blau: #2E75B6;
+  --sport: #B45F06; --alltag: #5B6B2E; --versorgung: #1F4E79;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 17px/1.45 Calibri, Carlito, "Segoe UI", system-ui, sans-serif;
+       color: var(--text); background: var(--grund); }
+header { background: #50A910; color: #fff; padding: 14px 16px; }
+header h1 { margin: 0; font-size: 1.35rem; }
+header p { margin: 2px 0 0; opacity: .92; font-size: .95rem; }
+main { max-width: 980px; margin: 0 auto; padding: 12px 16px 60px; }
+nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+nav button { flex: 1 1 140px; padding: 10px; border: 2px solid #50A910; border-radius: 10px;
+             background: #fff; color: #2f6b08; font: inherit; font-weight: bold; cursor: pointer; }
+nav button.aktiv { background: #50A910; color: #fff; }
+section.aufgabe { display: none; }
+section.aufgabe.aktiv { display: block; }
+h2 { font-size: 1.2rem; margin: 6px 0 4px; }
+.auftrag { margin: 0 0 12px; }
+.legende { display: flex; gap: 10px; flex-wrap: wrap; font-size: .85rem; margin-bottom: 8px; }
+.thema { display: inline-block; font-size: .78rem; font-weight: bold; color: #fff;
+         padding: 1px 8px; border-radius: 20px; white-space: nowrap; }
+.thema.sport { background: var(--sport); } .thema.alltag { background: var(--alltag); }
+.thema.versorgung { background: var(--versorgung); }
+
+/* Ablage der ziehbaren Karten – bleibt beim Scrollen oben */
+.ablage { position: sticky; top: 0; z-index: 5; background: var(--grund); padding: 8px 0;
+          display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid #ddd; margin-bottom: 12px; }
+.ablage .titel { width: 100%; font-size: .8rem; color: var(--grau); }
+.chip { touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab;
+        padding: 6px 10px; border-radius: 8px; border: 2px solid; font-size: .95rem; line-height: 1.2; }
+.chip.gewaehlt { outline: 3px solid #222; outline-offset: 1px; }
+.chip.wandler { background: #fff; border-color: var(--gruen); border-radius: 2px; }
+.geist { position: fixed; pointer-events: none; z-index: 99; opacity: .9; transform: translate(-50%, -60%); }
+
+
+.slot { min-height: 38px; min-width: 150px; border: 2px dashed var(--linie); border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center; padding: 3px 6px;
+        background: #fff; color: #999; font-size: .85rem; vertical-align: middle; }
+.slot.form { border-radius: 20px; }
+.slot.wandler { border-radius: 2px; border-color: var(--gruen); }
+.slot.ueber { border-color: #222; background: #f0f0f0; }
+.slot.voll { border-style: solid; color: var(--text); font-size: .95rem; }
+/* Farben der Energieformen – dieselben wie auf den Kärtchen von AB01 */
+.f-hoehe    { background: #DEEBF7; border-color: #2E75B6; }
+.f-kin      { background: #E2EFD9; border-color: #70AD47; }
+.f-spann    { background: #D9EFEF; border-color: #2E8B8B; }
+.f-chem     { background: #E6E0F0; border-color: #7030A0; }
+.f-el       { background: #FFF2CC; border-color: #FFC000; }
+.f-strahl   { background: #FBE5D6; border-color: #ED7D31; }
+.f-innen    { background: #FBDDDD; border-color: #C00000; }
+.f-kern     { background: #EDEDED; border-color: #7F7F7F; }
+.slot.richtig { box-shadow: 0 0 0 3px var(--gruen); }
+.slot.falsch  { box-shadow: 0 0 0 3px var(--rot); }
+
+.karte { background: var(--karte); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+         border-left: 6px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.karte.sport { border-left-color: var(--sport); } .karte.alltag { border-left-color: var(--alltag); }
+.karte.versorgung { border-left-color: var(--versorgung); }
+.karte h3 { margin: 0 0 6px; font-size: 1.02rem; }
+
+/* Aufgabe 1 */
+.paar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pfeil { font-size: 1.4rem; color: var(--gruen); }
+
+/* Aufgabe 2 – Energieflussdiagramm von oben nach unten */
+.fluss { display: grid; grid-template-columns: minmax(170px, auto) auto 1fr; column-gap: 10px;
+         align-items: center; margin-top: 6px; }
+.fluss .pf { grid-column: 1; justify-self: center; width: 0; height: 44px; border-left: 4px solid var(--gruen);
+             position: relative; }
+.fluss .pf::after { content: ""; position: absolute; left: -9px; bottom: -2px; border: 7px solid transparent;
+                    border-top: 10px solid var(--gruen); border-bottom: 0; }
+.fluss .form { grid-column: 1; justify-self: center; }
+.fluss .box  { grid-column: 1; justify-self: center; }
+.fluss .zweig { grid-column: 2 / 4; display: flex; align-items: center; gap: 6px; }
+.fluss .zweig .strich { width: 40px; border-top: 4px solid var(--gruen); position: relative; }
+.fluss .zweig .strich::after { content: ""; position: absolute; right: -2px; top: -9px; border: 7px solid transparent;
+                               border-left: 10px solid var(--gruen); border-right: 0; }
+
+/* Aufgabe 3 */
+.bilderablage { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.bild { touch-action: none; cursor: grab; border-radius: 10px; overflow: hidden; background: #fff; }
+.bild img { display: block; width: 100%; height: auto; pointer-events: none; }
+.reihe { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.reihe .platz { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.reihe .platz .nr { text-align: center; font-weight: bold; }
+.slot.bildslot { min-height: 90px; min-width: 0; aspect-ratio: 4 / 3; padding: 0; overflow: hidden; }
+.slot.bildslot img { width: 100%; height: auto; display: block; }
+.reihe .slot.form { min-width: 0; width: 100%; }
+.wahl label { display: block; padding: 8px 10px; margin: 6px 0; background: #fff; border: 2px solid #ddd;
+              border-radius: 8px; cursor: pointer; }
+.wahl label.richtig { border-color: var(--gruen); background: var(--gruen-hell); }
+.wahl label.falsch  { border-color: var(--rot); background: #FBDDDD; }
+
+/* Aufgabe 4 */
+textarea { width: 100%; min-height: 100px; font: inherit; padding: 10px; border-radius: 8px; border: 2px solid #bbb; }
+.situationen { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.situationen label { display: block; background: #fff; border-radius: 10px; padding: 10px; border: 2px solid #ddd;
+                     border-left-width: 6px; cursor: pointer; }
+.situationen label.sport { border-left-color: var(--sport); } .situationen label.alltag { border-left-color: var(--alltag); }
+.situationen label.versorgung { border-left-color: var(--versorgung); }
+.situationen input { margin-right: 6px; }
+.prompt { white-space: pre-wrap; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 10px;
+          font-size: .88rem; color: #333; max-height: 260px; overflow: auto; }
+.hinweis { font-size: .9rem; color: var(--grau); }
+.warnung { background: #FFF2CC; border-left: 5px solid #FFC000; padding: 8px 10px; border-radius: 6px; font-size: .92rem; }
+
+.knoepfe { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.knopf { padding: 10px 16px; border-radius: 10px; border: 0; background: #50A910; color: #fff;
+         font: inherit; font-weight: bold; cursor: pointer; }
+.knopf.zweit { background: #fff; color: #2f6b08; border: 2px solid #50A910; }
+.meldung { font-weight: bold; margin: 6px 0; min-height: 1.4em; }
+.meldung.gut { color: #3b7a1a; } .meldung.nochnicht { color: var(--rot); }
+footer { text-align: center; font-size: .8rem; color: var(--grau); padding: 20px; }
+
+@media (max-width: 620px) {
+  .bilderablage, .reihe { grid-template-columns: repeat(2, 1fr); }
+  .slot { min-width: 120px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Energieumwandlungen üben</h1>
+  <p>Physik 9 · Energie als Erhaltungsgröße</p>
+</header>
+<main>
+  <nav>
+    <button data-ziel="a1" class="aktiv">1 Zuordnen</button>
+    <button data-ziel="a2">2 Ketten bauen</button>
+    <button data-ziel="a3">3 Bilderserie</button>
+    <button data-ziel="a4">4 Beschreiben</button>
+  </nav>
+  <div class="legende">
+    <span class="thema sport">Sport &amp; Freizeit</span>
+    <span class="thema alltag">Alltag</span>
+    <span class="thema versorgung">Energieversorgung</span>
+  </div>
+
+  <!-- ============================================================ Aufgabe 1 -->
+  <section class="aufgabe aktiv" id="a1">
+    <h2>1 Welche Energie wird in welche umgewandelt?</h2>
+    <p class="auftrag">Ziehe die Energieformen in die Felder – links die Energie <b>vorher</b>, rechts <b>nachher</b>.
+      Du kannst auch erst eine Karte antippen und dann das Feld.</p>
+    <div class="ablage" data-art="form"></div>
+    <div id="a1-liste"></div>
+    <div class="knoepfe"><button class="knopf" data-pruefe="a1">Prüfen</button>
+      <button class="knopf zweit" data-loese="a1">Lösung zeigen</button></div>
+    <div class="meldung" id="a1-meldung"></div>
+  </section>
+
+  <!-- ============================================================ Aufgabe 2 -->
+  <section class="aufgabe" id="a2">
+    <h2>2 Energieflussdiagramme mit mehreren Schritten</h2>
+    <p class="auftrag">Die <b>Energieform</b> steht am Pfeil, der <b>Energiewandler</b> im Rechteck.
+      Zu jeder Kette gehört ein <b>Verlust</b>: Dort wird ein Teil der Energie in eine Form umgewandelt, die niemand nutzen kann.
+      Prüfe jede Kette einzeln.</p>
+    <div class="ablage" data-art="beides"></div>
+    <div id="a2-liste"></div>
+  </section>
+
+  <!-- ============================================================ Aufgabe 3 -->
+  <section class="aufgabe" id="a3">
+    <h2>3 Bilderserie: Trampolinspringen <span class="thema sport">Sport &amp; Freizeit</span></h2>
+    <p class="auftrag">a) Bringe die vier Bilder in die richtige Reihenfolge. Die gestrichelte Linie zeigt,
+      wie hoch der Springer am Anfang war.<br>
+      b) Ziehe unter jedes Bild die Energieform, die dort <b>am meisten</b> vorhanden ist.</p>
+    <div class="bilderablage" id="a3-bilder"></div>
+    <div class="ablage" data-art="form"></div>
+    <div class="reihe" id="a3-reihe"></div>
+    <div class="karte sport" style="margin-top:12px">
+      <h3>c) Warum springt er ohne Nachhelfen jedes Mal etwas weniger hoch?</h3>
+      <div class="wahl" id="a3-wahl"></div>
+    </div>
+    <div class="knoepfe"><button class="knopf" data-pruefe="a3">Prüfen</button>
+      <button class="knopf zweit" data-loese="a3">Lösung zeigen</button></div>
+    <div class="meldung" id="a3-meldung"></div>
+  </section>
+
+  <!-- ============================================================ Aufgabe 4 -->
+  <section class="aufgabe" id="a4">
+    <h2>4 Beschreibe eine Energieumwandlung – und lass dir Rückmeldung geben</h2>
+    <p class="auftrag">Wähle eine Situation. Beschreibe in <b>zwei oder drei Sätzen</b>, welche Energie in welche
+      umgewandelt wird und wo ein Verlust auftritt.</p>
+    <div class="situationen" id="a4-situationen"></div>
+    <p><label for="a4-text"><b>Deine Beschreibung</b></label></p>
+    <textarea id="a4-text" placeholder="… wird in … umgewandelt. Ein Verlust tritt auf, wo …"></textarea>
+    <p class="warnung">Schreibe <b>keinen Namen</b> und nichts Persönliches in den Text.
+      Die Seite speichert und verschickt nichts – der Text geht nur weiter, wenn du ihn selbst kopierst.</p>
+    <div class="knoepfe"><button class="knopf" id="a4-kopieren">Prompt kopieren</button></div>
+    <div class="meldung" id="a4-meldung"></div>
+    <p class="hinweis">So geht es weiter: Füge den Prompt in das KI-Werkzeug ein, das deine Schule dafür freigegeben hat.
+      Lies die Rückmeldung, <b>verbessere deinen Text selbst</b> und schreibe die verbesserte Fassung ins Heft.
+      Die KI soll dir sagen, was fehlt – schreiben musst du selbst. Und: Auch eine KI kann sich irren.
+      Prüfe ihre Hinweise mit dem, was du gelernt hast.</p>
+    <details><summary class="hinweis">Diesen Prompt kopierst du</summary><div class="prompt" id="a4-prompt"></div></details>
+  </section>
+</main>
+<footer>Ph09 · AB02 Übung · keine Anmeldung, keine Speicherung, keine Übertragung</footer>
+
+<script>
+"use strict";
+// ------------------------------------------------------------------ Daten
+const FORMEN = {
+  hoehe: "Höhenenergie", kin: "kinetische Energie", spann: "Spannenergie",
+  chem: "chemische Energie", el: "elektrische Energie", strahl: "Strahlungsenergie",
+  innen: "innere Energie", kern: "Kernenergie"
+};
+const THEMEN = { sport: "Sport & Freizeit", alltag: "Alltag", versorgung: "Energieversorgung" };
+
+// Aufgabe 1: je Themenwelt zwei Vorgänge mit einer einzigen Umwandlung
+const ZUORDNEN = [
+  { thema: "sport",      text: "Ein Skispringer fährt die Schanze hinunter.", vor: "hoehe",  nach: "kin" },
+  { thema: "sport",      text: "Ein aufgezogenes Spielzeugauto fährt los.",    vor: "spann",  nach: "kin" },
+  { thema: "alltag",     text: "Das Wasser im Wasserkocher wird heiß.",       vor: "el",     nach: "innen" },
+  { thema: "alltag",     text: "Du bremst mit dem Fahrrad bis zum Stillstand – die Bremsen werden warm.", vor: "kin", nach: "innen" },
+  { thema: "versorgung", text: "Eine Solarzelle auf dem Dach liefert Strom.",  vor: "strahl", nach: "el" },
+  { thema: "versorgung", text: "Der Wind dreht ein Windrad, das Strom liefert.", vor: "kin",  nach: "el" }
+];
+
+// Aufgabe 2: mehrstufige Ketten. schritte = [Form, Wandler, Form, Wandler, …, Form]; zweig = Index des Wandlers
+const KETTEN = [
+  { thema: "sport", titel: "Bogenschießen",
+    text: "Die Bogenschützin spannt den Bogen, lässt los – der Pfeil fliegt und bleibt in der Zielscheibe stecken.",
+    schritte: ["chem", "Muskeln", "spann", "Bogen", "kin", "Zielscheibe", "innen"], zweig: 1,
+    wandlerAuswahl: ["Muskeln", "Bogen", "Zielscheibe", "Sehne"] },
+  { thema: "alltag", titel: "Fahrrad mit Dynamo",
+    text: "Du trittst in die Pedale, der Dynamo am Rad läuft mit, und der Scheinwerfer leuchtet.",
+    schritte: ["chem", "Radfahrer", "kin", "Dynamo", "el", "Scheinwerfer", "strahl"], zweig: 5,
+    wandlerAuswahl: ["Radfahrer", "Dynamo", "Scheinwerfer", "Batterie"] },
+  { thema: "versorgung", titel: "Wasserkraftwerk",
+    text: "Wasser aus einem Stausee strömt hinunter zur Turbine. Die Turbine treibt einen Generator an, und zu Hause leuchtet eine Lampe.",
+    schritte: ["hoehe", "Turbine", "kin", "Generator", "el", "Lampe", "strahl"], zweig: 3,
+    wandlerAuswahl: ["Turbine", "Generator", "Lampe", "Stausee"] }
+];
+
+// Aufgabe 3
+const TRAMPOLIN = { reihenfolge: [1, 2, 3, 4], formen: ["hoehe", "kin", "spann", "hoehe"] };
+const WAHL = [
+  { t: "Die Energie wird beim Springen verbraucht.", ok: false,
+    w: "Energie wird nie verbraucht – sie wird nur umgewandelt." },
+  { t: "Ein Teil der Energie wird in innere Energie umgewandelt – Tuch, Federn und Luft werden ein kleines bisschen wärmer.", ok: true,
+    w: "Genau: Die Energie ist nicht weg, aber als innere Energie nützt sie dem Sprung nichts mehr." },
+  { t: "Die Kraft des Springers geht nach und nach verloren.", ok: false,
+    w: "Kraft und Energie sind zwei verschiedene Größen. Hier geht es um Energie – und die geht nicht verloren." },
+  { t: "Die Erde zieht den Springer bei jedem Sprung stärker an.", ok: false,
+    w: "Die Gewichtskraft bleibt bei jedem Sprung gleich groß." }
+];
+
+// Aufgabe 4
+const SITUATIONEN = [
+  { thema: "sport", titel: "Springender Ball",
+    text: "Ein Ball fällt auf den Boden und springt wieder hoch – aber nicht mehr ganz so hoch." },
+  { thema: "alltag", titel: "Wasserkocher",
+    text: "Ein Wasserkocher macht Wasser heiß." },
+  { thema: "versorgung", titel: "Solarzelle",
+    text: "Eine Solarzelle treibt einen kleinen Ventilator an." }
+];
+
+// ------------------------------------------------------------------ Hilfen
+const $ = (s, w = document) => w.querySelector(s);
+const $$ = (s, w = document) => [...w.querySelectorAll(s)];
+const el = (tag, attr = {}, ...kinder) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attr)) {
+    if (k === "class") e.className = v; else if (k === "html") e.innerHTML = v; else e.setAttribute(k, v);
+  }
+  kinder.forEach(k => e.append(k));
+  return e;
+};
+const mischen = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const themaMarke = t => el("span", { class: "thema " + t }, THEMEN[t]);
+
+// ------------------------------------------------------------------ Ziehen und Ablegen
+// Karten aus der Ablage sind Vorlagen: Sie bleiben liegen, abgelegt wird eine Kopie.
+// Bilder dagegen wandern: Jedes Bild gibt es nur einmal.
+let gewaehlt = null;
+
+function formChip(key) {
+  return el("div", { class: "chip f-" + key, "data-art": "form", "data-wert": key }, FORMEN[key]);
+}
+function wandlerChip(name) {
+  return el("div", { class: "chip wandler", "data-art": "wandler", "data-wert": name }, name);
+}
+
+function inSlotLegen(slot, quelle) {
+  if (slot.dataset.art !== quelle.dataset.art) return false;
+  leeren(slot);
+  slot.classList.remove("richtig", "falsch");
+  slot.dataset.wert = quelle.dataset.wert;
+  slot.classList.add("voll");
+  if (quelle.dataset.art === "bild") {
+    slot.textContent = "";
+    slot.append(quelle);                       // das Bild selbst wandert
+    quelle.classList.remove("gewaehlt");
+  } else {
+    slot.textContent = quelle.textContent;
+    if (quelle.dataset.art === "form") slot.classList.add("f-" + quelle.dataset.wert);
+  }
+  return true;
+}
+
+function leeren(slot) {
+  const bild = $(".bild", slot);
+  if (bild) $("#a3-bilder").append(bild);
+  [...slot.classList].filter(c => c.startsWith("f-")).forEach(c => slot.classList.remove(c));
+  slot.classList.remove("voll", "richtig", "falsch");
+  delete slot.dataset.wert;
+  slot.textContent = slot.dataset.leer || "";
+}
+
+function waehlen(chip) {
+  if (gewaehlt) gewaehlt.classList.remove("gewaehlt");
+  gewaehlt = (gewaehlt === chip) ? null : chip;
+  if (gewaehlt) gewaehlt.classList.add("gewaehlt");
+}
+
+document.addEventListener("pointerdown", e => {
+  const chip = e.target.closest(".chip, .bild");
+  if (!chip) return;
+  e.preventDefault();
+  const start = { x: e.clientX, y: e.clientY };
+  let geist = null, ziel = null;
+  const bewegen = ev => {
+    if (!geist && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 8) return;
+    if (!geist) {
+      geist = chip.cloneNode(true);
+      geist.classList.add("geist");
+      geist.style.width = chip.getBoundingClientRect().width + "px";
+      document.body.append(geist);
+    }
+    geist.style.left = ev.clientX + "px"; geist.style.top = ev.clientY + "px";
+    const unter = document.elementFromPoint(ev.clientX, ev.clientY);
+    const s = unter && unter.closest(".slot");
+    if (ziel && ziel !== s) ziel.classList.remove("ueber");
+    ziel = (s && s.dataset.art === chip.dataset.art) ? s : null;
+    if (ziel) ziel.classList.add("ueber");
+  };
+  const loslassen = () => {
+    document.removeEventListener("pointermove", bewegen);
+    document.removeEventListener("pointerup", loslassen);
+    document.removeEventListener("pointercancel", loslassen);
+    if (geist) {
+      geist.remove();
+      if (ziel) { ziel.classList.remove("ueber"); inSlotLegen(ziel, chip); if (gewaehlt) waehlen(gewaehlt); }
+    } else if (chip.closest(".slot")) {
+      leeren(chip.closest(".slot"));          // ein abgelegtes Bild antippen legt es zurück
+    } else {
+      waehlen(chip);                          // antippen statt ziehen
+    }
+  };
+  document.addEventListener("pointermove", bewegen);
+  document.addEventListener("pointerup", loslassen);
+  document.addEventListener("pointercancel", loslassen);
+});
+
+// Feld antippen: gewählte Karte ablegen – oder, ohne Auswahl, das Feld leeren
+document.addEventListener("click", e => {
+  const slot = e.target.closest(".slot");
+  if (!slot || e.target.closest(".bild")) return;
+  if (gewaehlt && gewaehlt.dataset.art === slot.dataset.art) { inSlotLegen(slot, gewaehlt); waehlen(gewaehlt); }
+  else if (!gewaehlt && slot.classList.contains("voll")) leeren(slot);
+});
+
+function slot(art, soll, leerText) {
+  const s = el("div", { class: "slot " + (art === "wandler" ? "wandler" : "") + (art === "form" ? " form" : ""),
+                        "data-art": art, "data-soll": soll, "data-leer": leerText });
+  s.textContent = leerText;
+  return s;
+}
+
+// ------------------------------------------------------------------ Aufbau
+function ablagenFuellen() {
+  $$(".ablage").forEach(a => {
+    a.append(el("div", { class: "titel" }, "Energieformen – ziehen oder antippen"));
+    Object.keys(FORMEN).forEach(k => a.append(formChip(k)));
+    if (a.dataset.art === "beides") {
+      a.append(el("div", { class: "titel" }, "Energiewandler"));
+      const alle = [...new Set(KETTEN.flatMap(k => k.wandlerAuswahl))];
+      mischen(alle).forEach(w => a.append(wandlerChip(w)));
+    }
+  });
+}
+
+function aufgabe1() {
+  const liste = $("#a1-liste");
+  ZUORDNEN.forEach(z => {
+    liste.append(el("div", { class: "karte " + z.thema },
+      el("h3", {}, themaMarke(z.thema), " ", z.text),
+      el("div", { class: "paar" }, slot("form", z.vor, "vorher"), el("span", { class: "pfeil" }, "→"), slot("form", z.nach, "nachher"))));
+  });
+}
+
+function aufgabe2() {
+  const liste = $("#a2-liste");
+  KETTEN.forEach((k, nr) => {
+    const fluss = el("div", { class: "fluss" });
+    k.schritte.forEach((w, i) => {
+      if (i % 2 === 0) {
+        if (i > 0) fluss.append(el("div", { class: "pf" }));
+        fluss.append(el("div", { class: "form" }, slot("form", w, "Energieform")));
+        if (i < k.schritte.length - 1) fluss.append(el("div", { class: "pf" }));
+      } else {
+        fluss.append(el("div", { class: "box" }, slot("wandler", w, "Wandler")));
+        const zweig = el("div", { class: "zweig" });
+        if (i === k.zweig) zweig.append(el("span", { class: "strich" }), slot("form", "innen", "Verlust"));
+        fluss.append(zweig);
+      }
+    });
+    // Jede Kette prüft sich einzeln - sonst stünde nach der ersten schon
+    // "1 von 3 richtig" da, obwohl die anderen noch gar nicht bearbeitet sind.
+    const id = "a2-k" + nr;
+    const knoepfe = el("div", { class: "knoepfe" },
+      el("button", { class: "knopf", "data-pruefe": id }, "Prüfen"),
+      el("button", { class: "knopf zweit", "data-loese": id }, "Lösung zeigen"));
+    liste.append(el("div", { class: "karte " + k.thema, id },
+      el("h3", {}, themaMarke(k.thema), " ", k.titel), el("div", {}, k.text), fluss,
+      knoepfe, el("div", { class: "meldung", id: id + "-meldung" })));
+  });
+}
+
+function aufgabe3() {
+  const ablage = $("#a3-bilder");
+  mischen([1, 2, 3, 4]).forEach(n => {
+    const b = el("div", { class: "bild", "data-art": "bild", "data-wert": String(n) });
+    b.append(el("img", { src: `AB02 Trampolin ${n}.svg`, alt: "Trampolinbild" }));
+    ablage.append(b);
+  });
+  const reihe = $("#a3-reihe");
+  TRAMPOLIN.reihenfolge.forEach((n, i) => {
+    const s = slot("bild", String(n), "Bild hierher");
+    s.classList.add("bildslot");
+    reihe.append(el("div", { class: "platz" }, el("div", { class: "nr" }, (i + 1) + "."), s,
+                    slot("form", TRAMPOLIN.formen[i], "Energieform")));
+  });
+  const wahl = $("#a3-wahl");
+  mischen(WAHL).forEach((w, i) => {
+    const l = el("label", {}, el("input", { type: "radio", name: "a3", value: String(i) }), " " + w.t);
+    l.dataset.ok = w.ok; l.dataset.warum = w.w;
+    wahl.append(l);
+  });
+}
+
+function aufgabe4() {
+  const box = $("#a4-situationen");
+  SITUATIONEN.forEach((s, i) => {
+    box.append(el("label", { class: s.thema },
+      el("input", { type: "radio", name: "a4", value: String(i) }),
+      themaMarke(s.thema), el("b", {}, " " + s.titel), el("br"), s.text));
+  });
+  $$("input[name=a4]").forEach(r => r.addEventListener("change", promptZeigen));
+  $("#a4-text").addEventListener("input", promptZeigen);
+  $("#a4-kopieren").addEventListener("click", kopieren);
+  promptZeigen();
+}
+
+function promptBauen() {
+  const wahl = $("input[name=a4]:checked");
+  const s = wahl ? SITUATIONEN[+wahl.value] : null;
+  const text = $("#a4-text").value.trim();
+  return `Du bist Physiklehrkraft an einem bayerischen Gymnasium, Jahrgangsstufe 9. Ich habe eine Energieumwandlung beschrieben und möchte eine Rückmeldung dazu.
+
+Situation: ${s ? s.text : "(noch keine Situation gewählt)"}
+
+Meine Beschreibung:
+"${text || "(noch kein Text)"}"
+
+Prüfe meine Beschreibung nach diesen vier Punkten:
+1. Sind alle beteiligten Energieformen mit dem Fachbegriff genannt? Erlaubt sind: Höhenenergie, kinetische Energie, Spannenergie, chemische Energie, elektrische Energie, innere Energie, Strahlungsenergie, Kernenergie.
+2. Stimmt die Reihenfolge der Umwandlungen, und ist jeweils der Energiewandler genannt, in dem umgewandelt wird?
+3. Steht da, wo ein Verlust auftritt – also wo ein Teil der Energie in innere Energie umgewandelt wird, die niemand nutzen kann?
+4. Fachsprache: Energie wird "umgewandelt", nicht "verbraucht" oder "erzeugt". Energie darf nicht mit Kraft verwechselt werden.
+
+So soll deine Antwort aussehen:
+- meine Beschreibung ist kurz (zwei oder drei Sätze) – erwarte keinen langen Text
+- auf Deutsch, du-Ansprache, höchstens fünf Sätze
+- zuerst ein Satz, was schon gut ist
+- dann höchstens drei konkrete Verbesserungshinweise
+- schreibe meinen Text NICHT neu und gib keine Musterlösung – ich will ihn selbst verbessern
+- nur qualitativ beschreiben, nichts rechnen`;
+}
+
+function promptZeigen() { $("#a4-prompt").textContent = promptBauen(); }
+
+async function kopieren() {
+  const m = $("#a4-meldung");
+  if (!$("input[name=a4]:checked")) { m.className = "meldung nochnicht"; m.textContent = "Wähle zuerst eine Situation."; return; }
+  if ($("#a4-text").value.trim().split(/\s+/).length < 10) {
+    m.className = "meldung nochnicht"; m.textContent = "Schreib erst ein paar ganze Sätze – mindestens 10 Wörter."; return;
+  }
+  const p = promptBauen();
+  // Erst der alte Weg über ein verstecktes Textfeld: Er läuft sofort im Klick
+  // und fragt nicht nach einer Berechtigung, die manche Tablets nie beantworten.
+  const t = el("textarea"); t.value = p; t.setAttribute("readonly", "");
+  t.style.position = "fixed"; t.style.opacity = "0"; document.body.append(t); t.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+  t.remove();
+  if (!ok) {
+    try { await navigator.clipboard.writeText(p); ok = true; } catch (_) { ok = false; }
+  }
+  if (ok) { m.className = "meldung gut"; m.textContent = "Kopiert! Jetzt im KI-Werkzeug deiner Schule einfügen."; }
+  else {
+    m.className = "meldung nochnicht";
+    m.textContent = "Kopieren hat nicht geklappt – öffne unten „Diesen Prompt kopierst du“ und markiere den Text von Hand.";
+  }
+}
+
+// ------------------------------------------------------------------ Prüfen und Lösung
+function slotsPruefen(bereich) {
+  let richtig = 0, alle = 0;
+  $$(".slot", bereich).forEach(s => {
+    alle++;
+    s.classList.remove("richtig", "falsch");
+    if (!s.dataset.wert) return;
+    const ok = s.dataset.wert === s.dataset.soll;
+    s.classList.add(ok ? "richtig" : "falsch");
+    if (ok) richtig++;
+  });
+  return [richtig, alle];
+}
+
+function melden(id, richtig, alle, extra = "") {
+  const m = $("#" + id + "-meldung");
+  m.className = "meldung " + (richtig === alle ? "gut" : "nochnicht");
+  m.textContent = richtig === alle ? "Alles richtig! " + extra
+    : `${richtig} von ${alle} richtig. Rote Felder antippen zum Leeren, dann nochmal. ` + extra;
+}
+
+function pruefen(id) {
+  const bereich = $("#" + id);
+  let [r, a] = slotsPruefen(bereich);
+  if (id === "a3") {
+    const w = $("input[name=a3]:checked");
+    $$("#a3-wahl label").forEach(l => { l.classList.remove("richtig", "falsch"); l.title = ""; });
+    a++;
+    if (w) {
+      const l = w.closest("label");
+      const ok = l.dataset.ok === "true";
+      l.classList.add(ok ? "richtig" : "falsch");
+      if (ok) r++;
+      melden(id, r, a, l.dataset.warum);
+      return;
+    }
+  }
+  melden(id, r, a);
+}
+
+function loesen(id) {
+  const bereich = $("#" + id);
+  $$(".slot", bereich).forEach(s => {
+    if (s.dataset.art === "bild") {
+      const b = $(`.bild[data-wert="${s.dataset.soll}"]`);
+      if (b) inSlotLegen(s, b);
+    } else if (s.dataset.art === "form") inSlotLegen(s, formChip(s.dataset.soll));
+    else inSlotLegen(s, wandlerChip(s.dataset.soll));
+  });
+  if (id === "a3") $$("#a3-wahl label").forEach(l => { if (l.dataset.ok === "true") $("input", l).checked = true; });
+  pruefen(id);
+}
+
+// ------------------------------------------------------------------ Start
+ablagenFuellen(); aufgabe1(); aufgabe2(); aufgabe3(); aufgabe4();
+$$("[data-pruefe]").forEach(b => b.addEventListener("click", () => pruefen(b.dataset.pruefe)));
+$$("[data-loese]").forEach(b => b.addEventListener("click", () => loesen(b.dataset.loese)));
+$$("nav button").forEach(b => b.addEventListener("click", () => {
+  $$("nav button").forEach(x => x.classList.toggle("aktiv", x === b));
+  $$("section.aufgabe").forEach(s => s.classList.toggle("aktiv", s.id === b.dataset.ziel));
+  window.scrollTo(0, 0);
+}));
+</script>
+</body>
+</html>
