@@ -82,7 +82,7 @@ h2 { font-size: 1.2rem; margin: 6px 0 4px; }
 
 /* Aufgabe 2 – Energieflussdiagramm von oben nach unten. Wie auf dem Arbeitsblatt
    verbinden die Pfeile die Wandler, und die Energieform steht neben dem Pfeil –
-   nicht als eigenes Feld in der Kette. Der Verlust steht an der Spitze des Seitenpfeils. */
+   nicht als eigenes Feld in der Kette. Die nicht nutzbare Energieform steht an der Spitze des Seitenpfeils. */
 .fluss { --b: 170px; display: grid; grid-template-columns: var(--b) 1fr; column-gap: 0;
          align-items: center; margin-top: 6px; }
 .fluss .zeile { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
@@ -186,7 +186,7 @@ footer { text-align: center; font-size: .8rem; color: var(--grau); padding: 20px
   <section class="aufgabe" id="a2">
     <h2>2 Energieflussdiagramme mit mehreren Schritten</h2>
     <p class="auftrag">Die <b>Energieform</b> steht am Pfeil, der <b>Energiewandler</b> im Rechteck.
-      Zu jeder Kette gehört ein <b>Verlust</b>: Dort wird ein Teil der Energie in eine Form umgewandelt, die niemand nutzen kann.
+      In jeder Kette wird an einer Stelle ein Teil der Energie in eine <b>nicht nutzbare Energieform</b> umgewandelt – sie steht am Pfeil zur Seite.
       Prüfe jede Kette einzeln.</p>
     <div class="ablage" data-art="beides"></div>
     <div id="a2-liste"></div>
@@ -214,10 +214,10 @@ footer { text-align: center; font-size: .8rem; color: var(--grau); padding: 20px
   <section class="aufgabe" id="a4">
     <h2>4 Beschreibe eine Energieumwandlung – und lass dir Rückmeldung geben</h2>
     <p class="auftrag">Wähle eine Situation. Beschreibe in <b>zwei oder drei Sätzen</b>, welche Energie in welche
-      umgewandelt wird – es sind jeweils zwei Energiewandler – und wo ein Verlust auftritt.</p>
+      umgewandelt wird – es sind jeweils zwei Energiewandler – und wo eine nicht nutzbare Energieform entsteht.</p>
     <div class="situationen" id="a4-situationen"></div>
     <p><label for="a4-text"><b>Deine Beschreibung</b></label></p>
-    <textarea id="a4-text" placeholder="… wird in … umgewandelt. Ein Verlust tritt auf, wo …"></textarea>
+    <textarea id="a4-text" placeholder="… wird in … umgewandelt. Eine nicht nutzbare Energieform entsteht, wo …"></textarea>
     <p class="warnung">Schreibe <b>keinen Namen</b> und nichts Persönliches in den Text.
       Die Seite speichert und verschickt nichts – der Text geht nur weiter, wenn du ihn selbst kopierst.</p>
     <div class="knoepfe"><button class="knopf" id="a4-kopieren">Prompt kopieren</button></div>
@@ -500,7 +500,7 @@ Meine Beschreibung:
 Prüfe meine Beschreibung nach diesen vier Punkten:
 1. Sind alle beteiligten Energieformen mit dem Fachbegriff genannt? Erlaubt sind: Höhenenergie, kinetische Energie, Spannenergie, chemische Energie, elektrische Energie, innere Energie, Strahlungsenergie, Kernenergie.
 2. Stimmt die Reihenfolge der Umwandlungen, und ist jeweils der Energiewandler genannt, in dem umgewandelt wird?
-3. Steht da, wo ein Verlust auftritt – also wo ein Teil der Energie in innere Energie umgewandelt wird, die niemand nutzen kann?
+3. Steht da, wo eine nicht nutzbare Energieform entsteht – also wo ein Teil der Energie in innere Energie umgewandelt wird, die niemand nutzen kann?
 4. Fachsprache: Energie wird "umgewandelt", nicht "verbraucht" oder "erzeugt". Energie darf nicht mit Kraft verwechselt werden.
 
 So soll deine Antwort aussehen:
