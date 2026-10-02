@@ -95,13 +95,12 @@ h2 { font-size: 1.2rem; margin: 6px 0 4px; }
 .fluss .zweig .strich { flex: none; width: 40px; border-top: 4px solid var(--gruen); position: relative; }
 .fluss .zweig .strich::after { content: ""; position: absolute; right: -2px; top: -9px; border: 7px solid transparent;
                                border-left: 10px solid var(--gruen); border-right: 0; }
-/* Die Energieform ist Beschriftung, kein Kasten: leer eine gestrichelte Schreiblinie,
-   gefüllt nur der Text. Richtig oder falsch zeigt ein Haken oder Kreuz dahinter. */
-.fluss .slot.form { border: 0; border-bottom: 2px dashed var(--linie); border-radius: 0;
-                    background: transparent; justify-content: flex-start; padding: 3px 2px;
-                    white-space: nowrap; }
-.fluss .slot.form.voll { border-bottom-color: transparent; font-weight: bold; }
-.fluss .slot.form.ueber { background: #f0f0f0; border-bottom-color: #222; }
+/* Die Energieform ist Beschriftung: leer ein gestrichelter Kasten zum Hineinziehen,
+   gefüllt nur der Text ohne Rahmen. Richtig oder falsch zeigt ein Haken oder Kreuz dahinter. */
+.fluss .slot.form { border-radius: 4px; background: transparent; text-align: center; }
+.fluss .slot.form.voll { border-color: transparent; justify-content: flex-start; padding: 3px 2px;
+                         font-weight: bold; white-space: nowrap; }
+.fluss .slot.form.ueber { background: #f0f0f0; border-color: #222; }
 .fluss .slot.form.richtig, .fluss .slot.form.falsch { box-shadow: none; }
 .fluss .slot.form.richtig::after { content: "✓"; color: var(--gruen); margin-left: 8px; font-size: 1.3rem; font-weight: bold; }
 .fluss .slot.form.falsch::after  { content: "✗"; color: var(--rot);   margin-left: 8px; font-size: 1.3rem; font-weight: bold; }
@@ -436,7 +435,7 @@ function aufgabe2() {
       } else {
         fluss.append(el("div", { class: "box" }, slot("wandler", w, "Wandler")));
         const zweig = el("div", { class: "zweig" });
-        if (i === k.zweig) zweig.append(el("span", { class: "strich" }), slot("form", "innen", "Verlust"));
+        if (i === k.zweig) zweig.append(el("span", { class: "strich" }), slot("form", "innen", "nicht nutzbare Energieform"));
         fluss.append(zweig);
       }
     });
