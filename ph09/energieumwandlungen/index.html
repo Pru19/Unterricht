@@ -80,25 +80,28 @@ h2 { font-size: 1.2rem; margin: 6px 0 4px; }
 .paar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .pfeil { font-size: 1.4rem; color: var(--gruen); }
 
-/* Aufgabe 2 – Energieflussdiagramm von oben nach unten. Wie auf dem Arbeitsblatt
-   verbinden die Pfeile die Wandler, und die Energieform steht neben dem Pfeil –
-   nicht als eigenes Feld in der Kette. Die nicht nutzbare Energieform steht an der Spitze des Seitenpfeils. */
-.fluss { --b: 170px; display: grid; grid-template-columns: var(--b) 1fr; column-gap: 0;
-         align-items: center; margin-top: 6px; }
-.fluss .zeile { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
-                padding-left: calc(var(--b) / 2 - 2px); }
-.fluss .pf { flex: none; width: 0; height: 50px; border-left: 4px solid var(--gruen); position: relative; }
-.fluss .pf::after { content: ""; position: absolute; left: -9px; bottom: -2px; border: 7px solid transparent;
+/* Aufgabe 2 – Energieflussdiagramm von links nach rechts. Wie auf dem Arbeitsblatt
+   verbinden die Pfeile die Wandler, und die Energieform steht über dem Pfeil –
+   nicht als eigenes Feld in der Kette. Die nicht nutzbare Energieform steht unter
+   dem Wandler an der Spitze des Pfeils nach unten. Ein Raster: Zeile 1 Energieformen,
+   Zeile 2 Pfeile und Wandler, Zeile 3 Pfeil nach unten, Zeile 4 nicht nutzbare Form.
+   Ist der Bildschirm zu schmal, scrollt die Kette seitlich. */
+.fluss { display: grid; align-items: center; row-gap: 2px; margin-top: 8px; padding-bottom: 4px;
+         overflow-x: auto; }
+.fluss .pf { height: 0; border-top: 4px solid var(--gruen); position: relative; margin: 0 2px; }
+.fluss .pf::after { content: ""; position: absolute; right: -2px; top: -9px; border: 7px solid transparent;
+                    border-left: 10px solid var(--gruen); border-right: 0; }
+.fluss .ab { justify-self: center; width: 0; height: 34px; border-left: 4px solid var(--gruen); position: relative; }
+.fluss .ab::after { content: ""; position: absolute; left: -9px; bottom: -2px; border: 7px solid transparent;
                     border-top: 10px solid var(--gruen); border-bottom: 0; }
-.fluss .box  { grid-column: 1; justify-self: center; }
-.fluss .zweig { grid-column: 2; display: flex; align-items: center; gap: 12px; }
-.fluss .zweig .strich { flex: none; width: 40px; border-top: 4px solid var(--gruen); position: relative; }
-.fluss .zweig .strich::after { content: ""; position: absolute; right: -2px; top: -9px; border: 7px solid transparent;
-                               border-left: 10px solid var(--gruen); border-right: 0; }
+.fluss .slot.wandler { min-width: 104px; }
+.fluss > .slot.form { min-width: 0; justify-self: center; }
+.wischen { display: none; font-size: .8rem; color: var(--grau); margin: 6px 0 0; }
+@media (max-width: 900px) { .wischen { display: block; } }
 /* Die Energieform ist Beschriftung: leer ein gestrichelter Kasten zum Hineinziehen,
    gefüllt nur der Text ohne Rahmen. Richtig oder falsch zeigt ein Haken oder Kreuz dahinter. */
 .fluss .slot.form { border-radius: 4px; background: transparent; text-align: center; }
-.fluss .slot.form.voll { border-color: transparent; justify-content: flex-start; padding: 3px 2px;
+.fluss .slot.form.voll { border-color: transparent; padding: 3px 2px;
                          font-weight: bold; white-space: nowrap; }
 .fluss .slot.form.ueber { background: #f0f0f0; border-color: #222; }
 .fluss .slot.form.richtig, .fluss .slot.form.falsch { box-shadow: none; }
@@ -131,6 +134,12 @@ textarea { width: 100%; min-height: 100px; font: inherit; padding: 10px; border-
 .prompt { white-space: pre-wrap; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 10px;
           font-size: .88rem; color: #333; max-height: 260px; overflow: auto; }
 .hinweis { font-size: .9rem; color: var(--grau); }
+.weiter { background: #fff; border: 3px solid #50A910; border-radius: 10px; padding: 10px 14px; margin: 12px 0;
+          color: #000; }
+.weiter h3 { margin: 0 0 4px; font-size: 1.1rem; color: #2f6b08; }
+.weiter ol { margin: 0; padding-left: 1.4em; }
+.weiter li { margin: 4px 0; }
+.weiter p { margin: 8px 0 0; }
 .warnung { background: #FFF2CC; border-left: 5px solid #FFC000; padding: 8px 10px; border-radius: 6px; font-size: .92rem; }
 
 .knoepfe { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
@@ -144,11 +153,6 @@ footer { text-align: center; font-size: .8rem; color: var(--grau); padding: 20px
 @media (max-width: 620px) {
   .bilderablage, .reihe { grid-template-columns: repeat(2, 1fr); }
   .slot { min-width: 120px; }
-  .fluss { --b: 140px; }
-  .fluss .slot.wandler { min-width: 120px; }
-  .fluss .zweig { gap: 8px; }
-  .fluss .zweig .strich { width: 28px; }
-  .fluss .zweig .slot.form { min-width: 0; }
 }
 </style>
 </head>
@@ -186,7 +190,7 @@ footer { text-align: center; font-size: .8rem; color: var(--grau); padding: 20px
   <section class="aufgabe" id="a2">
     <h2>2 Energieflussdiagramme mit mehreren Schritten</h2>
     <p class="auftrag">Die <b>Energieform</b> steht am Pfeil, der <b>Energiewandler</b> im Rechteck.
-      In jeder Kette wird an einer Stelle ein Teil der Energie in eine <b>nicht nutzbare Energieform</b> umgewandelt – sie steht am Pfeil zur Seite.
+      In jeder Kette wird an einer Stelle ein Teil der Energie in eine <b>nicht nutzbare Energieform</b> umgewandelt – sie steht am Pfeil nach unten.
       Prüfe jede Kette einzeln.</p>
     <div class="ablage" data-art="beides"></div>
     <div id="a2-liste"></div>
@@ -222,10 +226,16 @@ footer { text-align: center; font-size: .8rem; color: var(--grau); padding: 20px
       Die Seite speichert und verschickt nichts – der Text geht nur weiter, wenn du ihn selbst kopierst.</p>
     <div class="knoepfe"><button class="knopf" id="a4-kopieren">Prompt kopieren</button></div>
     <div class="meldung" id="a4-meldung"></div>
-    <p class="hinweis">So geht es weiter: Füge den Prompt in das KI-Werkzeug ein, das deine Schule dafür freigegeben hat.
-      Lies die Rückmeldung, <b>verbessere deinen Text selbst</b> und schreibe die verbesserte Fassung ins Heft.
-      Die KI soll dir sagen, was fehlt – schreiben musst du selbst. Und: Auch eine KI kann sich irren.
-      Prüfe ihre Hinweise mit dem, was du gelernt hast.</p>
+    <div class="weiter">
+      <h3>So geht es weiter</h3>
+      <ol>
+        <li>Füge den Prompt in das KI-Werkzeug ein, das deine Schule dafür freigegeben hat.</li>
+        <li>Lies die Rückmeldung.</li>
+        <li><b>Verbessere deinen Text selbst.</b> Die KI soll dir sagen, was fehlt – schreiben musst du selbst.</li>
+        <li><b>Schreibe die verbesserte Fassung ins Heft.</b></li>
+      </ol>
+      <p>Auch eine KI kann sich irren. Prüfe ihre Hinweise mit dem, was du gelernt hast.</p>
+    </div>
     <details><summary class="hinweis">Diesen Prompt kopierst du</summary><div class="prompt" id="a4-prompt"></div></details>
   </section>
 </main>
@@ -428,15 +438,22 @@ function aufgabe2() {
   const liste = $("#a2-liste");
   KETTEN.forEach((k, nr) => {
     const fluss = el("div", { class: "fluss" });
+    const n = k.schritte.length;
+    fluss.style.gridTemplateColumns = k.schritte.map((_, i) => i % 2 ? "auto" : "minmax(124px, 1fr)").join(" ");
+    const hin = (e, zeile, spalte, breite = 1) => {
+      e.style.gridRow = zeile; e.style.gridColumn = spalte + " / span " + breite; fluss.append(e); };
     k.schritte.forEach((w, i) => {
+      const sp = i + 1;
       if (i % 2 === 0) {
-        // Energieform: Pfeil zum nächsten Wandler, das Feld daneben
-        fluss.append(el("div", { class: "zeile" }, el("div", { class: "pf" }), slot("form", w, "Energieform")));
+        // Energieform: Beschriftung über dem Pfeil zum nächsten Wandler
+        hin(slot("form", w, "Energieform"), 1, sp);
+        hin(el("div", { class: "pf" }), 2, sp);
       } else {
-        fluss.append(el("div", { class: "box" }, slot("wandler", w, "Wandler")));
-        const zweig = el("div", { class: "zweig" });
-        if (i === k.zweig) zweig.append(el("span", { class: "strich" }), slot("form", "innen", "nicht nutzbare Energieform"));
-        fluss.append(zweig);
+        hin(slot("wandler", w, "Wandler"), 2, sp);
+        if (i === k.zweig) {
+          hin(el("div", { class: "ab" }), 3, sp);
+          hin(slot("form", "innen", "nicht nutzbare Energieform"), 4, sp - 1, Math.min(3, n - sp + 2));
+        }
       }
     });
     // Jede Kette prüft sich einzeln - sonst stünde nach der ersten schon
@@ -446,7 +463,7 @@ function aufgabe2() {
       el("button", { class: "knopf", "data-pruefe": id }, "Prüfen"),
       el("button", { class: "knopf zweit", "data-loese": id }, "Lösung zeigen"));
     liste.append(el("div", { class: "karte " + k.thema, id },
-      el("h3", {}, themaMarke(k.thema), " ", k.titel), el("div", {}, k.text), fluss,
+      el("h3", {}, themaMarke(k.thema), " ", k.titel), el("div", {}, k.text), el("p", { class: "wischen" }, "Die Kette geht nach rechts weiter – seitlich wischen."), fluss,
       knoepfe, el("div", { class: "meldung", id: id + "-meldung" })));
   });
 }
