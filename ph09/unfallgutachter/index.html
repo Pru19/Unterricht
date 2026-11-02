@@ -1,0 +1,2651 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Unfallgutachter</title>
+<!--
+  Ph09 I/04 Arbeit – Lernspiel, Prototyp: Fall 1 „Die Bremsspur“, Fall 2 „Die Abkürzung“,
+  Fall 3 „Der Schubs“.
+  Entwurf in 00 Spielplanung.md, Abschnitt 6. Eine Datei ohne Nachladen.
+  Keine Anmeldung, keine Speicherung, keine Übertragung (CLAUDE.md §5b).
+
+  Ablauf
+    Büro
+    Unfallstelle   Spurenkoffer: Werkzeug selbst wählen, Spur frei vermessen
+    Teststrecke A  nachgebauter E-Scooter: Stimmt die Aussage? Bei welchem Tempo passt die Spur?
+    Teststrecke B  „Gutachter rechnen“: ΔE/s (als Bruch) ausrechnen → konstant →
+                   gleich der Bremskraft → mit zweiter Bremse prüfen → ΔE = F · s bauen
+    Benennung (ΔE heißt Arbeit W), Werkzeug, Gutachten (im Büro), Ergebnis
+  Fall 3 (nach Fall 2 oder mit dem Fallcode RAMPE)
+    Schulhof        Spurenkoffer: Video, Kraftmesser, Waage …
+    Video           erstes und letztes Bild des Schubses suchen, Schubstrecke an den Fugen
+    Auswertung      zugeführt? → E vorher, E nachher → W = ΔE = E_nachher − E_vorher (positiv)
+    Rückblick       Bremse: kinetische Energie erhöht? → W = 0 − E_vorher (negativ)
+    Übersicht       Schubs und Bremse nebeneinander → Werkzeug Energieänderung
+    Gutachten       W, F = W / s, Vergleich mit der behaupteten Kraft, Urteil
+  Fall 2 (nach Fall 1 oder mit dem Fallcode BREMSE)
+    Vor der Schule  Spurenkoffer: Verleih-App, Waage, Höhenmesser …
+    Auswertung      W = F · s für beide Wege → gleich → was spart der lange Weg? →
+                    gemeinsam ist Δh → ΔE_h → W = m · g · Δh bauen
+    Gutachten       Teil 1: Akku vorher − nachher, beweist das die Rampe?
+                    Teil 2: die Motorkraft verrät den Weg
+  Leitlinie: höchstens ein Satz je Bildschirm.
+-->
+<style>
+:root { --gruen: #3BA34B; --gelb: #FFC000; --rot: #D9534F; --blau: #2E75B6; --papier: #FFF8E7; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: #1f2d3a; color: #222; font: 18px/1.35 Carlito, Calibri, "Segoe UI", system-ui, sans-serif; }
+#spiel { max-width: 1100px; margin: 0 auto; position: relative; }
+#heim { position: absolute; left: 10px; bottom: 12px; width: 54px; height: 54px; border-radius: 14px; border: 3px solid #fff; background: #3d566e; color: #fff; font-size: 1.6rem; padding: 0; z-index: 2; }
+#kopf { display: flex; align-items: center; gap: 14px; padding: 8px 14px; background: #2b3d4f; color: #fff; flex-wrap: wrap; }
+#kopf .rang { background: var(--gelb); color: #222; font-weight: bold; padding: 3px 12px; border-radius: 20px; }
+#kopf .stempel { display: flex; gap: 4px; }
+#kopf .st { width: 26px; height: 26px; border-radius: 50%; border: 3px solid #E05050; color: #E05050; font-weight: bold;
+            font-size: 12px; display: flex; align-items: center; justify-content: center; transform: rotate(-12deg); }
+#kopf .st.weg { opacity: .2; }
+#kopf .beweise { display: flex; gap: 6px; }
+#kopf .bw { background: #fff; color: #222; border-radius: 6px; padding: 1px 8px; font-size: .85rem; font-weight: bold; }
+#kopf .werkzeug { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+#kopf .karte { background: #fff; color: #222; border-radius: 6px; padding: 2px 8px; font-size: .85rem; font-weight: bold; }
+#kopf .sterne { color: var(--gelb); font-weight: bold; }
+#buehne { position: relative; background: #cfe6f5; }
+#buehne svg.szene { display: block; width: 100%; height: auto; }
+#leiste { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; padding: 10px 76px; background: #2b3d4f; min-height: 78px; }
+#leiste:empty { display: none; }
+#spielende { position: absolute; right: 10px; bottom: 12px; height: 54px; border-radius: 14px; border: 3px solid #fff; background: #3d566e; color: #fff; font: inherit; font-weight: bold; font-size: .95rem; line-height: 1.1; padding: 0 10px; z-index: 2; display: none; }
+#spiel.fahrt #spielende { display: block; }
+#spiel.fahrt #leiste { padding-right: 120px; }
+button { font: inherit; cursor: pointer; }
+.k { padding: 10px 20px; border-radius: 14px; border: 3px solid #fff; background: var(--gruen); color: #fff; font-weight: bold; font-size: 1.1rem; }
+.k.hell { background: #fff; color: #2b3d4f; }
+.k.an { background: var(--gelb); color: #222; }
+.k:disabled { opacity: .4; cursor: default; }
+.werkz { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 12px; border-radius: 14px; border: 3px solid #fff;
+         background: #3d566e; color: #fff; font-weight: bold; font-size: .85rem; min-width: 86px; }
+.werkz b { font-size: 1.6rem; }
+.werkz.an { background: var(--gelb); color: #222; }
+.werkz.benutzt { border-color: var(--gelb); }
+.seg { display: flex; border: 3px solid #fff; border-radius: 14px; overflow: hidden; }
+.seg button { padding: 9px 14px; border: 0; background: #3d566e; color: #fff; font-weight: bold; }
+.seg button.an { background: var(--gelb); color: #222; }
+.seg button:disabled { opacity: .4; }
+.lbl { color: #fff; font-size: .85rem; text-align: center; }
+.feldgruppe { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+input[type=range] { width: 260px; accent-color: var(--gelb); }
+.tempo { color: #fff; font-weight: bold; font-size: 1.3rem; min-width: 5.2em; text-align: center; }
+.ebene { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 2%; background: rgba(20,30,40,.25); }
+.blatt { background: var(--papier); border-radius: 14px; padding: 16px 20px; box-shadow: 0 8px 30px rgba(0,0,0,.35);
+         max-height: 100%; overflow: auto; width: 100%; max-width: 820px; }
+.blatt h2 { margin: 0 0 8px; font-size: 1.4rem; }
+.mitte { text-align: center; }
+.knoepfe { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+/* Messtabelle auf der Teststrecke */
+#tafel { position: absolute; right: 1.5%; top: 25%; background: #fff; border-radius: 10px; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+         font-size: .85rem; max-width: 46%; }
+#tafel table { border-collapse: collapse; }
+#tafel th, #tafel td { border: 1px solid #ddd; padding: 2px 7px; text-align: center; font-variant-numeric: tabular-nums; }
+#tafel th { background: #f2f2f2; }
+#tafel th.q, #tafel td.q { background: #FFF2CC; }
+#tafel input { width: 4.6em; font: inherit; text-align: right; border: 2px solid #bbb; border-radius: 5px; padding: 1px 3px; }
+#tafel input.gut { border-color: var(--gruen); background: #DFF2D8; }
+#tafel input.schlecht { border-color: var(--rot); background: #F8D7D5; }
+#tafel tr.neu td { background: #EAF4FF; }
+/* Formel bauen */
+.formel { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 12px 0; }
+.slot { width: 64px; height: 64px; border: 3px dashed #9a8f73; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        font: italic bold 1.7rem "Cambria Math", Cambria, serif; background: #fff; }
+.slot.voll { border-style: solid; border-color: var(--blau); }
+.ziel { font: italic bold 1.6rem "Cambria Math", Cambria, serif; }
+.bausteine { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.stein { width: 60px; height: 60px; border-radius: 12px; border: 3px solid var(--blau); background: #DEEBF7; font: italic bold 1.6rem "Cambria Math", Cambria, serif; }
+.stein.op { border-color: #7F7F7F; background: #eee; font-style: normal; }
+.bruch { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; line-height: 1.05;
+         font: italic bold 1em "Cambria Math", Cambria, serif; margin: 0 2px; }
+.bruch.einheit { font: bold .8em Carlito, Calibri, sans-serif; }
+.bruch > span:first-child { border-bottom: 2px solid currentColor; padding: 0 3px; }
+.hinweis { text-align: center; font: 1.05rem Carlito, Calibri, sans-serif; color: #555; margin-top: 12px; min-height: 1.3em; }
+.gutachten label { display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: 1.1rem; }
+.gutachten input { font: inherit; width: 7em; padding: 6px 8px; border: 2px solid #9a8f73; border-radius: 8px; text-align: right; }
+.tippk { border: 2px solid #E0B400; background: #FFF2CC; border-radius: 50%; width: 38px; height: 38px; font-size: 1.1rem; padding: 0; }
+.tippf { background: #FFF2CC; border-radius: 8px; padding: 3px 10px; font: 1.05rem Carlito, Calibri, sans-serif; }
+.tippf i { font-family: "Cambria Math", Cambria, serif; }
+.tippf { white-space: nowrap; }
+.wurzel { white-space: nowrap; font-size: 1.15em; }
+.radikand { display: inline-block; border-top: 2px solid currentColor; padding: 2px 3px 0; margin-left: -1px; font-size: .87em; }
+.tippf small, .gutachten label small { font: .8rem Carlito, Calibri, sans-serif; color: #555; margin-left: 6px; }
+.gutachten input.gut { border-color: var(--gruen); background: #DFF2D8; color: #222; }
+.gutachten input.falsch { border-color: var(--rot); background: #F8D7D5; }
+.akte { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 6px 0 10px; }
+.akte > span { background: #fff; border: 2px solid #c9c2ae; border-radius: 10px; padding: 4px 10px; font-weight: bold; }
+.werkzeugkarte { display: inline-block; background: #fff; border: 3px solid var(--gelb); border-radius: 12px; padding: 10px 18px; font: italic bold 1.6rem "Cambria Math", Cambria, serif; }
+.code { font-size: 1.3rem; font-weight: bold; letter-spacing: .15em; border: 3px dashed var(--gelb); border-radius: 10px; padding: 1px 10px; color: var(--gelb); }
+.messung { border-collapse: collapse; margin: 8px auto; font-size: 1.1rem; }
+.messung th, .messung td { border: 1px solid #c9c2ae; padding: 4px 12px; text-align: center; font-variant-numeric: tabular-nums; }
+.messung th { background: #f2ead6; }
+.messung input { font: inherit; width: 5.5em; padding: 3px 6px; border: 2px solid #9a8f73; border-radius: 6px; text-align: right; }
+.messung input.gut, .gutachten input.gut { border-color: var(--gruen); background: #DFF2D8; color: #222; }
+.messung input.falsch { border-color: var(--rot); background: #F8D7D5; }
+.fazit { text-align: center; font-weight: bold; color: #2f7a2f; margin: 4px 0; }
+/* die Kernaussage eines Falls – schwarz auf Gelb wie die Hinweise auf der Bühne */
+.fazit.kern { color: #222; background: var(--gelb); border-radius: 8px; padding: 4px 12px; display: table; margin: 6px auto; }
+.protokoll { display: inline-block; background: #fff; border: 3px solid #555; border-radius: 10px; padding: 8px 18px; font-size: 1.3rem; font-weight: bold; }
+.buchknopf { background: #fff; color: #222; border: 0; border-radius: 6px; padding: 2px 10px; font-weight: bold; font-size: .95rem; }
+.buch { background: repeating-linear-gradient(#fffdf5 0, #fffdf5 29px, #cfe0f3 30px); border-left: 4px double #E08080;
+        padding: 4px 14px 8px 22px; line-height: 30px; font-size: 1.05rem; }
+.buch h3 { margin: 0; line-height: 30px; color: var(--blau); }
+.buch ul { margin: 0 0 6px; padding-left: 18px; }
+.buch .f { font-family: "Cambria Math", Cambria, serif; font-style: italic; font-weight: bold; white-space: nowrap; }
+.buch .neu { background: #FFF2CC; }
+.buch .f sub { font: normal .75em Carlito, Calibri, sans-serif; }
+.ix { font: normal .6em Carlito, Calibri, sans-serif; }
+.vz { display: inline-block; min-width: 1.1em; border-bottom: 3px solid #555; text-align: center; margin-right: 2px; }
+#leiste.eng { flex-wrap: nowrap; gap: 8px; }
+#leiste.eng .k { padding: 8px 12px; font-size: 1rem; }
+#leiste.eng input[type=range] { width: 170px; }
+.steuer { padding: 16px 30px; font-size: 1.3rem; user-select: none; -webkit-user-select: none; touch-action: none; }
+/* schmale Bildschirme (Tablet hochkant): Fenster kompakter, damit nichts gescrollt werden muss */
+@media (max-width: 900px) { .blatt { padding: 10px 14px; } .blatt h2 { font-size: 1.15rem; } .blatt ul { font-size: .88rem !important; line-height: 1.3 !important; } .blatt .k { padding: 7px 14px; font-size: 1rem; } }
+.wackeln { animation: wackeln .4s; }
+@keyframes wackeln { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+</style>
+</head>
+<body>
+<div id="spiel">
+  <div id="kopf"></div>
+  <div id="buehne"></div>
+  <div id="leiste"></div>
+  <button id="heim" title="Zur Startseite">🏠</button>
+  <button id="spielende">🏆 Spiel<br>beenden</button>
+</div>
+
+<script>
+'use strict';
+
+// ================================================================ Grundlagen
+
+const bruchHTML = (o, u, groesse = false) => `<span class="bruch${groesse ? '' : ' einheit'}"><span>${o}</span><span>${u}</span></span>`;
+const BRUCH = bruchHTML('Δ<i>E</i>', '<i>s</i>', true), KMH = bruchHTML('km', 'h'), MS = bruchHTML('m', 's');
+const kopf = document.getElementById('kopf');
+const buehne = document.getElementById('buehne');
+const leiste = document.getElementById('leiste');
+
+// ohne Tausenderpunkt: „2.845 J“ läse sich wie ein Komma
+const z = (x, st = 0) => x.toLocaleString('de-DE', { minimumFractionDigits: st, maximumFractionDigits: st, useGrouping: false });
+function lies(t) {
+  t = String(t).trim().replace(/\s/g, '').replace(/[−–]/g, '-').replace(/^\+/, '');
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  return /^-?\d*\.?\d+$/.test(t) ? parseFloat(t) : NaN;
+}
+const passt = (x, soll, tol = 0.05) => !isNaN(x) && Math.abs(x - soll) <= Math.abs(soll) * tol;
+const kmh = v => v / 3.6;
+/* Passt eine Testspur zur Unfallspur? Relativ, damit benachbarte Tempos auch bei
+   kurzen Spuren unterscheidbar bleiben (11 und 12 km/h liegen dort nur 0,25 m auseinander). */
+const spurPasst = (s, ziel) => Math.abs(s - ziel) <= Math.max(0.1, 0.08 * ziel);
+const wackle = el => { el.classList.remove('wackeln'); void el.offsetWidth; el.classList.add('wackeln'); };
+
+const stand = { rang: 'Praktikant', stempel: 3, werkzeuge: [], sterne: 0, beweise: {}, buch: new Set() };
+
+function kopfZeigen() {
+  const b = stand.beweise;
+  kopf.innerHTML = `<span class="rang">${stand.rang}</span>
+    <span class="stempel">${[0, 1, 2].map(i => `<span class="st${i < stand.stempel ? '' : ' weg'}">OK</span>`).join('')}</span>
+    <span class="sterne">${'★'.repeat(stand.sterne)}</span>
+    <span class="beweise">${b.spur != null ? `<span class="bw">📏 ${z(b.spur, 1)} m</span>` : ''}${b.masse ? `<span class="bw">⚖ ${b.masse} kg</span>` : ''}${b.kraft ? `<span class="bw">🛑 ${b.kraft} N</span>` : ''}${b.hoehe ? `<span class="bw">📐 Δ<i>h</i> = ${b.hoehe} m</span>` : ''}${b.app ? '<span class="bw">📱 App</span>' : ''}${b.akku ? `<span class="bw">🔋 ${z(b.akku[0])} → ${z(b.akku[1])} J</span>` : ''}${b.kraftBeh ? `<span class="bw">💬 „höchstens ${b.kraftBeh} N“</span>` : ''}${b.video ? `<span class="bw">📹 ${z(b.video.vv * 3.6, 1)} ${KMH} → ${z(b.video.vn * 3.6, 1)} ${KMH}</span><span class="bw">📏 ${z(b.video.s, 1)} m</span>` : ''}</span>
+    <span class="werkzeug">🧰 ${stand.werkzeuge.map(w => `<span class="karte">${w}</span>`).join('') || '<span style="opacity:.6">leer</span>'}
+      ${stand.buch.size ? '<button class="buchknopf" id="buchK" title="Notizbuch">📓 Notizbuch</button>' : ''}</span>`;
+  const k = document.getElementById('buchK');
+  if (k) k.onclick = () => buchZeigen();
+}
+
+/* Die Unfallstelle: bei jedem Start neu gezogen. In etwa jedem dritten Fall stimmt die Aussage. */
+function neuerFall() {
+  const behauptet = [12, 15, 18][Math.floor(Math.random() * 3)];
+  const ehrlich = Math.random() < 0.34;
+  const wirklich = ehrlich ? behauptet - 1 - Math.floor(Math.random() * 3) : behauptet + 4 + Math.floor(Math.random() * 5);
+  const F = [250, 300][Math.floor(Math.random() * 2)];
+  const m = 85;
+  const spur = 0.5 * m * kmh(wirklich) ** 2 / F;
+  return { behauptet, wirklich, F, m, spur, ehrlich, vB: Math.round(kmh(behauptet) * 10) / 10, F2: 400 };
+}
+let fall = neuerFall();
+
+// ================================================================ Zeichnen
+
+const SVG = inhalt => `<svg class="szene" viewBox="0 0 960 470" xmlns="http://www.w3.org/2000/svg">${inhalt}</svg>`;
+const SCHRIFT = 'font-family="Carlito, Calibri, sans-serif"';
+
+function person(x, y, { haut = '#F2C49B', oberteil = '#2E75B6', hose = '#2b3a67', helm = null, haare = '#5a3a22', s = 1, arm = 0 } = {}) {
+  return `<g transform="translate(${x},${y}) scale(${s})">
+    <line x1="-7" y1="-40" x2="-10" y2="0" stroke="${hose}" stroke-width="9" stroke-linecap="round"/>
+    <line x1="7" y1="-40" x2="10" y2="0" stroke="${hose}" stroke-width="9" stroke-linecap="round"/>
+    <rect x="-16" y="-88" width="32" height="52" rx="10" fill="${oberteil}"/>
+    <line x1="14" y1="-80" x2="${24 + arm * 6}" y2="${-54 - arm * 30}" stroke="${haut}" stroke-width="8" stroke-linecap="round"/>
+    <line x1="-14" y1="-80" x2="-22" y2="-50" stroke="${haut}" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="0" cy="-104" r="17" fill="${haut}"/>
+    ${helm ? `<path d="M-19 -106 A19 19 0 0 1 19 -106 Z" fill="${helm}"/>` : `<path d="M-17 -108 A17 17 0 0 1 17 -108 L14 -112 L-14 -112 Z" fill="${haare}"/>`}
+    <circle cx="6" cy="-105" r="2" fill="#222"/><path d="M2 -96 Q6 -93 10 -96" stroke="#222" stroke-width="2" fill="none"/>
+  </g>`;
+}
+/* Textbreite in der Schrift, die das Gerät wirklich hat – fehlt Carlito, wird die
+   Blase breiter, statt dass der Text über den Rand läuft */
+const messer = document.createElement('canvas').getContext('2d');
+function textbreite(t, groesse = 22) {
+  messer.font = `bold ${groesse}px Carlito, Calibri, sans-serif`;
+  return messer.measureText(t).width;
+}
+function blase(x, y, text, breite = 330, rechts = false) {
+  // mehrere Zeilen mit '\n' – sonst wird eine lange Blase breiter als die Bühne
+  const zeilen = text.split('\n'), h = 24 + 30 * zeilen.length;
+  const noetig = Math.max(...zeilen.map(z => zeilenBreite(z, 22))) + 48;
+  if (noetig > breite) { if (rechts) x -= noetig - breite; breite = noetig; }
+  const sx = rechts ? x + breite - 40 : x + 40;      // Mitte des Ansatzes der Spitze
+  const spitze = `${sx - 20},${y + h} ${rechts ? sx + 20 : sx - 20},${y + h + 22} ${sx + 20},${y + h}`;
+  return `<g><rect x="${x}" y="${y}" width="${breite}" height="${h}" rx="18" fill="#fff" stroke="#222" stroke-width="3"/>
+    <polygon points="${spitze}" fill="#fff" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="${sx - 17}" y="${y + h - 3}" width="34" height="5" fill="#fff"/>
+    ${zeilen.map((z, i) => zeile(z, y + 35 + 30 * i, 22, '#222', x + breite / 2)).join('')}</g>`;
+}
+/* Eine Textzeile mit echten Brüchen: {E/s} kursiv als Größen, {km/h} und {m/s}
+   aufrecht als Einheiten – Zähler über Nenner mit Bruchstrich. */
+const BRUCH_MARKE = /\{([^{}/]+)\/([^{}/]+)\}/;
+function zeilenTeile(text) {
+  const teile = [];
+  let rest = text, m;
+  while ((m = rest.match(BRUCH_MARKE))) {
+    teile.push(rest.slice(0, m.index), { o: m[1], u: m[2] });
+    rest = rest.slice(m.index + m[0].length);
+  }
+  teile.push(rest);
+  return teile;
+}
+function bruchBreite(b, groesse) { return Math.max(textbreite(b.o, groesse * 0.8), textbreite(b.u, groesse * 0.8)) + 8; }
+function zeilenBreite(text, groesse) {
+  return zeilenTeile(text).reduce((w, t) => w + (typeof t === 'string' ? textbreite(t, groesse) : bruchBreite(t, groesse) + 6), 0);
+}
+function zeile(text, y, groesse, farbe, cx = 480) {
+  let x = cx - zeilenBreite(text, groesse) / 2, svg = '';
+  for (const t of zeilenTeile(text)) {
+    if (typeof t === 'string') {
+      svg += `<text x="${x}" y="${y}" font-size="${groesse}" font-weight="bold" fill="${farbe}" ${SCHRIFT} xml:space="preserve">${t}</text>`;
+      x += textbreite(t, groesse);
+      continue;
+    }
+    const bb = bruchBreite(t, groesse), m = x + 3 + bb / 2;
+    const groesse2 = /E/.test(t.o) ? 'font-family="Cambria Math, Cambria, serif" font-style="italic" font-weight="bold"' : `font-weight="bold" ${SCHRIFT}`;
+    svg += `<text x="${m}" y="${y - groesse * 0.45}" text-anchor="middle" font-size="${groesse * 0.8}" fill="${farbe}" ${groesse2}>${t.o}</text>
+      <line x1="${m - bb / 2}" y1="${y - groesse * 0.32}" x2="${m + bb / 2}" y2="${y - groesse * 0.32}" stroke="${farbe}" stroke-width="2"/>
+      <text x="${m}" y="${y + groesse * 0.38}" text-anchor="middle" font-size="${groesse * 0.8}" fill="${farbe}" ${groesse2}>${t.u}</text>`;
+    x += bb + 6;
+  }
+  return svg;
+}
+function titel(t, unter, unter2) {
+  return `<rect x="0" y="0" width="960" height="${unter2 ? 112 : unter ? 84 : 52}" fill="rgba(31,45,58,.85)"/>
+    <text x="480" y="36" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" ${SCHRIFT}>${t}</text>
+    ${unter ? zeile(unter, 70, 20, '#FFC000') : ''}
+    ${unter2 ? zeile(unter2, 100, 20, '#fff') : ''}`;
+}
+function scooter(x, y, { gekippt = false, dummy = false } = {}) {
+  return `<g transform="translate(${x},${y}) ${gekippt ? 'rotate(-80)' : ''}">
+    <line x1="-48" y1="-8" x2="34" y2="-8" stroke="#333" stroke-width="7" stroke-linecap="round"/>
+    <line x1="30" y1="-8" x2="42" y2="-78" stroke="#555" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="-78" x2="54" y2="-80" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="-44" cy="0" r="10" fill="#222"/><circle cx="34" cy="0" r="10" fill="#222"/>
+    <circle cx="-44" cy="0" r="4" fill="#888"/><circle cx="34" cy="0" r="4" fill="#888"/>
+    ${dummy ? `<g transform="translate(-6,-12)"><rect x="-10" y="-46" width="20" height="40" rx="6" fill="#FFC000"/>
+      <circle cx="0" cy="-58" r="12" fill="#FFC000" stroke="#222" stroke-width="2"/><path d="M-6 -58 h12 M0 -64 v12" stroke="#222" stroke-width="2"/>
+      <line x1="6" y1="-40" x2="44" y2="-66" stroke="#FFC000" stroke-width="7" stroke-linecap="round"/>
+      <line x1="-4" y1="-8" x2="-8" y2="4" stroke="#FFC000" stroke-width="8"/><line x1="4" y1="-8" x2="10" y2="4" stroke="#FFC000" stroke-width="8"/></g>` : ''}
+  </g>`;
+}
+/* SVG-Koordinaten eines Klicks */
+function svgPunkt(svg, e) {
+  const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());
+}
+function ebene(html, breite = 560) {
+  const e = document.createElement('div');
+  e.className = 'ebene';
+  e.innerHTML = `<div class="blatt" style="max-width:${breite}px">${html}</div>`;
+  buehne.append(e);
+  return e;
+}
+
+// ================================================================ 1 Büro
+
+function bueroSzene(sprechblase, akte = 'AKTE 1') {
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#E9DFC9"/>
+    <rect x="0" y="360" width="960" height="110" fill="#B58B5E"/>
+    <rect x="620" y="100" width="240" height="140" fill="#9fd3f5" stroke="#7a5a3a" stroke-width="10"/>
+    <line x1="740" y1="100" x2="740" y2="240" stroke="#7a5a3a" stroke-width="6"/>
+    <rect x="90" y="100" width="190" height="110" fill="#fff" stroke="#7a5a3a" stroke-width="6"/>
+    <circle cx="140" cy="140" r="14" fill="#D9534F"/><line x1="140" y1="140" x2="230" y2="175" stroke="#D9534F" stroke-width="3"/>
+    <rect x="200" y="160" width="46" height="34" fill="#FFC000"/>
+    ${person(470, 360, { oberteil: '#6B4E9B', haare: '#2b2b2b', s: 1.6 })}
+    <rect x="300" y="300" width="360" height="30" fill="#7a5a3a"/><rect x="320" y="330" width="16" height="80" fill="#7a5a3a"/><rect x="624" y="330" width="16" height="80" fill="#7a5a3a"/>
+    ${akte ? `<g id="akte" style="cursor:pointer"><rect x="520" y="262" width="110" height="40" rx="4" fill="#E0B46A" stroke="#8a6a2a" stroke-width="3"/>
+      <text x="575" y="290" text-anchor="middle" font-size="18" font-weight="bold">${akte}</text></g>` : ''}
+    ${sprechblase ? blase(500, 104, sprechblase, 260) : ''}
+    ${titel('🏢 Gutachterbüro Kraft &amp; Weg', 'Du machst hier ein Praktikum und untersuchst Unfälle und Beschwerden.')}
+  `);
+}
+function bueroZeigen() {
+  fall = neuerFall();
+  stand.stempel = 3; stand.beweise = {}; stand.aufgerollt = false; stand.extraStern = false;
+  kopfZeigen();
+  bueroSzene('Hier ist dein erster Fall.');
+  leiste.innerHTML = '<button class="k" id="los">📁 Akte öffnen</button>';
+  document.getElementById('los').onclick = unfallstelleZeigen;
+  document.getElementById('akte').onclick = unfallstelleZeigen;
+}
+
+/* Das Notizbuch des Gutachters: nach jedem Fall eine Seite mit dem, was er
+   gezeigt hat. Nach Fall 3 wird es ganz gezeigt und aufs Arbeitsblatt (AB09)
+   übertragen. Formeln mit Δ, wie im Spiel. */
+const F_ = t => `<span class="f">${t}</span>`;
+const BUCH = [
+  { titel: 'Fall 1: Die Bremsspur', zeilen: [
+    'Die Energie, die durch die Einwirkung einer Kraft <i>F</i> entlang eines Weges Δ<i>s</i> einem System zugeführt oder entzogen wird, heißt <b>Arbeit <i>W</i></b>. Man sagt: Die Arbeit wird „verrichtet“.',
+    `${F_('W = ΔE')} &nbsp;und&nbsp; ${F_('W = F · Δs')} &nbsp; (Arbeit = Kraft · Weg)`] },
+  { titel: 'Fall 2: Die Abkürzung', zeilen: [
+    `Wird ein Körper um Δ<i>h</i> angehoben, gilt für die Hubarbeit: ${F_('W = m · g · Δh')} – genau die Zunahme der Höhenenergie.`,
+    'Die Hubarbeit hängt nicht vom Weg ab: Ein flacher Weg spart Kraft, ist dafür länger.',
+    'Hinweis: Kraft ist nicht Energie – die Arbeit (= Energieänderung) ist auf beiden Wegen gleich, die Kraft verschieden.'] },
+  { titel: 'Fall 3: Der Schubs', zeilen: [
+    `Energieänderung: ${F_('W = ΔE = E<sub>nachher</sub> − E<sub>vorher</sub>')}`,
+    'Kraft <b>in</b> Fahrtrichtung: Dem System wird von außen Energie zugeführt, <i>W</i> ist positiv.',
+    'Kraft <b>gegen</b> die Fahrtrichtung: Das System gibt nach außen Energie ab, <i>W</i> ist negativ.'] },
+];
+function buchZeigen(neu = 0, abschluss = false) {
+  const seiten = BUCH.map((s, i) => [s, i + 1]).filter(([, n]) => stand.buch.has(n));
+  const e = ebene(`<h2 class="mitte" style="margin-bottom:4px">${neu && !abschluss ? '📓 Neuer Eintrag im Notizbuch' : '📓 Notizbuch des Gutachters'}</h2>
+    ${abschluss ? '<p class="mitte" style="margin:0 0 8px;font-weight:bold">Übertrage dein Notizbuch auf das Arbeitsblatt AB09.</p>' : ''}
+    <div class="buch">${seiten.map(([s, n]) => `<h3>${s.titel}</h3><ul class="${n === neu && !abschluss ? 'neu' : ''}">${s.zeilen.map(z => `<li>${z}</li>`).join('')}</ul>`).join('')}</div>
+    <div class="knoepfe"><button class="k" id="zu">${abschluss ? 'Fertig ✔' : 'Schließen'}</button></div>`, 760);
+  e.querySelector('#zu').onclick = () => e.remove();
+  // ein neuer Eintrag steht unten – dorthin scrollen
+  if (neu && !abschluss) e.querySelector('.buch ul:last-child').scrollIntoView({ block: 'end' });
+}
+function eintragen(n, abschluss = false) {
+  stand.buch.add(n);
+  kopfZeigen();
+  buchZeigen(n, abschluss);
+}
+
+/* Startseite: jeder Fall ist einzeln startbar, sobald er frei ist. Frei wird er
+   durch den Fall davor oder durch seinen Code – gespeichert wird nichts. */
+const FAELLE = [
+  { name: 'Die Bremsspur', code: null, rang: 'Praktikant', werkzeuge: [], start: () => bueroZeigen() },
+  { name: 'Die Abkürzung', code: 'BREMSE', rang: 'Gutachter', werkzeuge: ['Arbeit'], start: () => fall2Buero() },
+  { name: 'Der Schubs', code: 'RAMPE', rang: 'Fachgutachter', werkzeuge: ['Arbeit', 'Hubarbeit'], start: () => fall3Buero() },
+  { name: 'Beweisfahrt (Üben)', code: 'SCHUBS', rang: 'Chefgutachter', werkzeuge: ['Arbeit', 'Hubarbeit', 'Energieänderung'], start: () => beweisfahrtStart(), schild: 'FAHRT' },
+];
+stand.frei = 1;
+let lauf = 0;                         // zählt hoch, sobald die Startseite kommt – alte Zeitgeber laufen dann ins Leere
+const spaeter = (fn, ms) => { const l = lauf; setTimeout(() => { if (l === lauf) fn(); }, ms); };
+function fallStarten(n) {
+  const F = FAELLE[n - 1];
+  for (let i = 1; i < n; i++) stand.buch.add(i);      // wer mit Code einsteigt, hat die Fälle davor schon gespielt
+  stand.rang = F.rang; stand.werkzeuge = [...F.werkzeuge];
+  F.start();
+}
+/* Alle Akten liegen auf dem Tisch. Fall 1 ist immer offen, die anderen nach dem
+   Fall davor – oder mit ihrem Code. */
+function startZeigen() {
+  lauf++; endeKnopf(false); T.faehrt = false; leiste.classList.remove('eng'); document.onkeydown = document.onkeyup = null;
+  stand.beweise = {}; stand.stempel = 3;
+  kopfZeigen();
+  bueroSzene(null, null);
+  const svg = buehne.querySelector('svg');
+  // die Akten auf dem Tisch, die Fahrt zum Gericht als Tür rechts
+  const fahrtNr = FAELLE.findIndex(F => F.schild) + 1, fahrtOffen = fahrtNr <= stand.frei;
+  svg.insertAdjacentHTML('beforeend', FAELLE.map((F, i) => {
+    if (F.schild) return '';
+    const x = 330 + i * 115, offen = i < stand.frei;
+    return `<g data-n="${i + 1}" style="cursor:pointer" transform="rotate(${[-4, 2, -2][i]} ${x + 50} 285)">
+      <rect x="${x}" y="262" width="100" height="44" rx="4" fill="${offen ? '#E0B46A' : '#C9B48E'}" stroke="#8a6a2a" stroke-width="3"/>
+      <text x="${x + 50}" y="290" text-anchor="middle" font-size="17" font-weight="bold" ${SCHRIFT}>${offen ? '' : '🔒 '}AKTE ${i + 1}</text></g>`;
+  }).join('') + `<g data-n="${fahrtNr}" style="cursor:pointer">
+      <rect x="872" y="150" width="80" height="210" fill="#8a5a2a" stroke="#5a3a1a" stroke-width="4"/>
+      <circle cx="886" cy="262" r="5" fill="#FFC000"/>
+      <polygon points="700,282 920,282 950,307 920,332 700,332" fill="${fahrtOffen ? '#3BA34B' : '#8a9a8a'}" stroke="#fff" stroke-width="3"/>
+      <text x="812" y="314" text-anchor="middle" font-size="18" font-weight="bold" fill="#fff" ${SCHRIFT}>${fahrtOffen ? '' : '🔒 '}Fahrt zum Gericht</text></g>`
+    + blase(560, 130, 'Willkommen! Tippe auf eine Akte.', 300));
+  svg.querySelectorAll('[data-n]').forEach(g => g.onclick = () => { const n = +g.dataset.n; if (n <= stand.frei) fallStarten(n); else fallcode(n); });
+  leiste.innerHTML = '';
+}
+document.getElementById('heim').onclick = () => {
+  if (buehne.querySelector('#heimfrage')) return;
+  const e = ebene(`<div class="mitte" id="heimfrage"><h2>Zur Startseite? Der Fall beginnt dann von vorn.</h2>
+    <div class="knoepfe"><button class="k" id="ja">🏠 Zur Startseite</button><button class="k hell" id="nein">Weiterspielen</button></div></div>`, 520);
+  e.querySelector('#ja').onclick = startZeigen;
+  e.querySelector('#nein').onclick = () => e.remove();
+};
+/* Ohne Speicherung geht es nach dem Neuladen nur mit dem Code weiter */
+function fallcode(n) {
+  const e = ebene(`<div class="mitte"><h2>🔑 Code für ${FAELLE[n - 1].schild ? 'die Fahrt zum Gericht' : `Fall ${n}`}</h2>
+    <input id="c" autocomplete="off" style="font:inherit;font-size:1.3rem;width:9em;text-align:center;text-transform:uppercase;padding:6px;border:2px solid #9a8f73;border-radius:8px">
+    <div class="knoepfe"><button class="k" id="ok">Öffnen</button><button class="k hell" id="zu">Zurück</button></div></div>`, 420);
+  const c = e.querySelector('#c');
+  c.focus();
+  e.querySelector('#zu').onclick = () => e.remove();
+  e.querySelector('#ok').onclick = () => {
+    if (c.value.trim().toUpperCase() !== FAELLE[n - 1].code) { wackle(c); return; }
+    stand.frei = Math.max(stand.frei, n);
+    fallStarten(n);
+  };
+  c.onkeydown = ev => { if (ev.key === 'Enter') e.querySelector('#ok').click(); };
+}
+
+// ================================================================ 2 Unfallstelle
+
+const SP = 70;                        // Pixel je Meter auf Unfallstelle und Teststrecke
+const SPUR_X = 120, SPUR_Y = 378;
+
+function unfallstelleZeigen() {
+  kopfZeigen();
+  const x1 = SPUR_X + fall.spur * SP;
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#cfe6f5"/>
+    <rect x="0" y="250" width="960" height="40" fill="#8bbf6a"/>
+    <rect x="0" y="290" width="960" height="130" fill="#6d6d6d"/>
+    ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<rect x="${i * 130 + 20}" y="352" width="70" height="6" fill="#eee"/>`).join('')}
+    <rect x="0" y="420" width="960" height="50" fill="#bdb6a5"/>
+    <defs><linearGradient id="spurg" x1="0" x2="1"><stop offset="0" stop-color="#1a1a1a" stop-opacity=".25"/><stop offset=".15" stop-color="#1a1a1a" stop-opacity=".85"/><stop offset="1" stop-color="#1a1a1a" stop-opacity=".9"/></linearGradient></defs>
+    <rect x="${SPUR_X}" y="${SPUR_Y - 6}" width="${x1 - SPUR_X}" height="10" rx="4" fill="url(#spurg)"/>
+    <rect x="${SPUR_X}" y="${SPUR_Y + 10}" width="${x1 - SPUR_X}" height="6" rx="3" fill="url(#spurg)" opacity=".6"/>
+    ${scooter(x1 + 50, SPUR_Y + 18, { gekippt: true })}
+    ${[0, 1, 2, 3, 4, 5].map(i => `<rect x="${i * 160}" y="236" width="80" height="10" fill="#E05050"/><rect x="${i * 160 + 80}" y="236" width="80" height="10" fill="#fff"/>`).join('')}
+    ${person(850, 290, { helm: '#2E75B6', oberteil: '#3BA34B', s: 1.2, arm: 1 })}
+    ${titel('🚨 Unfall mit dem E-Scooter', 'Untersuche den Unfall: Stimmt die Aussage?')}
+    ${blase(500, 92, `Ich war höchstens ${fall.behauptet} {km/h} schnell!`, 400, true)}
+    <g id="mass"></g><g id="info"></g>
+  `);
+  const svg = buehne.querySelector('svg');
+  const info = svg.querySelector('#info'), mass = svg.querySelector('#mass');
+  const zeigeInfo = t => { info.innerHTML = `<rect x="160" y="424" width="640" height="40" rx="12" fill="#FFC000"/>
+    ${zeile(t, 451, 21, '#222')}`; };
+
+  // Spurenkoffer: das richtige Werkzeug wählt die Klasse selbst
+  const WERKZEUGE = [
+    { id: 'band', zeichen: '📏', name: 'Maßband' },
+    { id: 'waage', zeichen: '⚖', name: 'Waage' },
+    { id: 'bremse', zeichen: '🛑', name: 'Bremsprüfer' },
+    { id: 'uhr', zeichen: '⏱', name: 'Stoppuhr' },
+    { id: 'thermo', zeichen: '🌡', name: 'Thermometer' },
+    { id: 'kamera', zeichen: '📷', name: 'Kamera' },
+  ];
+  leiste.innerHTML = `${WERKZEUGE.map(w => `<button class="werkz" data-w="${w.id}"><b>${w.zeichen}</b>${w.name}</button>`).join('')}
+    <button class="k" id="weiter">Zur Polizei ➜</button>`;
+  let messen = null;
+  const knopf = id => leiste.querySelector(`[data-w="${id}"]`);
+  leiste.querySelectorAll('.werkz').forEach(b => b.onclick = () => {
+    leiste.querySelectorAll('.werkz').forEach(x => x.classList.remove('an'));
+    messen = null;
+    const w = b.dataset.w;
+    if (w === 'band') { b.classList.add('an'); messen = []; mass.innerHTML = ''; zeigeInfo('Tippe auf Anfang und Ende der Spur.'); return; }
+    b.classList.add('benutzt');
+    if (w === 'waage') { stand.beweise.masse = fall.m; zeigeInfo(`Fahrer mit E-Scooter: ${fall.m} kg`); }
+    if (w === 'bremse') { stand.beweise.kraft = fall.F; zeigeInfo(`Bremskraft: ${fall.F} N`); }
+    if (w === 'uhr') zeigeInfo('Der Unfall ist vorbei – hier läuft nichts mehr.');
+    if (w === 'thermo') zeigeInfo('Asphalt 14 °C – hilft das weiter?');
+    if (w === 'kamera') zeigeInfo('Foto gemacht. Für Zahlen brauchst du ein Messgerät.');
+    kopfZeigen();
+  });
+  svg.addEventListener('click', e => {
+    if (!messen) return;
+    const p = svgPunkt(svg, e);
+    if (p.y < 300 || p.y > 420) { zeigeInfo('Tippe direkt auf die Spur.'); return; }
+    messen.push(p.x);
+    mass.innerHTML = messen.map(x => `<circle cx="${x}" cy="${SPUR_Y}" r="9" fill="#FFC000" stroke="#222" stroke-width="2"/>`).join('');
+    if (messen.length < 2) return;
+    const [a, b] = messen.sort((u, v) => u - v);
+    // Wer die Spur ungefähr trifft, liest am Maßband die Spurlänge ab – auf 0,1 m.
+    // So bleibt der Messwert nah genug an der Wahrheit, dass die Testfahrten
+    // später eindeutig zu einem Tempo passen.
+    const laenge = (b - a) / SP;
+    const getroffen = Math.abs(laenge - fall.spur) <= Math.max(0.2, 0.12 * fall.spur);
+    const anzeige = getroffen ? Math.round(fall.spur * 10) / 10 : laenge;
+    mass.innerHTML += `<line x1="${a}" y1="${SPUR_Y - 20}" x2="${b}" y2="${SPUR_Y - 20}" stroke="#FFC000" stroke-width="10"/>
+      <rect x="${(a + b) / 2 - 50}" y="${SPUR_Y - 66}" width="100" height="34" rx="8" fill="#FFC000"/>
+      <text x="${(a + b) / 2}" y="${SPUR_Y - 42}" text-anchor="middle" font-size="22" font-weight="bold">${z(anzeige, 1)} m</text>`;
+    messen = null;
+    knopf('band').classList.remove('an');
+    if (getroffen) {
+      stand.beweise.spur = anzeige;
+      knopf('band').classList.add('benutzt');
+      zeigeInfo(`Spur: ${z(stand.beweise.spur, 1)} m`);
+      kopfZeigen();
+    } else zeigeInfo('Das ist nicht die ganze Spur. Miss noch einmal.');
+  });
+  document.getElementById('weiter').onclick = () => {
+    const b = stand.beweise;
+    if (b.spur == null || !b.masse || !b.kraft) { zeigeInfo('Für einen Nachbau fehlen der Polizei noch Daten.'); wackle(document.getElementById('weiter')); return; }
+    uebergangPolizei();
+  };
+}
+
+function uebergangPolizei() {
+  const e = ebene(`<div class="mitte"><div style="font-size:3rem">🚓</div>
+    <h2>Die Polizei baut den E-Scooter nach und testet, ob die Aussage zur Bremsspur passt.</h2>
+    <div class="knoepfe"><button class="k" id="ok">Zur Teststrecke ➜</button></div></div>`);
+  e.querySelector('#ok').onclick = () => teststrecke('A');
+}
+
+// ================================================================ 3 Teststrecke
+
+/* Phase A: ausprobieren und schätzen. Phase B: die Rechnung entwickeln.
+   Phase B läuft in Schritten; ein Schritt nennt immer genau eine Aufgabe. */
+const XB = 120;                                   // Bremsbeginn
+const T = { phase: 'A', schritt: 'A1', tempo: 10, bremse: 0, fahrten: [], faehrt: false };
+
+function teststrecke(phase) {
+  T.phase = phase;
+  if (phase === 'A') { T.schritt = 'A1'; T.fahrtenA = []; }
+  if (phase === 'B') { T.schritt = 'B1'; T.fahrten = []; T.bremse = 0; }
+  kopfZeigen();
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#d7ecf7"/>
+    <rect x="0" y="330" width="960" height="140" fill="#8a8a8a"/>
+    <rect x="0" y="326" width="960" height="6" fill="#fff"/>
+    ${Array.from({ length: 12 }, (_, k) => `<line x1="${XB + k * SP}" y1="332" x2="${XB + k * SP}" y2="350" stroke="#fff" stroke-width="3"/>
+      <text x="${XB + k * SP}" y="372" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">${k} m</text>`).join('')}
+    <rect x="${XB - 3}" y="250" width="6" height="80" fill="#3BA34B"/>
+    <text x="${XB}" y="242" text-anchor="middle" font-size="15" font-weight="bold" fill="#2f6b08">Bremsbeginn</text>
+    ${phase === 'A' ? `<rect x="${XB}" y="398" width="${stand.beweise.spur * SP}" height="10" rx="4" fill="#E05050" opacity=".8"/>
+      <text x="${XB + stand.beweise.spur * SP + 8}" y="408" font-size="15" font-weight="bold" fill="#fff">Unfallspur</text>` : ''}
+    <g id="spur"></g><g id="roller">${scooter(-80, 326, { dummy: true })}</g>
+    <g id="geraete" transform="translate(20,150)"></g>
+    <g id="aufgabe"></g><g id="info"></g>
+  `);
+  geraete('–', '–', '–');
+  aufgabe();
+  leisteTeststrecke();
+  tafel();
+}
+function aufgabeText() {
+  return {
+    A1: `Stimmt „höchstens ${fall.behauptet} {km/h}“ bei ${z(stand.beweise.spur, 1)} m Unfallspur?`,
+    A2: 'Bei welchem Tempo entsteht die Unfallspur?',
+    B1: 'Wie ändert sich die Spurlänge, wenn du doppelt so schnell fährst?',
+    B2: 'Berechne {ΔE/s} für jede Fahrt und runde auf ganze Zahlen.',
+    B4: 'Prüfe es mit der neuen Bremse.',
+    B5: 'Berechne wieder {ΔE/s} und runde auf ganze Zahlen.',
+  }[T.schritt] || '';
+}
+function aufgabe() {
+  const g = buehne.querySelector('#aufgabe');
+  if (!g) return;
+  if (T.phase === 'A') {
+    const frage = `Stimmt „höchstens ${fall.behauptet} {km/h}“ bei ${z(stand.beweise.spur, 1)} m Unfallspur?`;
+    g.innerHTML = titel('🚓 Polizei-Teststrecke · Nachbau', frage, T.schritt === 'A2' ? '➜ Bei welchem Tempo entsteht die Unfallspur?' : '');
+  } else g.innerHTML = titel('🧮 Polizei-Teststrecke · Rechnung', aufgabeText());
+}
+function info(t, farbe = '#FFC000') {
+  const g = buehne.querySelector('#info');
+  if (!g) return;
+  const breite = t ? Math.max(300, zeilenBreite(t, 22) + 48) : 0;
+  g.innerHTML = t ? `<rect x="${480 - breite / 2}" y="410" width="${breite}" height="44" rx="12" fill="${farbe}"/>
+    ${zeile(t, 440, 22, farbe === '#FFC000' ? '#222' : '#fff')}` : '';
+}
+function geraete(E, F, s) {
+  const g = buehne.querySelector('#geraete');
+  const kasten = (x, name, zeichen, wert, farbe) => `<g transform="translate(${x},0)"><rect width="150" height="70" rx="12" fill="#fff" stroke="${farbe}" stroke-width="4"/>
+    <text x="10" y="22" font-size="13" fill="#555" ${SCHRIFT}>${name}</text>
+    <text x="10" y="56" font-size="26" font-weight="bold" font-style="italic" font-family="Cambria Math, Cambria, serif">${zeichen}</text>
+    <text x="142" y="56" text-anchor="end" font-size="22" font-weight="bold" ${SCHRIFT}>${wert}</text></g>`;
+  g.innerHTML = kasten(0, 'Energiezähler', 'E<tspan font-size="15" dy="5">kin</tspan>', E, '#FFC000')
+    + kasten(162, 'Kraftmesser Bremse', 'F', F, '#D9534F') + kasten(324, 'Spurlänge', 's', s, '#2E75B6');
+}
+const bremsen = () => [fall.F, fall.F2];
+const masse = () => fall.m;
+
+function leisteTeststrecke() {
+  const B = T.phase === 'B';
+  const neueBremseFrei = B && ['B4', 'B5', 'B6'].includes(T.schritt);
+  leiste.innerHTML = `
+    <div class="feldgruppe"><input type="range" id="regler" min="5" max="25" step="1" value="${T.tempo}"><span class="lbl">Tempo</span></div>
+    <span class="tempo" id="tempo">${T.tempo} ${KMH}</span>
+    ${B ? `<div class="feldgruppe"><div class="seg" id="bremse">
+      <button data-b="0" class="${T.bremse === 0 ? 'an' : ''}">alte ${fall.F} N</button>
+      <button data-b="1" class="${T.bremse === 1 ? 'an' : ''}" ${neueBremseFrei ? '' : 'disabled'}>${neueBremseFrei ? '' : '🔒 '}neue ${fall.F2} N</button></div><span class="lbl">Bremse</span></div>` : ''}
+    <button class="k" id="fahren">🛴 Vollbremsung</button>
+    ${T.phase === 'A' && T.schritt === 'A1' ? `<button class="k hell" id="urteil" ${T.fahrtenA.length ? '' : 'disabled'}>⚖ Urteilen</button>` : ''}
+    ${T.phase === 'A' && T.schritt === 'A2' ? `<button class="k hell" id="spurPasst" ${T.fahrtenA.length ? '' : 'disabled'}>🎯 Tempo bestimmen</button>` : ''}
+    ${B && T.schritt === 'B1' ? `<button class="k hell" id="antwort" ${T.fahrten.length >= 2 ? '' : 'disabled'}>💡 Antworten</button>` : ''}`;
+  if (document.getElementById('antwort')) document.getElementById('antwort').onclick = antwortVerdopplung;
+  if (document.getElementById('urteil')) document.getElementById('urteil').onclick = urteilA;
+  if (document.getElementById('spurPasst')) document.getElementById('spurPasst').onclick = tempoBestimmen;
+  const regler = document.getElementById('regler');
+  regler.oninput = () => { T.tempo = +regler.value; document.getElementById('tempo').innerHTML = `${T.tempo} ${KMH}`; };
+  leiste.querySelectorAll('#bremse button').forEach(b => b.onclick = () => { T.bremse = +b.dataset.b; leisteTeststrecke(); });
+  document.getElementById('fahren').onclick = () => fahre(T.tempo, T.phase === 'A' ? fall.F : bremsen()[T.bremse]);
+}
+
+function fahre(vKmh, F) {
+  if (T.faehrt) return;
+  T.faehrt = true; info('');
+  leiste.querySelectorAll('button, input').forEach(b => b.disabled = true);
+  // E wird ganzzahlig angezeigt; die Spur gehört zu genau diesem E, damit E/s in
+  // der Tabelle auf die ganze Zahl genau die Bremskraft ergibt
+  const m = masse(), v = kmh(vKmh), E = Math.round(0.5 * m * v * v), s = E / F, a = F / m;
+  const roller = buehne.querySelector('#roller'), spur = buehne.querySelector('#spur');
+  spur.innerHTML = '';
+  geraete(`${z(E)} J`, '–', '–');
+  const anlauf = 1.4, tB = v / a, start = performance.now(), meinLauf = lauf;
+  function tick(jetzt) {
+    if (meinLauf !== lauf) return;              // zur Startseite gewechselt
+    const t = (jetzt - start) / 1000;
+    let x, fertig = false;
+    if (t < anlauf) x = XB - (anlauf - t) * v * SP;
+    else {
+      const tt = Math.min(t - anlauf, tB), weg = v * tt - a * tt * tt / 2;
+      x = XB + weg * SP;
+      geraete(`${z(E)} J`, `${F} N`, `${z(weg, 2)} m`);
+      spur.innerHTML = `<line x1="${XB}" y1="330" x2="${x}" y2="330" stroke="#1a1a1a" stroke-width="7" opacity=".85"/>`;
+      if (tt >= tB) fertig = true;
+    }
+    roller.innerHTML = scooter(x, 326, { dummy: true });
+    if (!fertig) return requestAnimationFrame(tick);
+    T.faehrt = false;
+    // in der Rechnung auf Millimeter, damit E/s nicht durch Rundung von F abweicht
+    geraete(`${z(E)} J`, `${F} N`, `${z(s, T.phase === 'B' ? 3 : 2)} m`);
+    leisteTeststrecke();
+    nachFahrt({ v: vKmh, F, E, s: Math.round(s * 1000) / 1000 });
+  }
+  requestAnimationFrame(tick);
+}
+
+function nachFahrt(f) {
+  if (T.phase === 'A') {
+    // die Spuren vergleichen die Schülerinnen und Schüler selbst – das Spiel sagt nichts dazu
+    if (!T.fahrtenA.some(x => x.v === f.v)) T.fahrtenA.push(f);
+    T.fahrtenA.sort((a, b) => a.v - b.v);
+    tafel(); leisteTeststrecke();
+    return;
+  }
+  // Phase B
+  T.fahrten.push({ ...f, neu: true });
+  tafel();
+  if (T.schritt === 'B1') leisteTeststrecke();
+  if (T.schritt === 'B4' && f.F === fall.F2) {
+    const n = T.fahrten.filter(x => x.F === fall.F2).length;
+    if (n >= 2) { T.schritt = 'B5'; aufgabe(); tafel(); pruefeQuotienten(); }
+    else info('Noch eine Fahrt mit der neuen Bremse.');
+  }
+}
+
+/* A1: Ein Urteil braucht einen Beweis. Zwei Fahrten taugen dazu: die mit dem
+   behaupteten Tempo (dann werden die Spuren verglichen) oder die mit der
+   Unfallspur (dann werden die Tempos verglichen). Ein falsches Urteil kostet
+   Glaubwürdigkeit, Raten lohnt sich also nicht. */
+function fahrtKnoepfe(liste) {
+  return liste.map((f, i) => `<button class="k hell" data-i="${i}">${f.v} ${KMH} → ${z(f.s, 2)} m</button>`).join('');
+}
+function urteilA() {
+  const e = ebene(`<div class="mitte"><h2>Welche Fahrt ist dein Beweis?</h2>
+    <div class="knoepfe">${fahrtKnoepfe(T.fahrtenA)}</div><div class="mitte" id="hw" style="min-height:24px;font-weight:bold"></div>
+    <div class="knoepfe"><button class="k hell" id="zu" style="opacity:.7">Noch eine Fahrt</button></div></div>`, 700);
+  e.querySelector('#zu').onclick = () => e.remove();
+  e.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
+    const beweis = T.fahrtenA[+b.dataset.i], spur = stand.beweise.spur;
+    const gleichesTempo = beweis.v === fall.behauptet, gleicheSpur = !gleichesTempo && spurPasst(beweis.s, spur);
+    if (!gleichesTempo && !gleicheSpur) {
+      b.disabled = true; wackle(b);
+      e.querySelector('#hw').innerHTML = `Diese Fahrt sagt nichts über ${z(spur, 1)} m Bremsspur bei höchstens ${fall.behauptet} ${KMH}.`;
+      return;
+    }
+    T.tempoGefunden = gleicheSpur ? beweis.v : null;
+    const vergleich = gleichesTempo
+      ? `${beweis.v} ${KMH} → ${z(beweis.s, 2)} m. Unfallspur: ${z(spur, 1)} m.`
+      : `${z(beweis.s, 2)} m Spur → ${beweis.v} ${KMH}. Behauptet: höchstens ${fall.behauptet} ${KMH}.`;
+    e.querySelector('.blatt').innerHTML = `<div class="mitte"><h2>${vergleich}<br>Stimmt „höchstens ${fall.behauptet} ${KMH}“?</h2>
+      <div class="knoepfe"><button class="k" data-j="1" style="background:#2E75B6">👍 stimmt</button><button class="k" data-j="0" style="background:#D9534F">👎 stimmt nicht</button></div></div>`;
+    // die Begründung der Polizei – erst nach dem Urteil, nie vorher
+    const langsamer = fall.ehrlich;
+    const grund = gleichesTempo
+      ? `Bei ${beweis.v} ${KMH} wäre die Spur ${z(beweis.s, 2)} m lang. Die Unfallspur ist ${langsamer ? 'kürzer' : 'länger'} – er war also ${langsamer ? 'langsamer' : 'schneller'}.`
+      : `Die Unfallspur passt zu ${beweis.v} ${KMH} – das ist ${langsamer ? 'nicht mehr' : 'mehr'} als ${fall.behauptet} ${KMH}.`;
+    e.querySelectorAll('[data-j]').forEach(k => k.onclick = () => {
+      const richtig = (k.dataset.j === '1') === fall.ehrlich;
+      if (!richtig) { stand.stempel--; kopfZeigen(); }
+      e.querySelector('.blatt').innerHTML = `<div class="mitte">
+        <h2 style="color:${richtig ? '#2f7a2f' : '#C0392B'}">${richtig ? '✔ Richtig geurteilt.' : '✘ Falsch geurteilt – ein Stempel weg.'}</h2>
+        <p style="font-size:1.2rem;font-weight:bold">Die Aussage „höchstens ${fall.behauptet} ${KMH}“ ${fall.ehrlich ? 'stimmt' : 'stimmt nicht'}.</p>
+        <p style="font-size:1.15rem">${grund}</p>
+        <div class="knoepfe"><button class="k" id="weiter">Weiter ➜</button></div></div>`;
+      e.querySelector('#weiter').onclick = () => {
+        e.remove();
+        if (stand.stempel <= 0) { neuAufrollen(); return; }
+        // Wer die Unfallspur als Beweis nahm, kennt das Tempo schon – A2 entfällt
+        if (T.tempoGefunden) { uebergangRechnung(); return; }
+        T.schritt = 'A2'; aufgabe(); leisteTeststrecke();
+      };
+    });
+  });
+}
+
+/* A2: das wirkliche Tempo schätzen – die Klasse wählt die passende Fahrt aus */
+function tempoBestimmen() {
+  const e = ebene(`<div class="mitte"><h2>Welche Fahrt passt zur Unfallspur von ${z(stand.beweise.spur, 1)} m?</h2>
+    <div class="knoepfe">${fahrtKnoepfe(T.fahrtenA)}</div>
+    <div class="knoepfe"><button class="k hell" id="zu" style="opacity:.7">Noch eine Fahrt</button></div></div>`, 700);
+  e.querySelector('#zu').onclick = () => e.remove();
+  e.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
+    const f = T.fahrtenA[+b.dataset.i];
+    if (!spurPasst(f.s, stand.beweise.spur)) { b.disabled = true; wackle(b); return; }
+    e.remove();
+    info(`Er war etwa ${f.v} {km/h} schnell.`, '#3BA34B');
+    leiste.querySelectorAll('button, input').forEach(x => x.disabled = true);
+    spaeter(uebergangRechnung, 1800);
+  });
+}
+
+function uebergangRechnung() {
+  const e = ebene(`<div class="mitte"><div style="font-size:3rem">⚖️</div>
+    <h2>Gutachter bauen nicht jeden Unfall nach – sie rechnen. Dafür brauchst du eine Regel.</h2>
+    <div class="knoepfe"><button class="k" id="ok">Rechnung entwickeln ➜</button></div></div>`);
+  e.querySelector('#ok').onclick = () => { e.remove(); teststrecke('B'); };
+}
+
+/* B1: Die Klasse wählt die Tempos selbst. Antworten kann sie erst, wenn in der
+   Tabelle zwei Fahrten stehen, von denen eine doppelt so schnell war. */
+function antwortVerdopplung() {
+  const alte = T.fahrten.filter(f => f.F === fall.F);
+  const paar = alte.some(a => alte.some(b => b.v === 2 * a.v));
+  if (!paar) { info('Dafür brauchst du eine Fahrt, die genau doppelt so schnell war.'); return; }
+  frage('Doppelt so schnell – die Spur wird …', ['gleich lang', 'doppelt so lang', 'viermal so lang'], 2, () =>
+    frage('Und die Energie Δ<i>E</i>, die er dabei abgibt?', ['bleibt gleich', 'doppelt so groß', 'viermal so groß'], 2, () => {
+      T.schritt = 'B2'; aufgabe(); tafel(); leisteTeststrecke();
+    }));
+}
+
+/* Messtabelle mit der Spalte E/s, die die Klasse selbst ausrechnet */
+function tafel() {
+  let el = document.getElementById('tafel');
+  if (!el) { el = document.createElement('div'); el.id = 'tafel'; buehne.append(el); }
+  if (T.phase === 'A') {
+    el.innerHTML = `<table><tr><th>v in ${KMH}</th><th>s in m</th></tr>
+      ${T.fahrtenA.map(f => `<tr><td>${f.v}</td><td>${z(f.s, 2)}</td></tr>`).join('') || '<tr><td colspan="2" style="color:#999">Fahrten</td></tr>'}</table>`;
+    return;
+  }
+  const mitQ = ['B2', 'B3', 'B4', 'B5', 'B6'].includes(T.schritt);
+  el.innerHTML = `<table><tr><th>v in ${KMH}</th><th>F in N</th><th>Δ<i>E</i> in J</th><th>s in m</th>${mitQ ? `<th class="q">${BRUCH}</th>` : ''}</tr>
+    ${T.fahrten.map((f, i) => [f, i]).sort((a, b) => a[0].F - b[0].F).map(([f, i], k, alle) =>
+      (k && alle[k - 1][0].F !== f.F ? `<tr><td colspan="5" style="background:#eee;font-size:.75rem">neue Bremse</td></tr>` : '') +
+      `<tr class="${f.neu ? 'neu' : ''}"><td>${f.v}</td><td>${f.F}</td><td>${z(f.E)}</td><td>${z(f.s, 3)}</td>
+      ${mitQ ? `<td class="q"><input data-i="${i}" inputmode="decimal" value="${f.q ?? ''}" class="${f.q != null ? 'gut' : ''}" ${f.q != null ? 'disabled' : ''}></td>` : ''}</tr>`).join('')}
+    ${T.fahrten.length ? '' : '<tr><td colspan="4" style="color:#999">Messtabelle</td></tr>'}</table>`;
+  T.fahrten.forEach(f => f.neu = false);
+  el.querySelectorAll('input').forEach(inp => inp.onchange = () => {
+    const f = T.fahrten[+inp.dataset.i];
+    const x = lies(inp.value);
+    if (passt(x, f.E / f.s, 0.03)) { f.q = Math.round(x); inp.className = 'gut'; inp.disabled = true; pruefeQuotienten(); }
+    else { inp.className = 'schlecht'; wackle(inp); }
+  });
+}
+function pruefeQuotienten() {
+  const alte = T.fahrten.filter(f => f.F === fall.F), neue = T.fahrten.filter(f => f.F === fall.F2);
+  if (T.schritt === 'B2' && alte.every(f => f.q != null)) { T.schritt = 'B3'; spaeter(frageKonstant, 500); }
+  if (T.schritt === 'B5' && neue.length && neue.every(f => f.q != null)) { T.schritt = 'B6'; spaeter(() => {
+    info(`Wieder die Bremskraft: ${fall.F2} N!`, '#3BA34B'); spaeter(formelBauen, 1600); }, 400); }
+}
+
+/* B3: zwei Fragen zur Auswertung – falsche Antworten kosten nichts, sie wackeln nur */
+function frage(titelText, optionen, richtig, weiter) {
+  const e = ebene(`<div class="mitte"><h2>${titelText}</h2><div class="knoepfe">
+    ${optionen.map((o, i) => `<button class="k hell" data-i="${i}">${o}</button>`).join('')}</div></div>`, 620);
+  e.querySelectorAll('button').forEach(b => b.onclick = () => {
+    if (+b.dataset.i === richtig) { e.remove(); weiter(); } else { b.disabled = true; wackle(b); }
+  });
+}
+function frageKonstant() {
+  frage(`Was fällt dir an ${BRUCH} auf?`, ['wird größer', 'ist immer gleich', 'wird kleiner'], 1, () => {
+    // das Fazit erst, wenn die Klasse es selbst gesehen hat
+    info('Spur und Energie wachsen im gleichen Maß.', '#3BA34B');
+    frage(`Wo hast du ${fall.F} N schon gesehen?`, ['beim Tempo', 'bei der Bremskraft', 'bei der Masse'], 1, () => {
+      T.schritt = 'B4'; T.bremse = 1; aufgabe(); leisteTeststrecke(); tafel();
+      info('Die neue Bremse ist frei.', '#3BA34B');
+    });
+  });
+}
+
+/* Am Ende wird die Regel gebaut – jetzt ist sie hergeleitet, nicht geraten */
+function formelBauen() {
+  const STEINE = ['F', 's', 'v', 'm', '·', '+', '/'], OPS = ['·', '+', '/'];
+  const e = ebene(`<h2 class="mitte">${BRUCH} ist immer die Bremskraft F. Also:</h2>
+    <div class="formel"><span class="ziel">ΔE =</span>
+      <div class="slot" data-n="0"></div><div class="slot" data-n="1"></div><div class="slot" data-n="2"></div></div>
+    <div class="bausteine">${STEINE.map(s => `<button class="stein${OPS.includes(s) ? ' op' : ''}">${s}</button>`).join('')}</div>
+    <div class="hinweis" id="hw"></div>
+    <div class="knoepfe"><button class="k" id="pruefen">Prüfen</button></div>`, 620);
+  const slots = [...e.querySelectorAll('.slot')], inhalt = ['', '', ''];
+  const zeige = () => slots.forEach((s, i) => { s.textContent = inhalt[i]; s.classList.toggle('voll', !!inhalt[i]); });
+  e.querySelectorAll('.stein').forEach(b => b.onclick = () => { const i = inhalt.indexOf(''); if (i >= 0) { inhalt[i] = b.textContent; zeige(); } });
+  slots.forEach((s, i) => s.onclick = () => { inhalt[i] = ''; zeige(); });
+  e.querySelector('#pruefen').onclick = () => {
+    const r = inhalt.join(' ');
+    if (r === 'F · s' || r === 's · F') { e.remove(); arbeitBenennen(); return; }
+    // an einer Zeile der Tabelle vorrechnen, warum es nicht passt
+    const f = T.fahrten[0], w = { F: f.F, s: f.s, v: kmh(f.v), m: masse() };
+    const [a, op, b] = inhalt;
+    let text = 'Setz zwei Größen und ein Rechenzeichen ein.';
+    if (w[a] != null && w[b] != null && OPS.includes(op)) {
+      const x = op === '·' ? w[a] * w[b] : op === '+' ? w[a] + w[b] : w[a] / w[b];
+      text = `Erste Fahrt: ${a} ${op} ${b} = ${z(x, x < 100 ? 1 : 0)} – gemessen waren ${z(f.E)} J.`;
+    }
+    e.querySelector('#hw').textContent = text;
+    slots.forEach(wackle);
+  };
+}
+
+// ================================================================ 4 Werkzeug
+
+/* Erst jetzt bekommt die übertragene Energie ihren Namen – E1 */
+function arbeitBenennen() {
+  const e = ebene(`<div class="mitte"><div class="werkzeugkarte"><i>W</i> = Δ<i>E</i> = <i>F</i> · Δ<i>s</i></div>
+    <p style="margin:6px 0 0;color:#555">Δ<i>s</i>: der Weg, auf dem die Kraft wirkt – hier die Spurlänge</p>
+    <h2 style="margin-top:12px">Die Energie, die durch die Einwirkung einer Kraft <i>F</i> entlang eines Weges Δ<i>s</i> einem System zugeführt oder entzogen wird, heißt <b>Arbeit <i>W</i></b>.</h2>
+    <p style="margin:0;font-size:1.1rem">Man sagt: Die Arbeit wird „verrichtet“.</p>
+    <div class="knoepfe"><button class="k" id="ok">Weiter ➜</button></div></div>`, 600);
+  e.querySelector('#ok').onclick = () => { e.remove(); werkzeugZeigen(); };
+}
+
+function werkzeugZeigen(name = 'Arbeit', formel = 'W = F · Δs', worte = 'Arbeit = Kraft · Weg', knopf = 'Zum Gutachten ➜', weiter = gutachtenZeigen) {
+  if (!stand.werkzeuge.includes(name)) stand.werkzeuge.push(name);
+  kopfZeigen();
+  const e = ebene(`<div class="mitte"><h2>Neues Werkzeug!</h2><div style="font-size:3rem">🧰</div>
+    <div class="werkzeugkarte">${formel}</div>
+    <p style="font-size:1.2rem;margin:8px 0 0"><b>${worte}</b></p>
+    <div class="knoepfe"><button class="k" id="gut">${knopf}</button></div></div>`, 520);
+  e.querySelector('#gut').onclick = () => { e.remove(); weiter(); };
+}
+
+// ================================================================ 5 Gutachten
+
+function gutachtenZeigen() {
+  kopfZeigen();
+  bueroSzene();
+  leiste.innerHTML = '';
+  const b = stand.beweise;
+  const e = ebene(`<div class="gutachten"><h2>📝 Gutachten – Akte 1</h2>
+    <div class="akte"><span>⚖ ${b.masse} kg</span><span>🛑 ${b.kraft} N</span><span>📏 ${z(b.spur, 1)} m</span>
+      <span>„${fall.behauptet} ${KMH}“ = ${z(fall.vB, 1)} ${MS}</span></div>
+    <p class="mitte" style="margin:2px 0;color:#555">Runde auf ganze Zahlen.</p>
+    <label><span>Arbeit der Bremse:</span> <input id="e1" inputmode="decimal"> J
+      <button class="tippk" data-t="t1" title="Tipp">💡</button><span class="tippf" id="t1" hidden><i>W</i> = <i>F</i> · Δ<i>s</i> <small>Bremskraft · Spurlänge</small></span></label>
+    <label><span><i>E</i><sub>kin</sub> bei ${fall.behauptet} ${KMH}:</span> <input id="e2" inputmode="decimal"> J
+      <button class="tippk" data-t="t2" title="Tipp">💡</button><span class="tippf" id="t2" hidden><i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>² <small><i>v</i> in ${MS}</small></span></label>
+    <div class="mitte" id="vergleich" hidden style="margin-top:10px;font-size:1.1rem">Die Arbeit der Bremse ist
+      <button class="k hell" data-v="kleiner">kleiner</button> <button class="k hell" data-v="größer">größer</button> als <i>E</i><sub>kin</sub> bei ${fall.behauptet} ${KMH}.</div>
+    <div id="urteilsfrage" hidden><h3 class="mitte" style="margin:12px 0 0">Stimmt „höchstens ${fall.behauptet} ${KMH}“?</h3>
+    <div class="knoepfe"><button class="k" id="stimmt" style="background:#2E75B6">👍 Stimmt</button><button class="k" id="gelogen" style="background:#D9534F">👎 Gelogen</button></div></div>
+    <div class="mitte" id="meldung" style="min-height:28px;margin-top:8px;font-weight:bold"></div></div>`, 820);
+  // je Rechnung ein Tipp: die Formel, aufgedeckt erst auf Knopfdruck
+  e.querySelectorAll('.tippk').forEach(k => k.onclick = ev => {
+    ev.preventDefault();
+    e.querySelector('#' + k.dataset.t).hidden = false; k.hidden = true;
+  });
+  const e1 = e.querySelector('#e1'), e2 = e.querySelector('#e2'), meldung = e.querySelector('#meldung');
+  // Wie in der Messtabelle: jede Zahl wird sofort geprüft – richtig wird grün,
+  // falsch rot. Geurteilt wird erst, wenn beide Beweise stehen.
+  const soll1 = b.kraft * b.spur, soll2 = 0.5 * b.masse * kmh(fall.behauptet) ** 2;
+  const pruefen = (inp, ok) => () => {
+    if (ok(lies(inp.value))) { inp.className = 'gut'; inp.disabled = true; }
+    else { inp.className = 'falsch'; wackle(inp); }
+    // stehen beide Energien, werden sie erst verglichen – dann geurteilt
+    if (e1.disabled && e2.disabled) e.querySelector('#vergleich').hidden = false;
+  };
+  const kleiner = soll1 < soll2;
+  e.querySelectorAll('#vergleich button').forEach(k => k.onclick = () => {
+    if ((k.dataset.v === 'kleiner') !== kleiner) { k.disabled = true; wackle(k); return; }
+    e.querySelectorAll('#vergleich button').forEach(x => { x.disabled = true; x.style.opacity = x === k ? 1 : .3; });
+    k.classList.add('an');
+    e.querySelector('#urteilsfrage').hidden = false;
+  });
+  e1.onchange = pruefen(e1, w => passt(w, soll1, 0.03));
+  e2.onchange = pruefen(e2, w => passt(w, soll2, 0.05) || passt(w, 0.5 * b.masse * fall.vB ** 2, 0.03));
+  const urteil = gelogen => {
+    if (gelogen === !fall.ehrlich) { e.remove(); ergebnisZeigen(); return; }
+    stand.stempel--;
+    kopfZeigen();
+    // wie auf der Teststrecke: ein Stempel weg, dann die Begründung und weiter
+    const kleinerE = soll1 < soll2;
+    begruendung(e, meldung, `Die Arbeit der Bremse ist ${kleinerE ? 'kleiner' : 'größer'} als <i>E</i><sub>kin</sub> bei ${fall.behauptet} ${KMH} – er war also ${kleinerE ? 'langsamer' : 'schneller'}.`,
+      `Die Aussage „höchstens ${fall.behauptet} ${KMH}“ ${fall.ehrlich ? 'stimmt' : 'stimmt nicht'}.`, neuesGutachten, ergebnisZeigen);
+  };
+  e.querySelector('#stimmt').onclick = () => urteil(false);
+  e.querySelector('#gelogen').onclick = () => urteil(true);
+}
+
+/* Nach einem falschen Urteil: Stempel ist schon weg, jetzt die Begründung.
+   Danach geht es zum Ergebnis – oder, ohne Stempel, in ein neues Gutachten. */
+function begruendung(e, meldung, grund, satz, neu, ergebnis) {
+  // Urteilsknöpfe weg, damit die Begründung ohne Scrollen zu sehen ist
+  e.querySelector('#urteilsfrage').hidden = true;
+  meldung.innerHTML = `<div style="color:#C0392B;font-size:1.2rem">✘ Falsch geurteilt – ein Stempel weg.</div>
+    <div style="font-size:1.1rem;margin-top:4px">${satz}</div><div style="font-weight:normal;font-size:1.05rem">${grund}</div>
+    <div class="knoepfe"><button class="k" id="weiterU">Weiter ➜</button></div>`;
+  wackle(meldung);
+  meldung.scrollIntoView({ block: 'end' });
+  meldung.querySelector('#weiterU').onclick = () => { e.remove(); if (stand.stempel <= 0) neu(); else ergebnis(); };
+}
+
+function neuAufrollen() {
+  fall = neuerFall();
+  stand.stempel = 3; stand.beweise = {}; stand.aufgerollt = true;
+  kopfZeigen();
+  const e = ebene(`<div class="mitte"><h2>Der Fall wird mit neuen Spuren neu aufgerollt.</h2><div style="font-size:3rem">🔄</div>
+    <div class="knoepfe"><button class="k" id="neu">Zur Unfallstelle ➜</button></div></div>`, 520);
+  e.querySelector('#neu').onclick = unfallstelleZeigen;
+}
+
+/* Wer erst im Gutachten scheitert, hat das Werkzeug schon verdient: neuer Fall,
+   neue Zahlen, direkt wieder ins Gutachten. Nach einem Neuaufrollen gibt es
+   höchstens einen Stern. */
+function neuesGutachten() {
+  fall = neuerFall();
+  stand.stempel = 3; stand.aufgerollt = true;
+  stand.beweise = { spur: Math.round(fall.spur * 10) / 10, masse: fall.m, kraft: fall.F };
+  kopfZeigen();
+  const e = ebene(`<div class="mitte"><h2>Neuer Fall mit neuen Spuren – dein Werkzeug hast du schon.</h2><div style="font-size:3rem">🔄</div>
+    <div class="knoepfe"><button class="k" id="neu">Zum Gutachten ➜</button></div></div>`, 520);
+  e.querySelector('#neu').onclick = gutachtenZeigen;
+}
+const sterneAus = () => stand.aufgerollt ? 1 : stand.stempel === 3 ? 3 : stand.stempel === 2 ? 2 : 1;
+
+// ================================================================ 6 Ergebnis
+
+function ergebnisZeigen() {
+  const sterne = sterneAus();
+  stand.sterne += sterne; stand.rang = 'Gutachter'; stand.frei = Math.max(stand.frei, 2);
+  kopfZeigen();
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#E9DFC9"/>
+    <rect x="0" y="380" width="960" height="90" fill="#8a6a4a"/>
+    <rect x="300" y="250" width="360" height="140" fill="#5a3a22"/>
+    ${person(480, 250, { oberteil: '#222', haare: '#bbb', s: 1.5, arm: 1 })}
+    <rect x="540" y="160" width="60" height="22" rx="4" fill="#8a5a2a" transform="rotate(-25 570 170)"/>
+    ${blase(560, 60, fall.ehrlich ? 'Die Aussage stimmt!' : 'Gelogen!', 300, true)}
+    <g transform="translate(160,170) rotate(-12)"><circle r="70" fill="none" stroke="#E05050" stroke-width="8"/>
+      <text y="10" text-anchor="middle" font-size="26" font-weight="bold" fill="#E05050">GELÖST</text></g>
+    <text x="480" y="440" text-anchor="middle" font-size="26" font-weight="bold" fill="#fff">Neuer Rang: Gutachter ${'★'.repeat(sterne)}</text>
+  `);
+  leiste.innerHTML = `<button class="k hell" id="vertiefen">⭐ Wie schnell war er wirklich?</button>
+    <span class="lbl">Code für Fall 2: <span class="code">BREMSE</span></span>
+    <button class="k" id="fall2">Fall 2 ➜</button>`;
+  document.getElementById('fall2').onclick = fall2Buero;
+  eintragen(1);
+  document.getElementById('vertiefen').onclick = () => {
+    // in drei Schritten, jeder mit eigenem Feld; Tipps nur für die beiden Formeln
+    const b = stand.beweise, E = b.kraft * b.spur;
+    const vMS = Math.sqrt(2 * E / b.masse), vKMH = vMS * 3.6;
+    const schritt = (id, links, einheit, tipp) => `<label><span>${links}</span> <input id="${id}" inputmode="decimal" disabled> <span>${einheit}</span>
+      ${tipp ? `<button class="tippk" data-t="t${id}" title="Tipp">💡</button><span class="tippf" id="t${id}" hidden>${tipp}</span>` : ''}</label>`;
+    const wurzel = `<span class="wurzel">√<span class="radikand">${bruchHTML('2 · <i>E</i><sub>kin</sub>', '<i>m</i>', true)}</span></span>`;
+    const e = ebene(`<div class="gutachten"><h2>⭐ Wie schnell war er wirklich?</h2>
+      <div class="akte"><span>⚖ ${b.masse} kg</span><span>🛑 ${b.kraft} N</span><span>📏 ${z(b.spur, 1)} m</span></div>
+      ${schritt('w1', '<i>E</i><sub>kin</sub> vor dem Bremsen:', 'J', 'so viel, wie er beim Bremsen abgegeben hat: <i>W</i> = <i>F</i> · Δ<i>s</i>')}
+      ${schritt('w2', '<i>v</i> vor dem Bremsen:', `${MS} <small>(eine Nachkommastelle)</small>`, `<i>v</i> = ${wurzel}`)}
+      ${schritt('w3', '<i>v</i> vor dem Bremsen:', `${KMH} <small>(ganze Zahl)</small>`, '')}
+      <div class="knoepfe"><button class="k" id="pruef">Prüfen</button><button class="k hell" id="zu">Schließen</button></div>
+      <div class="mitte" id="m" style="font-weight:bold;min-height:26px"></div></div>`, 880);
+    e.querySelector('#zu').onclick = () => e.remove();
+    e.querySelectorAll('.tippk').forEach(k => k.onclick = ev => { ev.preventDefault(); e.querySelector('#' + k.dataset.t).hidden = false; k.hidden = true; });
+    const felder = [['w1', E, 0.03], ['w2', vMS, 0.04], ['w3', vKMH, 0.05]];
+    const pruefe = i => {
+      const [id, soll, tol] = felder[i], inp = e.querySelector('#' + id);
+      if (inp.classList.contains('gut') || inp.disabled || !inp.value.trim()) return;
+      if (!passt(lies(inp.value), soll, tol)) { inp.className = 'falsch'; wackle(inp); return; }
+      inp.className = 'gut'; inp.disabled = true;
+      if (i < felder.length - 1) { const n = e.querySelector('#' + felder[i + 1][0]); n.disabled = false; n.focus(); return; }
+      // der Extra-Stern gibt es einmal – danach ist die Frage gelöst und bleibt es
+      stand.extraStern = true; stand.sterne++; kopfZeigen();
+      e.querySelector('#pruef').disabled = true;
+      e.querySelector('#m').innerHTML = `Extra-Stern! Er war etwa ${z(vKMH)} ${KMH} schnell.`;
+      const k = document.getElementById('vertiefen');
+      k.innerHTML = `⭐ gelöst: etwa ${z(vKMH)} ${KMH}`; k.disabled = true;
+    };
+    felder.forEach(([id], i) => { e.querySelector('#' + id).onchange = () => pruefe(i); });
+    // „Prüfen“ prüft das Feld, das gerade offen ist – auch das letzte
+    e.querySelector('#pruef').onclick = () => { const i = felder.findIndex(([id]) => !e.querySelector('#' + id).disabled); if (i >= 0) pruefe(i); };
+    e.querySelector('#w1').disabled = false;
+    e.querySelector('#w1').focus();
+  };
+}
+
+// ================================================================ Fall 2: Die Abkürzung
+
+/* Hat die Kundin die verbotene Rampe genommen? Der Verleih schließt von der
+   Energie auf den Weg – das geht nicht, beide Wege kosten gleich viel. Erst die
+   Motorkraft verrät den Weg. Die Massen sind so gewählt, dass F · s auf beiden
+   Wegen und m · g · h auf die ganze Zahl genau gleich herauskommen. */
+const G = 9.81;
+function neuerFall2() {
+  const m = [58, 63, 74, 79][Math.floor(Math.random() * 4)];
+  const h = [5, 6, 8][Math.floor(Math.random() * 3)];
+  const Eh = m * G * h, sR = 2.5 * h, sS = 10 * h;
+  const FR = Math.round(Eh / sR * 10) / 10, FS = Math.round(Eh / sS * 10) / 10;
+  const vorher = [18000, 20000, 24000][Math.floor(Math.random() * 3)];
+  return { m, h, E: Math.round(Eh), Eh, sR, sS, FR, FS, vorher, nachher: vorher - Math.round(Eh), rampe: Math.random() < 0.5 };
+}
+let fall2 = neuerFall2();
+
+function fall2Buero() {
+  fall2 = neuerFall2();
+  stand.stempel = 3; stand.beweise = {}; stand.aufgerollt = false;
+  kopfZeigen();
+  bueroSzene('Fall 2: Eine Kundin wehrt sich.', 'AKTE 2');
+  leiste.innerHTML = '<button class="k" id="los">📁 Akte öffnen</button>';
+  document.getElementById('los').onclick = schuleZeigen;
+  document.getElementById('akte').onclick = schuleZeigen;
+}
+
+// Hügel mit Schule: links die steile Rampe, rechts die Serpentinen
+const SERPENTINEN = '885,438 640,418 790,397 620,375 700,356 600,336 612,318 565,292';
+function schuleZeigen() {
+  kopfZeigen();
+  const f = fall2;
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#cfe6f5"/>
+    <rect x="0" y="420" width="960" height="50" fill="#8bbf6a"/>
+    <polygon points="200,440 400,290 560,290 900,440" fill="#9cc97a" stroke="#6f9a52" stroke-width="3"/>
+    <line x1="205" y1="436" x2="402" y2="290" stroke="#6d6d6d" stroke-width="16" stroke-linecap="round"/>
+    <polyline points="${SERPENTINEN}" fill="none" stroke="#6d6d6d" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="${SERPENTINEN}" fill="none" stroke="#eee" stroke-width="2" stroke-dasharray="10 10"/>
+    <g transform="translate(232,392)"><rect x="-3" y="0" width="6" height="40" fill="#555"/>
+      <circle cy="-6" r="18" fill="#fff" stroke="#E05050" stroke-width="6"/></g>
+    <rect x="410" y="225" width="140" height="65" fill="#F2D49B" stroke="#8a6a3a" stroke-width="3"/>
+    <polygon points="402,228 480,190 558,228" fill="#C0504D"/>
+    ${[0, 1, 2].map(i => `<rect x="${425 + i * 42}" y="240" width="26" height="20" fill="#9fd3f5" stroke="#8a6a3a" stroke-width="2"/>`).join('')}
+    <text x="480" y="283" text-anchor="middle" font-size="14" font-weight="bold" fill="#5a3a22" ${SCHRIFT}>SCHULE</text>
+    ${person(70, 440, { oberteil: '#C0504D', haare: '#2b2b2b', s: 1.2, arm: 1 })}
+    ${person(850, 440, { helm: '#7030A0', oberteil: '#FFC000', haare: '#a0522d', s: 1.1 })}
+    ${scooter(912, 440)}
+    <g id="werte"></g>
+    ${titel('🛴 Ärger beim E-Scooter-Verleih', 'Untersuche: Ist sie die verbotene Rampe gefahren?')}
+    ${blase(20, 96, 'Ihr Akku beweist es: Das war die verbotene Rampe!', 300)}
+    ${blase(560, 180, 'Ich bin die Serpentinen gefahren!', 380, true)}
+    <g id="info"></g>
+  `);
+  const svg = buehne.querySelector('svg');
+  const infoG = svg.querySelector('#info'), werte = svg.querySelector('#werte');
+  const zeigeInfo = t => {
+    const breite = Math.max(300, zeilenBreite(t, 21) + 48);
+    infoG.innerHTML = `<rect x="${480 - breite / 2}" y="424" width="${breite}" height="40" rx="12" fill="#FFC000"/>${zeile(t, 451, 21, '#222')}`;
+  };
+  // Weg und Kraft getrennt untereinander – ein „·“ dazwischen läse sich als Produkt
+  const schild = (x, y, s, F) => `<rect x="${x - 62}" y="${y - 24}" width="124" height="54" rx="8" fill="#fff" stroke="#2E75B6" stroke-width="3"/>
+    <text x="${x}" y="${y - 2}" text-anchor="middle" font-size="18" font-weight="bold" ${SCHRIFT}><tspan font-style="italic">s</tspan> = ${s} m</text>
+    <text x="${x}" y="${y + 21}" text-anchor="middle" font-size="18" font-weight="bold" ${SCHRIFT}><tspan font-style="italic">F</tspan> = ${F} N</text>`;
+  const zeichneWerte = () => {
+    const b = stand.beweise;
+    werte.innerHTML = (b.app ? schild(250, 330, z(f.sR, 1).replace(',0', ''), z(f.FR, 1)) + schild(770, 330, z(f.sS), z(f.FS, 1)) : '')
+      + (b.hoehe ? `<line x1="520" y1="292" x2="520" y2="436" stroke="#222" stroke-width="3" stroke-dasharray="6 4"/>
+        <polygon points="520,292 514,304 526,304" fill="#222"/><polygon points="520,438 514,426 526,426" fill="#222"/>
+        <rect x="530" y="352" width="54" height="28" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
+        <text x="557" y="373" text-anchor="middle" font-size="18" font-weight="bold" ${SCHRIFT}>${f.h} m</text>` : '');
+  };
+  const WERKZEUGE = [
+    { id: 'app', zeichen: '📱', name: 'Verleih-App' },
+    { id: 'akku', zeichen: '🔋', name: 'Akku-Protokoll' },
+    { id: 'hoehe', zeichen: '📐', name: 'Höhenmesser' },
+    { id: 'waage', zeichen: '⚖', name: 'Waage' },
+    { id: 'uhr', zeichen: '⏱', name: 'Stoppuhr' },
+    { id: 'thermo', zeichen: '🌡', name: 'Thermometer' },
+  ];
+  leiste.innerHTML = `${WERKZEUGE.map(w => `<button class="werkz" data-w="${w.id}"><b>${w.zeichen}</b>${w.name}</button>`).join('')}
+    <button class="k" id="weiter">Auswerten ➜</button>`;
+  leiste.querySelectorAll('.werkz').forEach(k => k.onclick = () => {
+    k.classList.add('benutzt');
+    const w = k.dataset.w, b = stand.beweise;
+    if (w === 'app') { b.app = true; zeigeInfo('Messfahrten des Verleihs: Weg und Motorkraft'); }
+    if (w === 'akku') { b.akku = [f.vorher, f.nachher]; zeigeInfo(`Akku vor der Fahrt: ${z(f.vorher)} J · danach: ${z(f.nachher)} J`); }
+    if (w === 'hoehe') { b.hoehe = f.h; zeigeInfo(`Die Schule liegt ${f.h} m höher.`); }
+    if (w === 'waage') { b.masse = f.m; zeigeInfo(`Kundin mit E-Scooter: ${f.m} kg`); }
+    if (w === 'uhr') zeigeInfo('Die Fahrt ist vorbei – hier läuft nichts mehr.');
+    if (w === 'thermo') zeigeInfo('Akku 21 °C – hilft das weiter?');
+    zeichneWerte(); kopfZeigen();
+  });
+  document.getElementById('weiter').onclick = () => {
+    const b = stand.beweise;
+    if (!b.app || !b.akku || !b.masse || !b.hoehe) { zeigeInfo('Für die Auswertung fehlen noch Daten.'); wackle(document.getElementById('weiter')); return; }
+    auswertungZeigen();
+  };
+}
+
+/* Eine Frage im selben Blatt – die Tabelle bleibt dabei sichtbar */
+function frageIn(ziel, titelText, optionen, richtig, weiter) {
+  ziel.innerHTML = `<h3 class="mitte" style="margin:10px 0 0">${titelText}</h3><div class="knoepfe">
+    ${optionen.map((o, i) => `<button class="k hell" data-i="${i}">${o}</button>`).join('')}</div>`;
+  ziel.querySelectorAll('button').forEach(b => b.onclick = () => {
+    if (+b.dataset.i === richtig) weiter(); else { b.disabled = true; wackle(b); }
+  });
+  ziel.scrollIntoView({ block: 'end' });
+}
+
+function auswertungZeigen() {
+  const f = fall2;
+  kopfZeigen();
+  bueroSzene(null, 'AKTE 2');
+  leiste.innerHTML = '';
+  const e = ebene(`<div class="gutachten"><h2 class="mitte">📱 Messfahrten des Verleihs</h2>
+    <p class="mitte" id="auftrag" style="margin:2px 0">Berechne für beide Wege die Arbeit. Runde auf ganze Zahlen.
+      <button class="tippk" data-t="t1" title="Tipp">💡</button><span class="tippf" id="t1" hidden><i>W</i> = <i>F</i> · Δ<i>s</i></span></p>
+    <table class="messung"><tr><th>Weg</th><th><i>F</i> in N</th><th>Δ<i>s</i> in m</th><th><i>W</i> in J</th></tr>
+      <tr><td>Rampe</td><td>${z(f.FR, 1)}</td><td>${z(f.sR, 1).replace(',0', '')}</td><td><input id="eR" inputmode="decimal"></td></tr>
+      <tr><td>Serpentinen</td><td>${z(f.FS, 1)}</td><td>${z(f.sS)}</td><td><input id="eS" inputmode="decimal"></td></tr></table>
+    <div id="fazit"></div><div id="schritt"></div></div>`, 760);
+  e.querySelector('.tippk').onclick = ev => { ev.preventDefault(); e.querySelector('#t1').hidden = false; ev.target.hidden = true; };
+  const fazit = (t, kern) => e.querySelector('#fazit').innerHTML += `<div class="fazit${kern ? ' kern' : ''}">${t}</div>`;
+  const schritt = e.querySelector('#schritt');
+  const eR = e.querySelector('#eR'), eS = e.querySelector('#eS');
+  const pruefen = (inp, soll) => () => {
+    if (!inp.value.trim()) return;
+    if (passt(lies(inp.value), soll, 0.005)) { inp.className = 'gut'; inp.disabled = true; }
+    else { inp.className = 'falsch'; wackle(inp); }
+    if (eR.disabled && eS.disabled) { e.querySelector('#auftrag').hidden = true; fragen(); }
+  };
+  eR.onchange = pruefen(eR, f.FR * f.sR);
+  eS.onchange = pruefen(eS, f.FS * f.sS);
+  const fragen = () => frageIn(schritt, 'Was fällt dir auf?', ['Auf der Rampe ist <i>W</i> größer', '<i>W</i> ist auf beiden Wegen gleich', 'Auf den Serpentinen ist <i>W</i> größer'], 1, () => {
+    fazit('Die Arbeit hängt nicht vom Weg ab.', true);
+    frageIn(schritt, 'Was spart dann die Serpentinenstraße?', ['Arbeit', 'Kraft – dafür ist der Weg länger', 'Weg'], 1, () => {
+      fazit('Weniger Kraft, dafür ein längerer Weg.');
+      frageIn(schritt, 'Was haben beide Wege gemeinsam?', ['die Länge', 'den Höhenunterschied', 'die Kraft'], 1, hubRechnen);
+    });
+  });
+  // die Energie aus der Höhe – erst rechnen, dann mit W vergleichen, dann die Regel bauen
+  const hubRechnen = () => {
+    schritt.innerHTML = `<h3 class="mitte" style="margin:10px 0 0">Um wie viel steigt ihre Höhenenergie? Runde auf ganze Zahlen.</h3>
+      <div class="akte"><span>⚖ ${f.m} kg</span><span><i>g</i> = 9,81 ${bruchHTML('N', 'kg')}</span><span>📐 Δ<i>h</i> = ${f.h} m</span></div>
+      <label style="justify-content:center"><span>Δ<i>E</i><sub>h</sub> =</span> <input id="eh" inputmode="decimal"> J
+        <button class="tippk" data-t="t2" title="Tipp">💡</button><span class="tippf" id="t2" hidden>Δ<i>E</i><sub>h</sub> = <i>m</i> · <i>g</i> · Δ<i>h</i></span></label>`;
+    schritt.querySelector('.tippk').onclick = ev => { ev.preventDefault(); schritt.querySelector('#t2').hidden = false; ev.target.hidden = true; };
+    const eh = schritt.querySelector('#eh');
+    eh.focus();
+    schritt.scrollIntoView({ block: 'end' });
+    eh.onchange = () => {
+      if (!eh.value.trim()) return;
+      if (!passt(lies(eh.value), f.Eh, 0.003)) { eh.className = 'falsch'; wackle(eh); return; }
+      eh.className = 'gut'; eh.disabled = true;
+      // den Zusammenhang sieht die Klasse selbst – erst dann wird er ausgesprochen
+      fazit(`Δ<i>E</i><sub>h</sub> = ${z(f.E)} J`);
+      const dE = 'Δ<i>E</i><sub>h</sub>';
+      frageIn(schritt, 'Was fällt dir auf?', [`${dE} ist größer als <i>W</i>`, `${dE} ist genauso groß wie <i>W</i>`, `${dE} ist kleiner als <i>W</i>`], 1, () => {
+        fazit('Die Arbeit beim Hochfahren ist genau die Zunahme der Höhenenergie.', true);
+        schritt.innerHTML = '<div class="knoepfe"><button class="k" id="regel">Weiter ➜</button></div>';
+        schritt.querySelector('#regel').scrollIntoView({ block: 'end' });
+        schritt.querySelector('#regel').onclick = () => { e.remove(); hubRegelBauen(); };
+      });
+    };
+  };
+}
+
+/* W = m · g · Δh aus Bausteinen. F · s stimmt auch – aber nur für einen Weg;
+   gesucht ist, was auf jedem Weg gleich ist. Falsches wird an der Rampe vorgerechnet. */
+function hubRegelBauen() {
+  const f = fall2, STEINE = ['m', 'g', 'Δh', 'F', 'Δs', '·'];
+  const e = ebene(`<h2 class="mitte">Diese Arbeit heißt <b>Hubarbeit</b>. Für jeden Weg gilt:</h2>
+    <div class="formel"><span class="ziel">W =</span>
+      ${[0, 1, 2, 3, 4].map(n => `<div class="slot" data-n="${n}"></div>`).join('')}</div>
+    <div class="bausteine">${STEINE.map(s => `<button class="stein${s === '·' ? ' op' : ''}">${s}</button>`).join('')}</div>
+    <div class="hinweis" id="hw"></div>
+    <div class="knoepfe"><button class="k" id="pruefen">Prüfen</button></div>`, 680);
+  const slots = [...e.querySelectorAll('.slot')], inhalt = ['', '', '', '', ''];
+  const zeige = () => slots.forEach((s, i) => { s.textContent = inhalt[i]; s.classList.toggle('voll', !!inhalt[i]); });
+  e.querySelectorAll('.stein').forEach(b => b.onclick = () => { const i = inhalt.indexOf(''); if (i >= 0) { inhalt[i] = b.textContent; zeige(); } });
+  slots.forEach((s, i) => s.onclick = () => { inhalt[i] = ''; zeige(); });
+  e.querySelector('#pruefen').onclick = () => {
+    const [a, op1, b, op2, c] = inhalt;
+    if (op1 === '·' && op2 === '·' && [a, b, c].sort().join(' ') === 'g m Δh') {
+      e.remove();
+      werkzeugZeigen('Hubarbeit', 'W = m · g · Δh', 'Hubarbeit = Zunahme der Höhenenergie – egal auf welchem Weg', 'Zum Gutachten ➜', gutachten2Zeigen);
+      return;
+    }
+    const belegt = inhalt.filter(x => x).join(' ');
+    if (belegt === 'F · Δs' || belegt === 'Δs · F') {
+      e.querySelector('#hw').textContent = 'Stimmt – aber F und Δs sind auf jedem Weg anders. Was ist gleich?';
+      return;
+    }
+    const w = { m: f.m, g: G, 'Δh': f.h, F: f.FR, 'Δs': f.sR };
+    let text = 'Setz drei Größen und zwei Malzeichen ein.';
+    if (op1 === '·' && op2 === '·' && w[a] != null && w[b] != null && w[c] != null) {
+      const x = w[a] * w[b] * w[c];
+      text = `Rampe: ${a} · ${b} · ${c} = ${z(x, x < 100 ? 1 : 0)} – die Arbeit war ${z(f.E)} J.`;
+    }
+    e.querySelector('#hw').textContent = text;
+    slots.forEach(wackle);
+  };
+}
+
+/* Teil 1 ist immer „nein“ – darum gibt es Teil 2, dessen Antwort wechselt */
+function gutachten2Zeigen() {
+  const f = fall2;
+  kopfZeigen();
+  bueroSzene(null, 'AKTE 2');
+  leiste.innerHTML = '';
+  const e = ebene('', 720), blatt = e.querySelector('.blatt');
+  const verloren = () => { stand.stempel--; kopfZeigen(); };
+  const auswertung = (richtig, satz, grund, weiter) => {
+    blatt.innerHTML = `<div class="mitte">
+      <h2 style="color:${richtig ? '#2f7a2f' : '#C0392B'}">${richtig ? '✔ Richtig geurteilt.' : '✘ Falsch geurteilt – ein Stempel weg.'}</h2>
+      <p style="font-size:1.2rem;font-weight:bold">${satz}</p><div style="font-size:1.15rem;margin-bottom:8px">${grund}</div>
+      <div class="knoepfe"><button class="k" id="weiter">Weiter ➜</button></div></div>`;
+    blatt.querySelector('#weiter').onclick = () => { if (stand.stempel <= 0) { e.remove(); neuAufrollen2(); return; } weiter(); };
+  };
+  blatt.innerHTML = `<div class="gutachten"><h2 class="mitte">📝 Gutachten – Akte 2</h2>
+    <div class="akte"><span>🔋 vor der Fahrt: ${z(f.vorher)} J</span><span>🔋 danach: ${z(f.nachher)} J</span></div>
+    <label style="justify-content:center"><span>Abgegebene Energie:</span> <input id="ab" inputmode="decimal"> J
+      <button class="tippk" data-t="t3" title="Tipp">💡</button><span class="tippf" id="t3" hidden>vorher − nachher</span>
+      <button class="tippk" id="info" title="Für Interessierte" style="border-color:#2E75B6;background:#DEEBF7">ℹ</button></label>
+    <p id="infotext" hidden style="background:#DEEBF7;border-radius:10px;padding:8px 12px;font-size:1rem">In echt gibt der Akku mehr ab, als die Hubarbeit beträgt:
+      Reibung in Rädern und Lagern, Luftwiderstand und die Wärme im Motor kosten zusätzlich Energie.
+      Unser E-Scooter fährt ohne diese Verluste – so sieht man die Hubarbeit allein.</p>
+    <div id="frage1" hidden><h2 class="mitte">Beweist der Akku, dass sie die verbotene Rampe gefahren ist?</h2>
+    <div class="knoepfe"><button class="k" data-j="1" style="background:#2E75B6">👍 ja</button><button class="k" data-j="0" style="background:#D9534F">👎 nein</button></div></div></div>`;
+  blatt.querySelector('[data-t="t3"]').onclick = ev => { ev.preventDefault(); blatt.querySelector('#t3').hidden = false; ev.target.hidden = true; };
+  blatt.querySelector('#info').onclick = ev => { ev.preventDefault(); const p = blatt.querySelector('#infotext'); p.hidden = !p.hidden; };
+  const ab = blatt.querySelector('#ab');
+  ab.onchange = () => {
+    if (!ab.value.trim()) return;
+    if (!passt(lies(ab.value), f.E, 0.001)) { ab.className = 'falsch'; wackle(ab); return; }
+    ab.className = 'gut'; ab.disabled = true;
+    blatt.querySelector('#frage1').hidden = false;
+  };
+  blatt.querySelectorAll('[data-j]').forEach(k => k.onclick = () => {
+    const richtig = k.dataset.j === '0';
+    if (!richtig) verloren();
+    auswertung(richtig, 'Der Akku beweist nichts.', `Auf beiden Wegen ist die Arbeit ${z(f.E)} J.`, teil2);
+  });
+  function teil2() {
+    const F = f.rampe ? f.FR : f.FS;
+    // Alle Daten der App nebeneinander: Welche Spalte unterscheidet die Wege?
+    // Erst nach dem Urteil wird es ausgesprochen – E8: Kraft ist nicht Energie
+    blatt.innerHTML = `<div class="mitte"><h2>Die App hat auch ihre Fahrt aufgezeichnet.</h2>
+      <table class="messung"><tr><th></th><th><i>F</i> in N</th><th>Δ<i>s</i> in m</th><th><i>W</i> in J</th></tr>
+        <tr><td>Messfahrt Rampe</td><td>${z(f.FR, 1)}</td><td>${z(f.sR, 1).replace(',0', '')}</td><td>${z(f.E)}</td></tr>
+        <tr><td>Messfahrt Serpentinen</td><td>${z(f.FS, 1)}</td><td>${z(f.sS)}</td><td>${z(f.E)}</td></tr>
+        <tr style="background:#FFF2CC"><td><b>ihre Fahrt</b></td><td><b>${z(F, 1)}</b></td><td><b>?</b></td><td><b>${z(f.E)}</b></td></tr></table>
+      <h2 style="margin-top:6px">Welchen Weg ist sie gefahren?</h2>
+      <div class="knoepfe"><button class="k hell" data-w="1">⛔ Rampe</button><button class="k hell" data-w="0">〰 Serpentinen</button></div></div>`;
+    blatt.querySelectorAll('[data-w]').forEach(k => k.onclick = () => {
+      const richtig = (k.dataset.w === '1') === f.rampe;
+      if (!richtig) verloren();
+      auswertung(richtig, f.rampe ? 'Sie ist die Rampe gefahren.' : 'Sie ist die Serpentinen gefahren.',
+        (f.rampe ? `${z(F, 1)} N braucht man nur auf der steilen Rampe.` : `${z(F, 1)} N reichen nur auf den Serpentinen.`)
+          + '<div class="fazit kern" style="font-size:1.1rem">Die Arbeit ist auf beiden Wegen gleich – nur die Kraft ist verschieden.</div>',
+        () => { e.remove(); ergebnis2Zeigen(); });
+    });
+  }
+}
+
+/* wie in Fall 1: das Werkzeug ist verdient, es geht mit neuen Daten direkt ins Gutachten */
+function neuAufrollen2() {
+  fall2 = neuerFall2();
+  stand.stempel = 3; stand.aufgerollt = true;
+  stand.beweise = { app: true, akku: [fall2.vorher, fall2.nachher], masse: fall2.m, hoehe: fall2.h };
+  kopfZeigen();
+  const e = ebene(`<div class="mitte"><h2>Neuer Fall mit neuen Daten – dein Werkzeug hast du schon.</h2><div style="font-size:3rem">🔄</div>
+    <div class="knoepfe"><button class="k" id="neu">Zum Gutachten ➜</button></div></div>`, 520);
+  e.querySelector('#neu').onclick = gutachten2Zeigen;
+}
+
+function ergebnis2Zeigen() {
+  const sterne = sterneAus();
+  stand.sterne += sterne; stand.rang = 'Fachgutachter'; stand.frei = Math.max(stand.frei, 3);
+  kopfZeigen();
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#E9DFC9"/>
+    <rect x="0" y="380" width="960" height="90" fill="#8a6a4a"/>
+    <rect x="300" y="250" width="360" height="140" fill="#5a3a22"/>
+    ${person(480, 250, { oberteil: '#222', haare: '#bbb', s: 1.5, arm: 1 })}
+    <rect x="540" y="160" width="60" height="22" rx="4" fill="#8a5a2a" transform="rotate(-25 570 170)"/>
+    ${blase(560, 60, fall2.rampe ? 'Die Rampe!' : 'Die Serpentinen!', 300, true)}
+    <g transform="translate(160,170) rotate(-12)"><circle r="70" fill="none" stroke="#E05050" stroke-width="8"/>
+      <text y="10" text-anchor="middle" font-size="26" font-weight="bold" fill="#E05050">GELÖST</text></g>
+    <text x="480" y="440" text-anchor="middle" font-size="26" font-weight="bold" fill="#fff">Neuer Rang: Fachgutachter ${'★'.repeat(sterne)}</text>
+  `);
+  leiste.innerHTML = `<span class="lbl">Code für Fall 3: <span class="code">RAMPE</span></span>
+    <button class="k" id="fall3">Fall 3 ➜</button>`;
+  document.getElementById('fall3').onclick = fall3Buero;
+  eintragen(2);
+}
+
+// ================================================================ Fall 3: Der Schubs
+
+/* Wie fest war der Schubs? Ein Video zeigt Tacho und Pflasterfugen. Der Kniff:
+   Der E-Scooter rollte schon. Wer die Energie vorher vergisst, hält eine ehrliche
+   Aussage für gelogen. Gezogen werden nur Fälle mit ganzzahliger Kraft. */
+const FUGE_X0 = 60, PM = 100;                    // Video: linker Rand, Pixel je Meter
+function neuerFall3() {
+  const moeglich = [];
+  for (const m of [50, 60]) for (const vv of [1, 2]) for (const vn of [3, 4]) for (const s of [1.5, 2]) {
+    const W = 0.5 * m * (vn * vn - vv * vv), F = W / s;
+    if (Number.isInteger(F)) moeglich.push({ m, vv, vn, s, W, F });
+  }
+  const f = moeglich[Math.floor(Math.random() * moeglich.length)];
+  f.Ev = 0.5 * f.m * f.vv ** 2; f.En = 0.5 * f.m * f.vn ** 2;
+  f.ehrlich = Math.random() < 0.34;
+  // ehrlich: knapp über der wirklichen Kraft, aber unter dem, was ohne E_vorher herauskäme
+  const ohneVorher = f.En / f.s;
+  f.Fbeh = f.ehrlich ? Math.ceil((f.F + 1) / 10) * 10 : Math.max(40, Math.round(f.F * 0.5 / 10) * 10);
+  if (f.ehrlich && f.Fbeh >= ohneVorher) f.Fbeh = f.F;
+  // Bilder des Videos: 8 vor dem Schubs, k im Schubs, dann bis zum Fahrradständer
+  const xs = 2.5, a = (f.vn ** 2 - f.vv ** 2) / (2 * f.s), tp = (f.vn - f.vv) / a;
+  const k = Math.max(3, Math.round(tp / 0.1)), bilder = [];
+  for (let i = 8; i > 0; i--) bilder.push({ x: xs - f.vv * i * 0.1, v: f.vv, kontakt: false });
+  for (let j = 0; j <= k; j++) { const t = j * tp / k; bilder.push({ x: xs + f.vv * t + a * t * t / 2, v: f.vv + a * t, kontakt: true }); }
+  const xe = xs + f.s;
+  for (let j = 1; xe + f.vn * j * 0.1 < 6.6; j++) bilder.push({ x: xe + f.vn * j * 0.1, v: f.vn, kontakt: false, nach: true });
+  bilder.push({ x: 6.7, v: 0, kontakt: false, nach: true, crash: true });
+  f.bilder = bilder; f.start = 8; f.ende = 8 + k; f.xs = xs; f.xe = xe;
+  return f;
+}
+let fall3 = neuerFall3();
+const kmhText = v => `${z(v * 3.6, 1)} {km/h}`;
+
+function fall3Buero() {
+  fall3 = neuerFall3();
+  stand.stempel = 3; stand.beweise = {}; stand.aufgerollt = false;
+  kopfZeigen();
+  bueroSzene('Fall 3: Ein Schubs mit Folgen.', 'AKTE 3');
+  leiste.innerHTML = '<button class="k" id="los">📁 Akte öffnen</button>';
+  document.getElementById('los').onclick = schulhofZeigen;
+  document.getElementById('akte').onclick = schulhofZeigen;
+}
+
+function fahrradstaender(x, y) {
+  return `<g transform="translate(${x},${y})">${[0, 1, 2, 3].map(i => `<path d="M${i * 34} 0 v-46 a14 14 0 0 1 28 0 v46" fill="none" stroke="#777" stroke-width="6"/>`).join('')}
+    <line x1="-6" y1="0" x2="${3 * 34 + 34}" y2="0" stroke="#555" stroke-width="6"/></g>`;
+}
+
+function schulhofZeigen() {
+  stand.beweise.kraftBeh = fall3.Fbeh;            // die behauptete Kraft steht in der Aussage
+  kopfZeigen();
+  const f = fall3;
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#cfe6f5"/>
+    <rect x="0" y="150" width="960" height="210" fill="#E8D5B0"/>
+    ${[0, 1, 2, 3, 4, 5].map(i => `<rect x="${60 + i * 150}" y="190" width="90" height="70" fill="#9fd3f5" stroke="#8a6a3a" stroke-width="4"/>`).join('')}
+    <rect x="0" y="360" width="960" height="110" fill="#B9B4AA"/>
+    ${Array.from({ length: 20 }, (_, i) => `<line x1="${i * 50}" y1="360" x2="${i * 50 - 30}" y2="470" stroke="#9d978c" stroke-width="2"/>`).join('')}
+    ${fahrradstaender(720, 400)}
+    ${scooter(800, 398, { gekippt: true })}
+    ${person(660, 402, { helm: '#2E75B6', oberteil: '#3BA34B', s: 1.1 })}
+    ${person(330, 402, { oberteil: '#D9534F', haare: '#2b2b2b', s: 1.15, arm: 1 })}
+    ${titel('🛴 Unfall auf dem Schulhof', 'Untersuche den Schubs: Stimmt die Aussage?')}
+    ${blase(60, 120, `Ich hab ihn nur ganz leicht angeschubst – mit höchstens ${f.Fbeh} N!`, 300)}
+    <g id="info"></g>
+  `);
+  const infoG = buehne.querySelector('#info');
+  const zeigeInfo = t => {
+    const breite = Math.max(300, zeilenBreite(t, 21) + 48);
+    infoG.innerHTML = `<rect x="${480 - breite / 2}" y="424" width="${breite}" height="40" rx="12" fill="#FFC000"/>${zeile(t, 451, 21, '#222')}`;
+  };
+  const WERKZEUGE = [
+    { id: 'video', zeichen: '📹', name: 'Video' },
+    { id: 'waage', zeichen: '⚖', name: 'Waage' },
+    { id: 'band', zeichen: '📏', name: 'Maßband' },
+    { id: 'uhr', zeichen: '⏱', name: 'Stoppuhr' },
+    { id: 'thermo', zeichen: '🌡', name: 'Thermometer' },
+  ];
+  const b = stand.beweise;
+  leiste.innerHTML = `${WERKZEUGE.map(w => `<button class="werkz${(w.id === 'video' && b.video) || (w.id === 'waage' && b.masse) ? ' benutzt' : ''}" data-w="${w.id}"><b>${w.zeichen}</b>${w.name}</button>`).join('')}
+    <button class="k" id="weiter">Auswerten ➜</button>`;
+  leiste.querySelectorAll('.werkz').forEach(k => k.onclick = () => {
+    const w = k.dataset.w;
+    if (w === 'video') { videoZeigen(); return; }
+    k.classList.add('benutzt');
+    if (w === 'waage') { b.masse = f.m; zeigeInfo(`Fahrer mit E-Scooter: ${f.m} kg`); }
+    if (w === 'band') zeigeInfo('Auf dem Pflaster ist keine Spur.');
+    if (w === 'uhr') zeigeInfo('Der Unfall ist vorbei – hier läuft nichts mehr.');
+    if (w === 'thermo') zeigeInfo('Pflaster 16 °C – hilft das weiter?');
+    kopfZeigen();
+  });
+  document.getElementById('weiter').onclick = () => {
+    if (!b.video || !b.masse) { zeigeInfo('Für die Auswertung fehlen noch Daten.'); wackle(document.getElementById('weiter')); return; }
+    schubsAuswerten();
+  };
+}
+
+/* Das Video: Seitenansicht, Pflasterfugen alle 0,5 m, Tacho über dem Lenker.
+   Die Klasse sucht selbst das erste und das letzte Bild, in dem geschoben wird. */
+function videoZeigen() {
+  const f = fall3, ROLLER_Y = 398;
+  let bild = 0, start = null, ende = null, laeuft = null;
+  const px = x => FUGE_X0 + x * PM;
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#E8D5B0"/>
+    <rect x="0" y="400" width="960" height="70" fill="#B9B4AA"/>
+    ${Array.from({ length: 19 }, (_, i) => `<line x1="${px(i * 0.5)}" y1="400" x2="${px(i * 0.5)}" y2="470" stroke="#8d877c" stroke-width="3"/>`).join('')}
+    ${fahrradstaender(px(6.7) + 60, 400)}
+    <g id="marken"></g><g id="film"></g>
+    <rect x="0" y="0" width="960" height="470" fill="none" stroke="#222" stroke-width="10"/>
+    <g id="kopfzeile">${titel('📹 Schulhofkamera', 'Spule zum Schubs. Die Pflasterfugen liegen 0,5 m auseinander.')}</g>
+    <text x="940" y="140" text-anchor="end" font-size="16" font-weight="bold" fill="#555" ${SCHRIFT} id="nr"></text>
+  `);
+  const film = buehne.querySelector('#film'), marken = buehne.querySelector('#marken');
+  const zeichne = () => {
+    const b = f.bilder[bild], x = px(b.x);
+    // Schubser: läuft hinterher, schiebt, bleibt dann stehen
+    const sb = b.kontakt ? x - 78 : b.nach ? px(f.xe) - 78 + 15 : x - 120;
+    const schulter = { x: sb + 14, y: ROLLER_Y - 80 }, hand = b.kontakt ? { x: x - 26, y: ROLLER_Y - 98 } : b.nach ? { x: sb + 22, y: ROLLER_Y - 50 } : { x: sb + 44, y: ROLLER_Y - 82 };
+    film.innerHTML = `${person(sb, ROLLER_Y + 2, { oberteil: '#D9534F', haare: '#2b2b2b', s: 1 })}
+      <line x1="${schulter.x}" y1="${schulter.y}" x2="${hand.x}" y2="${hand.y}" stroke="#F2C49B" stroke-width="8" stroke-linecap="round"/>
+      ${b.crash ? scooter(x, ROLLER_Y, { gekippt: true }) : `${scooter(x, ROLLER_Y)}${person(x - 12, ROLLER_Y - 6, { helm: '#2E75B6', oberteil: '#3BA34B', s: 0.92 })}
+        <rect x="${x + 6}" y="${ROLLER_Y - 168}" width="96" height="36" rx="8" fill="#111"/>${zeile(kmhText(b.v), ROLLER_Y - 144, 16, '#7CFC00', x + 54)}`}`;
+    buehne.querySelector('#nr').textContent = `Bild ${bild + 1} / ${f.bilder.length}`;
+    leiste.querySelector('#bild').value = bild;
+  };
+  const marke = (x, farbe) => `<polygon points="${x},404 ${x - 10},426 ${x + 10},426" fill="${farbe}" stroke="#222" stroke-width="2"/>`;
+  const zeigeMarken = () => { marken.innerHTML = (start != null ? marke(px(f.xs), '#FFC000') : '') + (ende != null ? marke(px(f.xe), '#FFC000') : ''); };
+  const hinweis = t => {
+    const g = buehne.querySelector('#kopfzeile');
+    g.innerHTML = titel('📹 Schulhofkamera', 'Spule zum Schubs. Die Pflasterfugen liegen 0,5 m auseinander.', t);
+  };
+  // alles in einer Zeile; Bild vor/zurück sehen nicht wie Abspielknöpfe aus
+  leiste.classList.add('eng');
+  leiste.innerHTML = `<button class="k hell" id="spiel">▶ Abspielen</button><button class="k hell" id="zur">‹ Bild</button>
+    <input type="range" id="bild" min="0" max="${f.bilder.length - 1}" step="1" value="0">
+    <button class="k hell" id="vor">Bild ›</button>
+    <button class="k" id="beginnt">✋ Schubs beginnt</button><button class="k" id="endet">✋ Schubs endet</button>`;
+  // beim Spulen verschwindet der alte Hinweis – er gehörte zu einem anderen Bild
+  const gehe = n => { bild = Math.max(0, Math.min(f.bilder.length - 1, n)); hinweis(''); zeichne(); };
+  leiste.querySelector('#bild').oninput = ev => { clearInterval(laeuft); gehe(+ev.target.value); };
+  leiste.querySelector('#zur').onclick = () => { clearInterval(laeuft); gehe(bild - 1); };
+  leiste.querySelector('#vor').onclick = () => { clearInterval(laeuft); gehe(bild + 1); };
+  leiste.querySelector('#spiel').onclick = () => {
+    clearInterval(laeuft);
+    if (bild >= f.bilder.length - 1) gehe(0);
+    const l = lauf;
+    laeuft = setInterval(() => { if (l !== lauf || bild >= f.bilder.length - 1) clearInterval(laeuft); else gehe(bild + 1); }, 220);
+  };
+  leiste.querySelector('#beginnt').onclick = ev => {
+    clearInterval(laeuft);
+    if (bild < f.start) { hinweis('Da schiebt noch niemand.'); wackle(ev.target); return; }
+    if (bild > f.start) { hinweis(bild > f.ende ? 'Da schiebt schon niemand mehr.' : 'Der Schubs hat schon früher begonnen.'); wackle(ev.target); return; }
+    start = bild; ev.target.disabled = true; ev.target.innerHTML = `✔ Beginn: ${z(f.vv * 3.6, 1)} ${KMH}`;
+    hinweis(''); zeigeMarken(); fertig();
+  };
+  leiste.querySelector('#endet').onclick = ev => {
+    clearInterval(laeuft);
+    if (bild < f.start) { hinweis('Da schiebt noch niemand.'); wackle(ev.target); return; }
+    if (bild > f.ende) { hinweis('Da schiebt schon niemand mehr.'); wackle(ev.target); return; }
+    if (bild < f.ende) { hinweis('Er schiebt noch weiter.'); wackle(ev.target); return; }
+    ende = bild; ev.target.disabled = true; ev.target.innerHTML = `✔ Ende: ${z(f.vn * 3.6, 1)} ${KMH}`;
+    hinweis(''); zeigeMarken(); fertig();
+  };
+  // stehen beide Bilder fest, liest die Klasse die Schubstrecke an den Fugen ab
+  function fertig() {
+    if (start == null || ende == null) return;
+    hinweis('Wie lang war die Schubstrecke?');
+    leiste.classList.remove('eng');
+    leiste.innerHTML = `<label class="lbl" style="font-size:1.1rem;display:flex;gap:8px;align-items:center">Schubstrecke:
+      <input id="s3" inputmode="decimal" style="font:inherit;width:5em;padding:6px;border-radius:8px;border:2px solid #fff;text-align:right"> m</label>
+      <button class="k" id="ok">Prüfen</button>`;
+    const inp = leiste.querySelector('#s3');
+    inp.focus();
+    leiste.querySelector('#ok').onclick = () => {
+      if (!passt(lies(inp.value), f.s, 0.01)) { inp.style.background = '#F8D7D5'; wackle(inp); return; }
+      stand.beweise.video = { vv: f.vv, vn: f.vn, s: f.s };
+      schulhofZeigen();
+    };
+    inp.onkeydown = ev => { if (ev.key === 'Enter') leiste.querySelector('#ok').click(); };
+  }
+  zeichne();
+}
+
+/* Auswertung: Was macht der Schubs? → beide Energien → W = ΔE = nachher − vorher.
+   Das Vorzeichen von W ergibt sich aus der Rechnung, wie beim Δ der Geschwindigkeit. */
+const EV = '<i>E</i><sub class="ix">vorher</sub>', EN = '<i>E</i><sub class="ix">nachher</sub>';
+const BILANZ = `<i>W</i> = Δ<i>E</i> = ${EN} − ${EV}`;
+function schubsAuswerten() {
+  const f = fall3;
+  kopfZeigen();
+  bueroSzene(null, 'AKTE 3');
+  leiste.innerHTML = '';
+  const tippEkin = `<i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>² <small><i>v</i> in ${MS}</small>`;
+  const feld = (id, links, einheit, tipp) => `<label><span>${links}</span> <input id="${id}" inputmode="decimal"> ${einheit}
+      <button class="tippk" data-t="t${id}" title="Tipp">💡</button><span class="tippf" id="t${id}" hidden>${tipp}</span></label>`;
+  const e = ebene(`<div class="gutachten"><h2 class="mitte">📹 Auswertung des Videos</h2>
+    <div class="akte"><span>⚖ ${f.m} kg</span><span>vor dem Schubs: ${z(f.vv * 3.6, 1)} ${KMH}</span><span>danach: ${z(f.vn * 3.6, 1)} ${KMH}</span><span>📏 ${z(f.s, 1)} m</span></div>
+    <div id="fazit"></div><div id="schritt"></div></div>`, 800);
+  const fazit = (t, kern) => e.querySelector('#fazit').insertAdjacentHTML('beforeend', `<div class="fazit${kern ? ' kern' : ''}">${t}</div>`);
+  const schritt = e.querySelector('#schritt');
+  const tipps = () => schritt.querySelectorAll('.tippk').forEach(k => k.onclick = ev => { ev.preventDefault(); schritt.querySelector('#' + k.dataset.t).hidden = false; k.hidden = true; });
+  const pruefe = (inp, soll, danach, sonst) => () => {
+    if (!inp.value.trim()) return;
+    const x = lies(inp.value);
+    if (passt(x, soll, 0.01)) { inp.className = 'gut'; inp.disabled = true; danach(); return; }
+    inp.className = 'falsch'; wackle(inp);
+    if (sonst) sonst(x);
+  };
+  frageIn(schritt, 'Was macht der Schubs mit der Energie des E-Scooters?', ['Er führt ihm Energie zu', 'Der E-Scooter gibt Energie ab', 'nichts'], 0, () => {
+    // das Fazit gleich nach der richtigen Antwort
+    fazit('Der Schubs führt dem System Energie in Form von Arbeit zu.', true);
+    schritt.innerHTML = `<p class="mitte" style="margin:2px 0;color:#555">Runde auf ganze Zahlen.</p>
+      ${feld('ev', '<i>E</i><sub>kin</sub> vor dem Schubs:', 'J', tippEkin)}
+      ${feld('en', '<i>E</i><sub>kin</sub> nach dem Schubs:', 'J', tippEkin)}
+      <div id="wfeld"></div>`;
+    tipps();
+    const ev = schritt.querySelector('#ev'), en = schritt.querySelector('#en');
+    const beide = () => { if (ev.disabled && en.disabled) arbeit(); };
+    const arbeit = () => wRechnen(schritt.querySelector('#wfeld'), f.Ev, f.En, () => {
+      fazit('<i>W</i> ist positiv: Dem System wird von außen Energie zugeführt.', true);
+      const unten = schritt.querySelector('#wfeld');
+      unten.insertAdjacentHTML('beforeend', '<div class="knoepfe"><button class="k" id="weiter">Und die Bremse in Fall 1? ➜</button></div>');
+      unten.querySelector('#weiter').onclick = () => { e.remove(); rueckblickBremse(); };
+      unten.scrollIntoView({ block: 'end' });
+    });
+    ev.onchange = pruefe(ev, f.Ev, beide);
+    en.onchange = pruefe(en, f.En, beide);
+    ev.focus();
+    schritt.scrollIntoView({ block: 'end' });
+  });
+}
+
+/* W = ΔE = E_nachher − E_vorher mit den eigenen Zahlen – das Vorzeichen kommt
+   aus der Rechnung. Wer vorher minus nachher rechnet, bekommt einen Hinweis. */
+function wRechnen(ziel, Ev, En, weiter) {
+  ziel.innerHTML = `<div class="formel"><span class="ziel">${BILANZ}</span></div>
+    <label style="justify-content:center"><span><i>W</i> = ${z(En)} J − ${z(Ev)} J =</span> <input id="wv" inputmode="text"> J</label>
+    <div class="hinweis" id="hw2"></div>`;
+  const inp = ziel.querySelector('#wv'), hw = ziel.querySelector('#hw2');
+  inp.focus();
+  inp.onchange = () => {
+    if (!inp.value.trim()) return;
+    const x = lies(inp.value);
+    if (!isNaN(x) && Math.abs(x - (En - Ev)) <= Math.max(1, Math.abs(En - Ev) * 0.01)) {
+      inp.className = 'gut'; inp.disabled = true; hw.textContent = ''; weiter(); return;
+    }
+    inp.className = 'falsch'; wackle(inp);
+    hw.textContent = passt(Math.abs(x), Math.abs(En - Ev), 0.01) ? 'Achte auf das Vorzeichen: nachher minus vorher.'
+      : passt(x, En, 0.01) ? 'Der E-Scooter hatte vorher schon Energie.' : '';
+  };
+  ziel.scrollIntoView({ block: 'end' });
+}
+
+/* Ein E-Scooter mit Fahrtrichtung und Kraft: Schubs (Kraft mit der Fahrt) oder Bremse (dagegen) */
+function kraftBild(titelText, mit, farbe) {
+  const pfeil = (x, y, rechts, f) => rechts
+    ? `<line x1="${x}" y1="${y}" x2="${x + 70}" y2="${y}" stroke="${f}" stroke-width="6"/><polygon points="${x + 84},${y} ${x + 66},${y - 10} ${x + 66},${y + 10}" fill="${f}"/>`
+    : `<line x1="${x + 84}" y1="${y}" x2="${x + 14}" y2="${y}" stroke="${f}" stroke-width="6"/><polygon points="${x},${y} ${x + 18},${y - 10} ${x + 18},${y + 10}" fill="${f}"/>`;
+  return `<svg viewBox="0 0 300 150" style="width:100%;max-width:300px;background:#fff;border-radius:10px;border:2px solid #c9c2ae">
+    <text x="150" y="24" text-anchor="middle" font-size="18" font-weight="bold" ${SCHRIFT}>${titelText}</text>
+    ${scooter(150, 128)}${person(138, 122, { helm: '#2E75B6', oberteil: '#3BA34B', s: 0.6 })}
+    ${pfeil(mit ? 200 : 16, 60, true, '#888')}<text x="${mit ? 242 : 58}" y="50" text-anchor="middle" font-size="13" ${SCHRIFT}>Fahrt</text>
+    ${pfeil(mit ? 200 : 16, 90, mit, farbe)}<text x="${mit ? 242 : 58}" y="114" text-anchor="middle" font-size="15" font-weight="bold" fill="${farbe}" ${SCHRIFT}>F</text></svg>`;
+}
+
+/* Fall 1 von der anderen Seite: Die Kraft wirkt gegen die Fahrtrichtung.
+   Zahlen aus einem glatten Bremsfall: 85 kg, 4 m/s, 250 N, 2,72 m. */
+function rueckblickBremse() {
+  const Ev = 680;
+  const e = ebene(`<div class="gutachten"><h2 class="mitte">Und bei der Bremse in Fall 1?</h2>
+    <div class="mitte" style="max-width:300px;margin:0 auto">${kraftBild('Bremse', false, '#D9534F')}</div>
+    <div class="akte" style="margin-top:8px"><span>vor dem Bremsen: ${Ev} J</span><span>danach: 0 J (Er steht.)</span></div>
+    <div id="fazit"></div><div id="schritt"></div></div>`, 700);
+  const fazit = t => e.querySelector('#fazit').insertAdjacentHTML('beforeend', `<div class="fazit kern">${t}</div>`);
+  const schritt = e.querySelector('#schritt');
+  frageIn(schritt, 'Hat die Arbeit der Bremse die kinetische Energie erhöht?', ['ja', 'nein'], 1, () => {
+    wRechnen(schritt, Ev, 0, () => {
+      fazit('<i>W</i> ist negativ: Das System gibt nach außen Energie ab.');
+      schritt.innerHTML = '<div class="knoepfe"><button class="k" id="weiter">Übersicht ➜</button></div>';
+      schritt.querySelector('#weiter').onclick = () => { e.remove(); uebersichtZeigen(); };
+    });
+  });
+}
+
+/* Beide Fälle nebeneinander, unter jedem Bild sein Merksatz */
+function uebersichtZeigen() {
+  const spalte = (titelText, mit, farbe, satz) => `<div style="flex:1;min-width:0">${kraftBild(titelText, mit, farbe)}
+    <div class="fazit kern" style="display:block;margin:8px 0 0;text-align:left">${satz}</div></div>`;
+  const e = ebene(`<div class="gutachten"><h2 class="mitte">Schubs und Bremse</h2>
+    <div style="display:flex;gap:14px">
+      ${spalte('Schubs', true, '#3BA34B', 'Kraft <b>in</b> Fahrtrichtung:<br>Dem System wird von außen Energie zugeführt. <i>W</i>&nbsp;>&nbsp;0')}
+      ${spalte('Bremse', false, '#D9534F', 'Kraft <b>gegen</b> die Fahrtrichtung:<br>Das System gibt nach außen Energie ab. <i>W</i>&nbsp;<&nbsp;0')}</div>
+    <div class="formel" style="margin-bottom:0"><span class="ziel">${EV} + <i>W</i> = ${EN}</span></div>
+    <div class="formel"><span class="ziel">${BILANZ}</span></div>
+    <div class="knoepfe"><button class="k" id="weiter">Weiter ➜</button></div></div>`, 760);
+  e.querySelector('#weiter').onclick = () => {
+    e.remove();
+    werkzeugZeigen('Energieänderung', BILANZ, 'W > 0: zugeführt · W < 0: abgegeben', 'Zum Gutachten ➜', gutachten3Zeigen);
+  };
+}
+
+function gutachten3Zeigen() {
+  const f = fall3;
+  kopfZeigen();
+  bueroSzene(null, 'AKTE 3');
+  leiste.innerHTML = '';
+  const e = ebene(`<div class="gutachten"><h2>📝 Gutachten – Akte 3</h2>
+    <div class="akte"><span>⚖ ${f.m} kg</span><span>vor dem Schubs: ${z(f.vv * 3.6, 1)} ${KMH}</span><span>danach: ${z(f.vn * 3.6, 1)} ${KMH}</span><span>📏 ${z(f.s, 1)} m</span></div>
+    <p class="mitte" style="margin:2px 0;color:#555">Runde auf ganze Zahlen.</p>
+    <label><span>Arbeit des Schubses <i>W</i>:</span> <input id="g1" inputmode="decimal"> J
+      <button class="tippk" data-t="tg1" title="Tipp">💡</button><span class="tippf" id="tg1" hidden>${BILANZ}</span></label>
+    <label><span>Kraft des Schubses <i>F</i>:</span> <input id="g2" inputmode="decimal" disabled> N
+      <button class="tippk" data-t="tg2" title="Tipp">💡</button><span class="tippf" id="tg2" hidden><i>W</i> = <i>F</i> · Δ<i>s</i></span></label>
+    <div class="mitte" id="vergleich" hidden style="margin-top:10px;font-size:1.1rem">Die Kraft ist
+      <button class="k hell" data-v="kleiner">kleiner</button> <button class="k hell" data-v="größer">größer</button> als die behaupteten ${f.Fbeh} N.</div>
+    <div id="urteilsfrage" hidden><h3 class="mitte" style="margin:12px 0 0">Stimmt die Behauptung „höchstens ${f.Fbeh} N“?</h3>
+    <div class="knoepfe"><button class="k" id="stimmt" style="background:#2E75B6">👍 Stimmt</button><button class="k" id="gelogen" style="background:#D9534F">👎 Gelogen</button></div></div>
+    <div class="mitte" id="meldung" style="min-height:28px;margin-top:8px;font-weight:bold"></div></div>`, 820);
+  e.querySelectorAll('.tippk').forEach(k => k.onclick = ev => { ev.preventDefault(); e.querySelector('#' + k.dataset.t).hidden = false; k.hidden = true; });
+  const g1 = e.querySelector('#g1'), g2 = e.querySelector('#g2'), meldung = e.querySelector('#meldung');
+  g1.onchange = () => {
+    if (!g1.value.trim()) return;
+    const x = lies(g1.value);
+    if (passt(x, f.W, 0.01)) { g1.className = 'gut'; g1.disabled = true; g2.disabled = false; g2.focus(); meldung.textContent = ''; return; }
+    g1.className = 'falsch'; wackle(g1);
+    meldung.textContent = passt(x, f.En, 0.01) ? 'Der E-Scooter hatte vorher schon Energie.' : '';
+  };
+  g2.onchange = () => {
+    if (!g2.value.trim()) return;
+    if (!passt(lies(g2.value), f.F, 0.01)) { g2.className = 'falsch'; wackle(g2); return; }
+    g2.className = 'gut'; g2.disabled = true;
+    e.querySelector('#vergleich').hidden = false;
+  };
+  e.querySelectorAll('#vergleich button').forEach(k => k.onclick = () => {
+    if ((k.dataset.v === 'kleiner') !== (f.F <= f.Fbeh)) { k.disabled = true; wackle(k); return; }
+    e.querySelectorAll('#vergleich button').forEach(x => { x.disabled = true; x.style.opacity = x === k ? 1 : .3; });
+    k.classList.add('an');
+    e.querySelector('#urteilsfrage').hidden = false;
+  });
+  const urteil = gelogen => {
+    if (gelogen === !f.ehrlich) { e.remove(); ergebnis3Zeigen(); return; }
+    stand.stempel--; kopfZeigen();
+    begruendung(e, meldung, `Der Schubs hatte ${f.F} N – ${f.F <= f.Fbeh ? 'nicht mehr' : 'mehr'} als die behaupteten ${f.Fbeh} N.`,
+      `Die Aussage „höchstens ${f.Fbeh} N“ ${f.ehrlich ? 'stimmt' : 'stimmt nicht'}.`, neuesGutachten3, ergebnis3Zeigen);
+  };
+  e.querySelector('#stimmt').onclick = () => urteil(false);
+  e.querySelector('#gelogen').onclick = () => urteil(true);
+}
+
+function neuesGutachten3() {
+  fall3 = neuerFall3();
+  stand.stempel = 3; stand.aufgerollt = true;
+  stand.beweise = { video: { vv: fall3.vv, vn: fall3.vn, s: fall3.s }, kraftBeh: fall3.Fbeh, masse: fall3.m };
+  kopfZeigen();
+  const e = ebene(`<div class="mitte"><h2>Neuer Fall mit neuem Video – dein Werkzeug hast du schon.</h2><div style="font-size:3rem">🔄</div>
+    <div class="knoepfe"><button class="k" id="neu">Zum Gutachten ➜</button></div></div>`, 520);
+  e.querySelector('#neu').onclick = gutachten3Zeigen;
+}
+
+function ergebnis3Zeigen() {
+  const sterne = sterneAus();
+  stand.sterne += sterne; stand.rang = 'Chefgutachter';
+  kopfZeigen();
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#E9DFC9"/>
+    <rect x="0" y="380" width="960" height="90" fill="#8a6a4a"/>
+    <rect x="300" y="250" width="360" height="140" fill="#5a3a22"/>
+    ${person(480, 250, { oberteil: '#222', haare: '#bbb', s: 1.5, arm: 1 })}
+    <rect x="540" y="160" width="60" height="22" rx="4" fill="#8a5a2a" transform="rotate(-25 570 170)"/>
+    ${blase(560, 60, fall3.ehrlich ? 'Die Aussage stimmt!' : 'Gelogen!', 300, true)}
+    <g transform="translate(160,170) rotate(-12)"><circle r="70" fill="none" stroke="#E05050" stroke-width="8"/>
+      <text y="10" text-anchor="middle" font-size="26" font-weight="bold" fill="#E05050">GELÖST</text></g>
+    <text x="480" y="440" text-anchor="middle" font-size="26" font-weight="bold" fill="#fff">Neuer Rang: Chefgutachter ${'★'.repeat(sterne)}</text>
+  `);
+  stand.frei = Math.max(stand.frei, 4);
+  leiste.innerHTML = `<button class="k hell" id="buchL">📓 Notizbuch</button>
+    <span class="lbl">Code fürs Üben: <span class="code">SCHUBS</span></span>
+    <button class="k" id="ueben">🛴 Beweisfahrt ➜</button>`;
+  document.getElementById('buchL').onclick = () => buchZeigen(0, true);
+  // die Stempel, die nach Fall 3 übrig sind, werden in der Beweisfahrt zu Jokern
+  document.getElementById('ueben').onclick = () => { stand.rang = 'Chefgutachter'; stand.fahrt.joker = stand.stempel; beweisfahrtStart(); };
+  eintragen(3, true);
+}
+
+// ================================================================ Aufgaben im Spiel
+
+/* Eine Aufgabe besteht aus Schritten: Zahl eintragen (sofort grün oder rot,
+   💡 zeigt nur die Formel) oder auswählen. Gebraucht von der Beweisfahrt. */
+const zufall = a => a[Math.floor(Math.random() * a.length)];
+const GN = `<i>g</i> = 9,81 ${bruchHTML('N', 'kg')}`;
+const RUNDE = ['Runde auf ganze Zahlen.', 'Runde auf eine Nachkommastelle.'];
+
+function aufgabeZeigen(A, nummer, fertig) {
+  let fehler = 0, i = 0;
+  aufgabeZeigen.aktuell = A;                  // fürs Testskript
+  const e = ebene(`<div class="gutachten"><h2>${nummer ? `Aufgabe ${nummer}: ` : ''}${A.titel} <span style="color:#C9A000">${A.stufe}</span></h2>
+    <div class="akte">${A.chips.map(c => `<span>${c}</span>`).join('')}</div>
+    <h3 class="mitte" style="margin:6px 0">${A.frage}</h3>
+    <div id="schritte"></div><div id="fazit"></div><div id="ende"></div>
+    <div class="knoepfe" id="hilfen">${A.einzeln ? '<button class="k hell" id="einzeln">🪜 Aufgabe in einzelnen Schritten lösen</button>' : ''}
+      ${A.extra ? `<button class="k hell" id="extra">${A.extra.text}</button>` : ''}</div></div>`, 780);
+  const box = e.querySelector('#schritte');
+  // In Schritten: Die Teilschritte ersetzen die eine Rechnung – nur, solange noch nichts gelöst ist
+  if (A.einzeln) e.querySelector('#einzeln').onclick = () => {
+    if (i > 0) return;
+    A.schritte = A.einzeln; box.innerHTML = ''; e.querySelector('#einzeln').remove(); schritt();
+  };
+  if (A.extra) e.querySelector('#extra').onclick = () => { e.remove(); A.extra.aktion(); };
+  const weiter = () => {
+    i++;
+    if (i < A.schritte.length) { schritt(); return; }
+    e.querySelector('#hilfen').innerHTML = '';
+    e.querySelector('#ende').innerHTML = '<div class="knoepfe"><button class="k" id="w">Weiter ➜</button></div>';
+    e.querySelector('#w').onclick = () => { e.remove(); fertig(fehler); };
+    e.querySelector('#w').scrollIntoView({ block: 'end' });
+  };
+  const fazit = t => { if (t) e.querySelector('#fazit').insertAdjacentHTML('beforeend', `<div class="fazit kern">${t}</div>`); };
+  function schritt() {
+    const s = A.schritte[i], d = document.createElement('div');
+    box.append(d);
+    if (s.optionen) {
+      d.innerHTML = `${s.frage ? `<p class="mitte" style="margin:8px 0 0;font-weight:bold">${s.frage}</p>` : ''}
+        <div class="knoepfe">${s.optionen.map((o, j) => `<button class="k hell" data-j="${j}">${o}</button>`).join('')}</div>`;
+      d.querySelectorAll('[data-j]').forEach(b => b.onclick = () => {
+        // 'frei': jede Wahl gilt, die Folgen kommen danach (Gabelung)
+        if (s.frei) A.gewaehlt = +b.dataset.j;
+        else if (+b.dataset.j !== s.richtig) { fehler++; b.disabled = true; wackle(b); return; }
+        d.querySelectorAll('[data-j]').forEach(x => { x.disabled = true; x.style.opacity = x === b ? 1 : .3; });
+        b.classList.add('an');
+        fazit(s.fazit); weiter();
+      });
+      return;
+    }
+    d.innerHTML = `${s.frage ? `<p class="mitte" style="margin:8px 0 2px;font-weight:bold">${s.frage}</p>` : ''}<label style="justify-content:center"><span>${s.label}</span> <input inputmode="decimal"> ${s.einheit}
+      <button class="tippk" title="Tipp">💡</button><span class="tippf" hidden>${s.tipp}</span></label>
+      <p class="mitte" style="margin:0;color:#555;font-size:.95rem">${RUNDE[s.nks]}</p>`;
+    const inp = d.querySelector('input');
+    d.querySelector('.tippk').onclick = ev => { ev.preventDefault(); d.querySelector('.tippf').hidden = false; ev.target.hidden = true; };
+    inp.focus();
+    inp.onchange = () => {
+      if (!inp.value.trim()) return;
+      const x = lies(inp.value);
+      // gerundet richtig: höchstens eine halbe letzte Stelle daneben, oder 1 %
+      if (!isNaN(x) && Math.abs(x - s.soll) <= Math.max(0.6 * 10 ** -s.nks, Math.abs(s.soll) * (s.tol || 0.01))) {
+        inp.className = 'gut'; inp.disabled = true; weiter(); return;
+      }
+      fehler++; inp.className = 'falsch'; wackle(inp);
+    };
+    d.scrollIntoView({ block: 'end' });
+  }
+  schritt();
+}
+
+// ================================================================ Üben: Beweisfahrt
+
+/* Fortsetzung des Gutachters als Fahrspiel: Das Beweisstück muss bis 12 Uhr ins
+   Gericht. Jedes Level ist eine Etappe mit eigener Ankunftszeit (Fahrplan).
+   Zwei Größen, beide aus der Geschichte: die Uhr und der Akku.
+   - Der E-Scooter fährt von selbst, ein Regler stellt das Tempo ein. Schneller
+     ist früher da, jedes Anfahren kostet aber mehr Akku: W = F · Δs. Bergauf
+     kostet die Hubarbeit m · g · Δh, bergab rollt er von selbst schneller.
+     Ohne Reibung kostet gleichbleibendes Tempo in der Ebene nichts. Leer: schieben.
+   - Ladesäule: ●○○ laden oder ●●● schnell laden – nur mit richtiger Rechnung.
+   - Level 1: rote Ampel mit Bremsweg. Level 2: Vorzeichen der Arbeit im Fahren,
+     ohne Anhalten. Level 3: Gabelung Rampe/Umweg, Abfahrt ohne Motor, Bremsweg
+     aus m · g · Δh = F · Δs, Stoppschild. Level 4: Schotter (W negativ), Kran
+     (Hubarbeit). Level 5: Ampel, Auffahrt mit Schwung.
+   - „Spiel beenden“ rechts unten: Urkunde mit den bisher geschafften Etappen.
+     An Ampel, Schranke und Stoppschild eine Frage, danach durch die richtige Antwort.
+   - Fehler kosten Zeit.
+   Solange gerechnet wird, steht die Uhr. Welt in Metern, PX Pixel je Meter,
+   die Strecke hat ein Höhenprofil (Punkte [x, h] in Metern). */
+const PX = 40, BODEN = 400, FRAGE_ABSTAND = 14, LAENGE = 2.2;   // LAENGE: E-Scooter von hinten bis vorn
+const FAHRT = { MOTOR: 120, ANFAHRT: 1.5, AUSROLL: 0.3, MASSE: 80, SPRUNG: 8.5, SCHWERE: 13, SPRUNG_V: 4.5,
+                STRAFE: 3, SCHIEBEN: 5, LADEN: 2500, SCHNELL: 4000, UMWEG: 2, MIN_JE_S: 0.25 };
+stand.fahrt = { sterne: [0, 0, 0, 0, 0], frei: 1, joker: null };   // Joker: die Stempel aus den Fällen
+const uhr = min => `${Math.floor(min / 60)}:${String(Math.floor(min % 60)).padStart(2, '0')}`;
+const kmhZahl = v => z(Math.round(v * 3.6), 0);             // der Regler steht auf ganzen km/h
+
+/* Fragen an Ampel und Schranke: [Frage, richtig, falsch, Fazit] */
+const FRAGEN_STADT = [
+  ['Du hältst den E-Scooter an der Ampel fest. Verrichtest du Arbeit?', 'nein', 'ja', 'Kein Weg – keine Arbeit.'],
+  ['Was ist physikalisch richtig?', 'Bremsen wandelt Energie um.', 'Bremsen vernichtet Energie.', 'Energie geht nicht verloren – sie wird umgewandelt.'],
+  ['Du bremst. Was passiert mit der Energie des E-Scooters?', 'Er gibt Energie ab.', 'Ihm wird Energie zugeführt.', 'Kraft gegen die Fahrtrichtung: Das System gibt Energie ab.'],
+  ['Du trägst den E-Scooter waagrecht über den Platz. Hubarbeit?', 'keine', 'ja', 'Kein Höhenunterschied – keine Hubarbeit.'],
+  ['Du hebst den E-Scooter in den Bus. Wird ihm Energie zugeführt?', 'ja', 'nein', 'Kraft in Wegrichtung: Energie wird zugeführt.'],
+  ['Jemand sagt: „Mit 100 J komme ich 50 m hoch.“ Stimmt das?', 'nein', 'ja', 'Für 50 m Höhe braucht man bei 80 kg fast 40 000 J.'],
+];
+const FRAGEN_PARK = [
+  ['Rampe oder Umweg auf den Hügel – wo braucht der Motor mehr Energie?', 'gleich viel', 'auf der Rampe', 'Die Hubarbeit hängt nicht vom Weg ab.'],
+  ['Bergab wirst du schneller. Woher kommt die Energie?', 'aus der Höhenenergie', 'aus dem Akku', 'Höhenenergie wird zu Bewegungsenergie.'],
+  ['Was spart der flache Umweg?', 'Kraft', 'Energie', 'Weniger Kraft – dafür ein längerer Weg.'],
+];
+const FRAGEN_BERG = [
+  ['Du bremst unten. Wohin geht die Energie?', 'Sie wird zu innerer Energie.', 'Sie verschwindet.', 'Die Bremse wird warm – die Energie bleibt erhalten.'],
+  ['Doppelt so hoch hinab – wie lang wird der Bremsweg?', 'doppelt so lang', 'viermal so lang', 'Doppelte Höhe, doppelte Energie: doppelter Bremsweg.'],
+  ['Doppelt so schnell – wie lang wird der Bremsweg?', 'viermal so lang', 'doppelt so lang', 'Die Bewegungsenergie wächst mit v²: viermal so lang.'],
+];
+const FRAGEN_BAU = [
+  ['Du schiebst die Schubkarre an. Wird ihr Energie zugeführt?', 'ja', 'nein', 'Kraft in Wegrichtung: Energie wird zugeführt.'],
+  ['Der Kran setzt eine Last ab. Wie ist W?', 'negativ', 'positiv', 'Die Last gibt Höhenenergie ab: W ist negativ.'],
+  ['Der Schotter bremst dich. Wie ist W?', 'negativ', 'positiv', 'Kraft gegen die Fahrtrichtung: W ist negativ.'],
+  ['Du hältst einen Zementsack fest. Verrichtest du Arbeit?', 'nein', 'ja', 'Kein Weg – keine Arbeit.'],
+];
+const torFrage = ([frage, richtig, falsch, fazit]) => {
+  const oben = Math.random() < 0.5;                // Springen ist nicht immer richtig
+  return { frage, fazit, oben: oben ? richtig : falsch, unten: oben ? falsch : richtig, richtigOben: oben };
+};
+const gemischt = a => [...a].sort(() => Math.random() - 0.5);
+
+/* Aufgaben an der Ladesäule je Level: normal ●○○, schnell ●●● */
+const LADEN = {
+  stadt: {
+    normal: () => { const F = zufall([100, 120, 150]), s = zufall([15, 20, 25]);
+      return { titel: '⚡ Laden', stufe: '●○○', chips: [`🛴 Motor: ${F} N`, `📏 Δ<i>s</i> = ${s} m`], frage: 'Welche Arbeit verrichtet der Motor dabei?',
+        schritte: [{ label: '<i>W</i> =', einheit: 'J', soll: F * s, nks: 0, tipp: '<i>W</i> = <i>F</i> · Δ<i>s</i>' }] }; },
+    schnell: () => { const F = zufall([100, 120]), s = zufall([5, 10, 15]), m = FAHRT.MASSE, v = Math.sqrt(2 * F * s / m);
+      return { titel: '⚡ Schnellladen', stufe: '●●●', chips: [`⚖ ${m} kg`, `🛴 Motor: ${F} N`, `📏 Δ<i>s</i> = ${s} m`, 'Start aus dem Stand'],
+        frage: 'Wie schnell bist du danach?',
+        schritte: [{ label: '<i>v</i> =', einheit: MS, soll: v, nks: 1, tipp: `<i>F</i> · Δ<i>s</i> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>²` }],
+        einzeln: [
+          { label: '<i>W</i> =', einheit: 'J', soll: F * s, nks: 0, tipp: '<i>W</i> = <i>F</i> · Δ<i>s</i>' },
+          { label: '<i>v</i> =', einheit: MS, soll: v, nks: 1, tipp: `<i>W</i> = <i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>²` }] }; },
+  },
+  park: {
+    normal: () => { const h = zufall([2, 3, 4]), m = FAHRT.MASSE;
+      return { titel: '⚡ Laden', stufe: '●○○', chips: [`⚖ ${m} kg`, `📐 Δ<i>h</i> = ${h} m`, GN], frage: 'Welche Hubarbeit verrichtet der Motor, wenn er dich so hoch bringt?',
+        schritte: [{ label: '<i>W</i> =', einheit: 'J', soll: m * G * h, nks: 0, tipp: '<i>W</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' }] }; },
+    schnell: () => { const W = zufall([3000, 4000, 5000]), m = FAHRT.MASSE;
+      return { titel: '⚡ Schnellladen', stufe: '●●●', chips: [`🔋 ${W} J`, `⚖ ${m} kg`, GN], frage: 'Wie viele Meter hoch kommst du mit dieser Energie?',
+        schritte: [{ label: 'Δ<i>h</i> =', einheit: 'm', soll: W / (m * G), nks: 1, tipp: '<i>W</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' }] }; },
+  },
+  berg: {
+    // die echte Höhe des Bergs aus dem Level – die Säule steht davor
+    // dazu der gefahrene Weg – er wird nicht gebraucht (Hubarbeit hängt nicht vom Weg ab)
+    normal: L => { const h = L.berg.h, m = FAHRT.MASSE;
+      return { titel: '⚡ Laden', stufe: '●○○', chips: [`⚖ ${m} kg`, `📏 Weg bergauf: ${L.berg.weg} m`, `⛰ Δ<i>h</i> = ${h} m`, GN], frage: 'Welche Hubarbeit hat der Motor am Berg verrichtet?',
+        schritte: [{ label: '<i>W</i> =', einheit: 'J', soll: m * G * h, nks: 0, tipp: '<i>W</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' }] }; },
+    schnell: () => { const F = zufall([150, 200]), s = zufall([20, 30]), m = FAHRT.MASSE;
+      return { titel: '⚡ Schnellladen', stufe: '●●●', chips: [`⚖ ${m} kg`, `🛴 Motor: ${F} N`, `📏 Δ<i>s</i> = ${s} m bergauf`, GN],
+        frage: 'Wie viele Meter höher bist du danach?',
+        schritte: [{ label: 'Δ<i>h</i> =', einheit: 'm', soll: F * s / (m * G), nks: 1, tipp: '<i>F</i> · Δ<i>s</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' }],
+        einzeln: [
+          { label: '<i>W</i> =', einheit: 'J', soll: F * s, nks: 0, tipp: '<i>W</i> = <i>F</i> · Δ<i>s</i>' },
+          { label: 'Δ<i>h</i> =', einheit: 'm', soll: F * s / (m * G), nks: 1, tipp: '<i>W</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' }] }; },
+  },
+  bau: {
+    normal: () => { const F = zufall([100, 120, 150]), s = zufall([12, 16, 20]), m = FAHRT.MASSE;
+      return { titel: '⚡ Laden', stufe: '●○○', chips: [`⚖ ${m} kg`, `🛴 Motor: ${F} N`, `📏 Δ<i>s</i> = ${s} m`], frage: 'Welche Arbeit verrichtet der Motor dabei?',
+        schritte: [{ label: '<i>W</i> =', einheit: 'J', soll: F * s, nks: 0, tipp: '<i>W</i> = <i>F</i> · Δ<i>s</i>' }] }; },
+    // Energieänderung aus Fall 3: E_nachher = E_vorher + W
+    schnell: () => { const v0 = zufall([2, 3]), v1 = v0 + 2, m = FAHRT.MASSE, W = 0.5 * m * (v1 * v1 - v0 * v0), s = zufall([8, 10]), F = W / s;
+      return { titel: '⚡ Schnellladen', stufe: '●●●', chips: [`⚖ ${m} kg`, `🛴 du fährst ${v0} ${MS}`, `Motor schiebt: ${F} N`, `📏 Δ<i>s</i> = ${s} m`],
+        frage: 'Wie schnell bist du danach?',
+        schritte: [{ label: '<i>v</i> =', einheit: MS, soll: v1, nks: 1, tipp: '<i>E</i><sub>nachher</sub> = <i>E</i><sub>vorher</sub> + <i>W</i>' }],
+        einzeln: [
+          { frage: '① Wie viel Bewegungsenergie hast du vorher?', label: '<i>E</i><sub>vorher</sub> =', einheit: 'J', soll: 0.5 * m * v0 * v0, nks: 0, tipp: `<i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>²` },
+          { frage: '② Welche Arbeit verrichtet der Motor?', label: '<i>W</i> =', einheit: 'J', soll: W, nks: 0, tipp: '<i>W</i> = <i>F</i> · Δ<i>s</i>' },
+          { frage: '③ Wie viel Bewegungsenergie hast du dann?', label: '<i>E</i><sub>nachher</sub> =', einheit: 'J', soll: 0.5 * m * v1 * v1, nks: 0, tipp: '<i>E</i><sub>nachher</sub> = <i>E</i><sub>vorher</sub> + <i>W</i>' },
+          { frage: '④ Wie schnell bist du dann?', label: '<i>v</i> =', einheit: MS, soll: v1, nks: 1, tipp: `<i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>²` }] }; },
+  },
+  gericht: {
+    // die Gerichtstreppe – die Zahl der Stufen wird nicht gebraucht
+    normal: () => { const m = zufall([12, 15]), h = zufall([3, 4]);
+      return { titel: '⚡ Laden', stufe: '●○○', chips: [`🛴 E-Scooter: ${m} kg`, `🪜 Treppe: ${h * 6} Stufen`, `📐 Δ<i>h</i> = ${h} m`, GN],
+        frage: 'Du trägst den E-Scooter die Gerichtstreppe hoch. Welche Hubarbeit verrichtest du?',
+        schritte: [{ label: '<i>W</i> =', einheit: 'J', soll: m * G * h, nks: 0, tipp: '<i>W</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' }] }; },
+    schnell: () => zufall(['stadt', 'berg', 'bau']) === 'berg' ? LADEN.berg.schnell() : zufall([LADEN.stadt, LADEN.bau]).schnell(),
+  },
+};
+
+function level1() {
+  // Ladesäule erst nach der Ampel – der Akku reicht bei hohem Tempo nicht bis ins Ziel
+  const elemente = [
+    { typ: 'kegel', x: 12 },
+    { typ: 'kegel', x: 40 },
+    { typ: 'ampel', x: 70, F: zufall([200, 250, 300]), ...torFrage(gemischt(FRAGEN_STADT)[0]) },
+    { typ: 'lade', x: 100 },
+    { typ: 'kegel', x: 112 },
+    { typ: 'ziel', x: 122 },
+  ];
+  // die ersten Meter nur Häuser – erst einmal ankommen und das Tempo ausprobieren
+  const RUHE = 22;
+  return { name: 'Altstadt', ziel: 'Marktplatz', kulisse: 'stadt', laenge: 124 + RUHE, akku: 3000,
+           start: 11 * 60, frist: 11 * 60 + 15, sterne: [11 * 60 + 7, 11 * 60 + 10, 11 * 60 + 15],
+           profil: [[0, 0], [400, 0]],
+           neu: [],
+           elemente: elemente.map(e => ({ ...e, x: e.x + RUHE })) };
+}
+
+/* Level 2: Stadtpark – das Vorzeichen der Arbeit, ohne Rechnen und ohne Anhalten.
+   Von oben fallen kurze Situationen; das genannte Ding ist das System.
+   W > 0 (Energie zugeführt): springen, W < 0 (Energie abgegeben): durchfahren. */
+const SITUATIONEN = [
+  ['Ball wird geworfen', true], ['Kiste wird gehoben', true], ['Schlitten wird angeschoben', true],
+  ['Feder wird gespannt', true], ['Pfeil wird abgeschossen', true], ['Koffer wird hochgetragen', true],
+  ['Wagen wird beschleunigt', true], ['Bogen wird gespannt', true],
+  ['Ball wird gefangen', false], ['Kiste wird abgesetzt', false], ['Fahrrad wird gebremst', false],
+  ['Feder entspannt sich', false], ['Last wird abgelassen', false], ['Puck wird gestoppt', false],
+  ['Läufer bremst ab', false], ['Auto bremst', false],
+];
+function level2() {
+  const R = 20, hB = 1.5;
+  // vier mit W > 0, vier mit W < 0, gemischt
+  const plus = gemischt(SITUATIONEN.filter(x => x[1])).slice(0, 4), minus = gemischt(SITUATIONEN.filter(x => !x[1])).slice(0, 4);
+  const liste = gemischt([...plus, ...minus]);
+  const start = 70 + R, abstand = 35;          // Abstand = Zeit zum Nachdenken
+  return {
+    name: 'Stadtpark', ziel: 'Parkausgang', kulisse: 'park', laenge: start + liste.length * abstand + 10, akku: 6500, uhr: 0.14,
+    start: 11 * 60 + 15, frist: 11 * 60 + 30, sterne: [11 * 60 + 23, 11 * 60 + 26, 11 * 60 + 30],
+    profil: [[0, 0], [30 + R, 0], [36 + R, hB], [44 + R, hB], [50 + R, 0], [400, 0]],
+    neu: [
+      'Hier zählt das Vorzeichen der Arbeit.',
+      'Energie wird zugeführt: <i>W</i> > 0 → <b>⤒ springen</b>.',
+      'Energie wird abgegeben: <i>W</i> < 0 → <b>durchfahren</b>.',
+      'Über die Enten springst du mit <b>⤒ Springen</b>.'],
+    elemente: [
+      { typ: 'ente', x: 12 + R },
+      { typ: 'ente', x: 22 + R },
+      ...liste.map(([text, plus], i) => ({ typ: 'vz', x: start + i * abstand, text, richtigOben: plus, oben: 'W > 0', unten: 'W < 0' })),
+      { typ: 'ziel', x: start + liste.length * abstand + 6 },
+    ],
+  };
+}
+
+/* Level 3: Bergstraße – Steinfeld, an der Gabelung Rampe oder Umweg hinauf
+   (gleiche Hubarbeit, andere Kraft), oben die Ladesäule, dann ohne Motor
+   steil bergab und vor dem Stoppschild bremsen: m · g · Δh = F · Δs. */
+function level3() {
+  const h = zufall([4, 5, 6]), F = zufall([300, 400]), sR = zufall([20, 25, 30]), sU = 40, Fmax = 150;
+  const fussBerg = 58, oben = fussBerg + sU, kante = oben + 20, fuss = kante + 14, stopp = fuss + 20;
+  return {
+    name: 'Bergstraße', ziel: 'Ortseingang', kulisse: 'berg', laenge: stopp + 36, akku: 7000,
+    start: 11 * 60 + 30, frist: 11 * 60 + 45, sterne: [11 * 60 + 39, 11 * 60 + 42, 11 * 60 + 45],
+    profil: [[0, 0], [fussBerg, 0], [oben, h], [kante, h], [fuss, 0], [stopp + 80, 0]],
+    berg: { h, F, kante, fuss, weg: sU },
+    gabel: { x: fussBerg - 8, hH: h, sR, sU, Fmax, F: FAHRT.MASSE * G * h / sR, fuss: fussBerg, oben },
+    neu: [
+      'Über die Steine springst du mit <b>⤒ Springen</b>.',
+      'Bergab fährst du ohne Motor. Bremsen kannst du erst unten vor dem Stoppschild.'],
+    elemente: [
+      // Steinfeld am Anfang: Sprung auf Sprung, bei jedem Tempo machbar
+      ...[12, 21, 30, 39].map(x => ({ typ: 'stein', x })),
+      { typ: 'gabel', x: fussBerg - 8 },
+      { typ: 'lade', x: oben + 6 },
+      { typ: 'gipfel', x: kante },
+      { typ: 'stopp', x: stopp, F, ...torFrage(gemischt([...FRAGEN_BERG, ...FRAGEN_PARK])[0]) },
+      { typ: 'ziel', x: stopp + 32 },
+    ],
+  };
+}
+/* Level 4: Baustelle – das Vorzeichen beim Rechnen (Fall 3). Schotter bremst bei
+   ausgeschaltetem Motor: E_nachher = E_vorher + W mit W < 0, ein Blitzer misst
+   nach. Der Kran hebt dich samt Aktenkiste aufs Gerüst (Hubarbeit, W > 0).
+   Kein Tor, an der Säule nur normales Laden.
+   Kürzere Etappe: Die Uhr läuft langsamer, damit es bis 12 Uhr aufgeht. */
+function level4() {
+  const W = 106, hK = zufall([3, 4]), mK = zufall([10, 15, 20]);
+  return {
+    name: 'Baustelle', ziel: 'Baustellenende', kulisse: 'bau', laenge: W + 42, akku: 6000, uhr: 0.17, nurLaden: true,
+    start: 11 * 60 + 45, frist: 11 * 60 + 53, sterne: [11 * 60 + 50, 11 * 60 + 51, 11 * 60 + 53], strafe: 2,
+    profil: [[0, 0], [W, 0], [W, hK], [W + 20, hK], [W + 30, 0], [W + 100, 0]],
+    neu: ['Über die Baken springst du mit <b>⤒ Springen</b>.'],
+    elemente: [
+      { typ: 'bake', x: 14 }, { typ: 'bake', x: 23 },
+      { typ: 'schotter', x: 42, s: zufall([8, 10]) },
+      { typ: 'lade', x: 66 },
+      { typ: 'bake', x: 80 }, { typ: 'bake', x: 89 },
+      { typ: 'kran', x: W, h: hK, mK },
+      { typ: 'bake', x: W + 12 },
+      { typ: 'ziel', x: W + 40 },
+    ],
+  };
+}
+/* Level 5: Gerichtshügel – das Finale. Ampel wie in Level 1, danach die Säule,
+   dann die Auffahrt zum Gericht ohne Motor: genug Schwung holen, ½ · m · v² = m · g · Δh. */
+function level5() {
+  const fuss = 124, h = zufall([1.2, 1.6, 2]), oben = fuss + 8;
+  return {
+    name: 'Gerichtshügel', ziel: 'Gericht', kulisse: 'stadt', laden: 'gericht', laenge: oben + 4, akku: 5000, uhr: 0.15,
+    start: 11 * 60 + 53, frist: 12 * 60, sterne: [11 * 60 + 57, 11 * 60 + 59, 12 * 60], strafe: 2,
+    profil: [[0, 0], [fuss, 0], [oben, h], [oben + 60, h]],
+    neu: ['Über die Hütchen springst du mit <b>⤒ Springen</b>.'],
+    elemente: [
+      { typ: 'kegel', x: 10 },
+      { typ: 'ampel', x: 46, F: zufall([200, 250, 300]), ...torFrage(gemischt([...FRAGEN_STADT, ...FRAGEN_PARK, ...FRAGEN_BERG, ...FRAGEN_BAU])[0]) },
+      { typ: 'lade', x: 76 },
+      { typ: 'kegel', x: 86 }, { typ: 'kegel', x: 94 },
+      { typ: 'auffahrt', x: fuss, h, oben },
+      { typ: 'gericht', x: oben + 3 },
+      { typ: 'ziel', x: oben + 1.5 },
+    ],
+  };
+}
+const LEVEL = [level1, level2, level3, level4, level5];
+const LEVELCODE = [null, 'MARKT', 'PARK', 'BERG', 'KRAN'];         // Code für Level n+1 – steht am Ende von Level n
+
+const endeKnopf = an => document.getElementById('spiel').classList.toggle('fahrt', an);
+document.getElementById('spielende').onclick = () => {
+  if (buehne.querySelector('#endefrage')) return;
+  const S = levelFahren.lauf === lauf ? levelFahren.S : null, lief = S && !S.pause && !S.fertig;
+  if (lief) S.pause = true;
+  const e = ebene(`<div class="mitte" id="endefrage"><h2>Spiel beenden und die Urkunde holen?</h2>
+    <div class="knoepfe"><button class="k" id="ja">🏆 Zur Urkunde</button><button class="k hell" id="nein">Weiterfahren</button></div></div>`, 520);
+  e.querySelector('#ja').onclick = urkundeZeigen;
+  e.querySelector('#nein').onclick = () => { e.remove(); if (lief) levelFahren.weiter(); };
+};
+
+/* Urkunde: alle Etappen mit ihren Sternen, nicht gefahrene mit Strich.
+   Für Schnelle: ★★★ in allen Etappen gibt das goldene Siegel. */
+function urkundeZeigen() {
+  lauf++; endeKnopf(false); document.onkeydown = document.onkeyup = null;
+  stand.stempel = stand.fahrt.joker ?? 3; kopfZeigen();
+  const st = stand.fahrt.sterne, summe = st.reduce((a, b) => a + b, 0), geschafft = st.filter(x => x > 0).length;
+  const alle = st[LEVEL.length - 1] > 0 && geschafft === LEVEL.length, gold = summe === 3 * LEVEL.length;
+  const satz = gold ? 'Alle Etappen mit ★★★ – eine Profi-Fahrt!'
+    : alle ? 'Das Beweisstück ist pünktlich im Gericht.'
+    : geschafft ? `${geschafft} von ${LEVEL.length} Etappen geschafft.` : 'Noch keine Etappe geschafft.';
+  const zeilen = LEVEL.map((f, i) => { const y = 196 + i * 34;
+    return `<text x="300" y="${y}" font-size="21" ${SCHRIFT}>Level ${i + 1}: ${f().name}</text>
+      <text x="660" y="${y}" text-anchor="end" font-size="23" fill="#C9A000" ${SCHRIFT}>${st[i] ? '★'.repeat(st[i]) + '☆'.repeat(3 - st[i]) : '–'}</text>`; }).join('');
+  const siegel = gold ? ['#C9A000', '★', 'GOLD'] : alle ? ['#C0392B', '§', 'GERICHT'] : ['#2E75B6', '🛴', 'FAHRT'];
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#E9DFC9"/><rect x="0" y="380" width="960" height="90" fill="#B58B5E"/>
+    <rect x="236" y="22" width="488" height="430" rx="6" fill="#FFF8E7" stroke="#C9A000" stroke-width="6"/>
+    <rect x="248" y="34" width="464" height="406" rx="4" fill="none" stroke="#C9A000" stroke-width="2"/>
+    <text x="480" y="92" text-anchor="middle" font-size="44" font-weight="bold" letter-spacing="6" ${SCHRIFT}>URKUNDE</text>
+    <text x="480" y="128" text-anchor="middle" font-size="22" ${SCHRIFT}>Beweisfahrt zum Gericht</text>
+    <line x1="300" y1="148" x2="660" y2="148" stroke="#C9A000" stroke-width="2"/>
+    ${zeilen}
+    <text x="300" y="${196 + LEVEL.length * 34 + 6}" font-size="21" font-weight="bold" ${SCHRIFT}>Zusammen</text>
+    <text x="660" y="${196 + LEVEL.length * 34 + 6}" text-anchor="end" font-size="21" font-weight="bold" ${SCHRIFT}>${summe} von ${3 * LEVEL.length} ★</text>
+    ${zeile(satz, 412, 20, '#222')}
+    ${alle && !gold ? zeile('Für Profis: ★★★ überall gibt das goldene Siegel.', 438, 15, '#777') : ''}
+    <g transform="translate(664,96) rotate(-12)"><circle r="44" fill="${siegel[0]}"/><circle r="36" fill="none" stroke="#fff" stroke-width="2"/>
+      <text y="6" text-anchor="middle" font-size="28" fill="#fff" ${SCHRIFT}>${siegel[1]}</text>
+      <text y="26" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff" ${SCHRIFT}>${siegel[2]}</text></g>`);
+  leiste.innerHTML = `<span style="color:#fff;font-weight:bold;font-size:1.35rem">🏁 Spiel beendet</span><button class="k hell" id="zurueck">🛴 Zurück zur Fahrt</button>`;
+  leiste.querySelector('#zurueck').onclick = beweisfahrtStart;
+}
+
+function beweisfahrtStart() {
+  lauf++; endeKnopf(true); document.onkeydown = document.onkeyup = null;
+  stand.beweise = {};
+  if (stand.fahrt.joker == null) stand.fahrt.joker = 3;          // Einstieg mit Code: drei Joker
+  stand.stempel = stand.fahrt.joker;
+  kopfZeigen();
+  bueroSzene('Das Beweisstück muss\nbis 12 Uhr ins Gericht!', 'BEWEIS');
+  leiste.innerHTML = `${LEVEL.map((f, i) => { const L = f(), offen = i < stand.fahrt.frei;
+      return `<button class="k${offen ? '' : ' hell'}" data-l="${i}">${offen ? '🛴' : '🔒'} ${i + 1} ${L.name} ${'★'.repeat(stand.fahrt.sterne[i])}</button>`; }).join('')}`;
+  leiste.querySelectorAll('[data-l]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.l;
+    if (i < stand.fahrt.frei) { levelFahren(i); return; }
+    // gesperrt: Code des Levels eingeben (nach dem Neuladen)
+    const e = ebene(`<div class="mitte"><h2>🔑 Code für Level ${i + 1}</h2>
+      <input id="c" autocomplete="off" style="font:inherit;font-size:1.3rem;width:9em;text-align:center;text-transform:uppercase;padding:6px;border:2px solid #9a8f73;border-radius:8px">
+      <div class="knoepfe"><button class="k" id="ok">Öffnen</button><button class="k hell" id="zu">Zurück</button></div></div>`, 420);
+    const c = e.querySelector('#c'); c.focus();
+    e.querySelector('#zu').onclick = () => e.remove();
+    e.querySelector('#ok').onclick = () => {
+      if (c.value.trim().toUpperCase() !== LEVELCODE[i]) { wackle(c); return; }
+      stand.fahrt.frei = Math.max(stand.fahrt.frei, i + 1); levelFahren(i);
+    };
+    c.onkeydown = ev => { if (ev.key === 'Enter') e.querySelector('#ok').click(); };
+  });
+}
+
+function levelFahren(nr) {
+  lauf++;
+  const L = levelFahren.L = LEVEL[nr](), meinLauf = levelFahren.lauf = lauf;      // L und S auch fürs Testskript
+  stand.stempel = stand.fahrt.joker; endeKnopf(true);
+  const S = levelFahren.S = { x: 7, y: 0, vy: 0, v: 0, akku: L.akku, minuten: 0, fehler: 0, zielV: 5, yMax: 0, bremse: false,
+    pause: true, anhalten: false, halt: false, ampel: null, vollbremsung: null, fertig: false, schotter: null, auffahrt: null, schwebe: null };
+  kopfZeigen();
+  // ---------------------------------------------------------- Höhenprofil
+  let profil = L.profil;
+  const hBoden = x => {
+    for (let k = 1; k < profil.length; k++) {
+      const [x0, h0] = profil[k - 1], [x1, h1] = profil[k];
+      if (x <= x1) return x <= x0 ? h0 : h0 + (h1 - h0) * (x - x0) / (x1 - x0);
+    }
+    return profil[profil.length - 1][1];
+  };
+  // ---------------------------------------------------------- Welt zeichnen
+  const kulisse = L.kulisse === 'berg'
+    ? Array.from({ length: Math.ceil(L.laenge / 14) + 2 }, (_, i) => { const x = i * 14 * PX, h = 170 + (i * 47) % 90;
+        return `<polygon points="${x - 260},${BODEN} ${x},${BODEN - h - 60} ${x + 260},${BODEN}" fill="${['#9fb3c8', '#8aa1b8', '#a9bccf'][i % 3]}"/>
+          <polygon points="${x - 46},${BODEN - h - 60 + 46 * (h + 60) / 260} ${x},${BODEN - h - 60} ${x + 46},${BODEN - h - 60 + 46 * (h + 60) / 260}" fill="#fff"/>`; }).join('')
+      + Array.from({ length: Math.ceil(L.laenge / 5) + 2 }, (_, i) => { const x = i * 5 * PX + 90, g = 60 + (i * 23) % 40, b = BODEN - hBoden(i * 5 + 90 / PX) * PX;
+        return `<rect x="${x - 5}" y="${b - 20}" width="10" height="20" fill="#6a4a2a"/>
+          <polygon points="${x - 24},${b - 18} ${x},${b - 18 - g} ${x + 24},${b - 18}" fill="${['#2f6b3a', '#3a7d45'][i % 2]}"/>`; }).join('')
+    : L.kulisse === 'bau'
+    ? Array.from({ length: Math.ceil(L.laenge / 12) + 1 }, (_, i) => { const x = i * 12 * PX + 40, h = 150 + (i * 41) % 100;
+        return `<rect x="${x}" y="${BODEN - 30 - h}" width="${8 * PX}" height="${h}" fill="#b9b4ab" stroke="#8a857c" stroke-width="2"/>
+          ${[0, 1, 2].map(j => `<rect x="${x + 24 + j * 100}" y="${BODEN - h + 4}" width="56" height="44" fill="#6d6a64"/>`).join('')}
+          <rect x="${x - 6}" y="${BODEN - 36 - h}" width="${8 * PX + 12}" height="8" fill="#8a857c"/>`; }).join('')
+      + Array.from({ length: Math.ceil(L.laenge / 8) + 1 }, (_, i) => `<rect x="${i * 8 * PX}" y="${BODEN - 54}" width="${8 * PX - 6}" height="40" fill="none" stroke="#c9c2b2" stroke-width="2"/>
+          <line x1="${i * 8 * PX}" y1="${BODEN - 54}" x2="${i * 8 * PX + 8 * PX - 6}" y2="${BODEN - 14}" stroke="#c9c2b2" stroke-width="1.5"/>`).join('')
+    : L.kulisse === 'park'
+    ? Array.from({ length: Math.ceil(L.laenge / 6) + 2 }, (_, i) => { const x = i * 6 * PX + 60, h = 90 + (i * 29) % 60;
+        return `<rect x="${x - 8}" y="${BODEN - 40 - h}" width="16" height="${h}" fill="#7a5a3a"/>
+          <circle cx="${x}" cy="${BODEN - 50 - h}" r="${46 + (i * 13) % 20}" fill="${['#5B9E47', '#6DB352', '#4E8A3D'][i % 3]}"/>`; }).join('')
+    : Array.from({ length: Math.ceil(L.laenge / 9) + 1 }, (_, i) => {
+        const x = i * 9 * PX + 30, h = 120 + (i * 37) % 90, f = ['#E8C9A0', '#D9B48A', '#EAD7B7', '#C9A27A'][i % 4];
+        return `<rect x="${x}" y="${BODEN - 40 - h}" width="${7 * PX}" height="${h}" fill="${f}" stroke="#8a6a3a" stroke-width="2"/>
+          <polygon points="${x - 8},${BODEN - 40 - h} ${x + 3.5 * PX},${BODEN - 80 - h} ${x + 7 * PX + 8},${BODEN - 40 - h}" fill="#B5523B"/>
+          ${[0, 1, 2].map(j => `<rect x="${x + 20 + j * 85}" y="${BODEN - 20 - h}" width="40" height="34" fill="#9fd3f5" stroke="#8a6a3a" stroke-width="2"/>`).join('')}`; }).join('');
+  const bodenSVG = () => {
+    const pkt = profil.map(([x, h]) => `${x * PX},${BODEN - h * PX}`).join(' ');
+    const ende = profil[profil.length - 1][0] * PX;
+    return `<polygon points="-200,${BODEN} ${pkt} ${ende},520 -200,520" fill="${{ park: '#8bbf6a', berg: '#a3b86c', bau: '#c9b79a' }[L.kulisse] || '#bdb6a5'}"/>
+      <polyline points="-200,${BODEN} ${pkt}" fill="none" stroke="#6d6d6d" stroke-width="16" stroke-linejoin="round"/>`;
+  };
+  const elementSVG = el => {
+    const x = el.x * PX, b = BODEN - hBoden(el.x) * PX;
+    if (el.typ === 'lade') return `<rect x="${x - 14}" y="${b - 110}" width="28" height="110" rx="6" fill="#3BA34B"/>
+      <rect x="${x - 9}" y="${b - 100}" width="18" height="26" rx="3" fill="#dff2d8"/><text x="${x}" y="${b - 40}" text-anchor="middle" font-size="26">⚡</text>
+      <text x="${x}" y="${b - 120}" text-anchor="middle" font-size="16" font-weight="bold" fill="#1f6b2b" ${SCHRIFT}>Ladesäule</text>`;
+    if (el.typ === 'kegel') return `<polygon points="${x - 14},${b} ${x},${b - 36} ${x + 14},${b}" fill="#F07D19"/><rect x="${x - 9}" y="${b - 20}" width="18" height="6" fill="#fff"/>`;
+    if (el.typ === 'bake') return `<rect x="${x - 3}" y="${b - 12}" width="6" height="12" fill="#555"/><rect x="${x - 16}" y="${b - 4}" width="32" height="6" rx="2" fill="#333"/>
+      <rect x="${x - 10}" y="${b - 44}" width="20" height="34" rx="3" fill="#fff" stroke="#C0392B" stroke-width="2"/>
+      ${[0, 1, 2].map(k => `<polygon points="${x - 10},${b - 40 + k * 11} ${x + 10},${b - 48 + k * 11} ${x + 10},${b - 42 + k * 11} ${x - 10},${b - 34 + k * 11}" fill="#C0392B"/>`).join('')}`;
+    if (el.typ === 'schotter') { const w = el.s * PX;
+      return `<rect x="${x}" y="${b - 9}" width="${w}" height="16" rx="4" fill="#9b8b70"/>
+        ${Array.from({ length: Math.floor(w / 9) }, (_, k) => `<circle cx="${x + 5 + k * 9}" cy="${b - 4 + (k % 3) * 3}" r="${2.5 + (k % 2)}" fill="#6f6250"/>`).join('')}
+        <rect x="${x - 3}" y="${b - 110}" width="6" height="110" fill="#555"/>
+        <rect x="${x - 60}" y="${b - 146}" width="120" height="36" rx="6" fill="#FFC000" stroke="#222" stroke-width="2"/>
+        <text x="${x}" y="${b - 122}" text-anchor="middle" font-size="16" font-weight="bold" ${SCHRIFT}>🪨 Schotter</text>
+        <rect x="${x + w - 3}" y="${b - 90}" width="6" height="90" fill="#555"/>
+        <rect x="${x + w - 16}" y="${b - 118}" width="32" height="30" rx="4" fill="#ddd" stroke="#555" stroke-width="2"/>
+        <circle cx="${x + w - 8}" cy="${b - 103}" r="8" fill="#333"/><circle cx="${x + w - 8}" cy="${b - 103}" r="3" fill="#9fd3f5"/>`; }
+    if (el.typ === 'kran') { const top = 66, hp = el.h * PX;
+      return `${Array.from({ length: 6 }, (_, k) => `<line x1="${x + k * 4 * PX}" y1="${BODEN}" x2="${x + k * 4 * PX}" y2="${BODEN - hp}" stroke="#8a6a3a" stroke-width="5"/>`).join('')}
+        ${Array.from({ length: 5 }, (_, k) => `<line x1="${x + k * 4 * PX}" y1="${BODEN}" x2="${x + (k + 1) * 4 * PX}" y2="${BODEN - hp}" stroke="#8a6a3a" stroke-width="3"/>`).join('')}
+        <rect x="${x - 5 * PX - 12}" y="${top}" width="24" height="${BODEN - top}" fill="none" stroke="#E0A800" stroke-width="5"/>
+        ${Array.from({ length: Math.floor((BODEN - top) / 30) }, (_, k) => `<line x1="${x - 5 * PX - 12}" y1="${top + k * 30}" x2="${x - 5 * PX + 12}" y2="${top + k * 30 + 30}" stroke="#E0A800" stroke-width="3"/>`).join('')}
+        <rect x="${x - 9 * PX}" y="${top - 8}" width="${15 * PX}" height="14" fill="#E0A800"/>
+        <rect x="${x - 9 * PX}" y="${top + 6}" width="60" height="40" fill="#777"/>
+        <rect x="${x - 5 * PX - 22}" y="${top + 6}" width="44" height="34" fill="#E0A800"/><rect x="${x - 5 * PX - 14}" y="${top + 12}" width="28" height="18" fill="#9fd3f5"/>`; }
+    if (el.typ === 'gericht') { const w = 9 * PX, top = b - 250;
+      return `<rect x="${x}" y="${top + 70}" width="${w}" height="180" fill="#EDE6D6" stroke="#8a7f6a" stroke-width="3"/>
+        <polygon points="${x - 14},${top + 72} ${x + w / 2},${top} ${x + w + 14},${top + 72}" fill="#EDE6D6" stroke="#8a7f6a" stroke-width="3"/>
+        <text x="${x + w / 2}" y="${top + 56}" text-anchor="middle" font-size="22" font-weight="bold" letter-spacing="3" ${SCHRIFT}>GERICHT</text>
+        ${[0, 1, 2, 3, 4].map(k => `<rect x="${x + 22 + k * 70}" y="${top + 86}" width="22" height="150" fill="#fff" stroke="#8a7f6a" stroke-width="2"/>`).join('')}
+        <rect x="${x - 8}" y="${b - 14}" width="${w + 16}" height="14" fill="#cfc6b2"/>`; }
+    if (el.typ === 'auffahrt') return `<rect x="${x - 3}" y="${b - 110}" width="6" height="110" fill="#555"/>
+      <rect x="${x - 56}" y="${b - 146}" width="112" height="36" rx="6" fill="#fff" stroke="#D9342B" stroke-width="3"/>
+      <text x="${x}" y="${b - 122}" text-anchor="middle" font-size="16" font-weight="bold" ${SCHRIFT}>⛔ Motor aus</text>`;
+    if (el.typ === 'stein') return `<path d="M${x - 18},${b} Q${x - 20},${b - 20} ${x - 4},${b - 26} Q${x + 14},${b - 30} ${x + 18},${b - 10} L${x + 18},${b} Z" fill="#8c8c8c" stroke="#555" stroke-width="2"/>
+      <path d="M${x - 8},${b - 18} Q${x},${b - 24} ${x + 8},${b - 20}" fill="none" stroke="#bbb" stroke-width="2"/>`;
+    if (el.typ === 'gipfel') return `<rect x="${x - 152}" y="${b - 120}" width="6" height="120" fill="#555"/>
+      <rect x="${x - 210}" y="${b - 124}" width="122" height="34" rx="8" fill="#fff" stroke="#2E75B6" stroke-width="3"/>
+      <text x="${x - 149}" y="${b - 101}" text-anchor="middle" font-size="15" font-weight="bold" ${SCHRIFT}>⛰ Aussicht</text>
+      <polygon points="${x + 10},${b - 70} ${x + 60},${b - 70} ${x + 35},${b - 112}" fill="#fff" stroke="#E05050" stroke-width="5"/>
+      <rect x="${x + 33}" y="${b - 70}" width="4" height="70" fill="#555"/>
+      <text x="${x + 35}" y="${b - 77}" text-anchor="middle" font-size="16" font-weight="bold" ${SCHRIFT}>%</text>`;
+    if (el.typ === 'ente') return `<g transform="translate(${x},${b})"><ellipse cx="0" cy="-14" rx="18" ry="12" fill="#fff" stroke="#999" stroke-width="2"/>
+      <circle cx="12" cy="-30" r="9" fill="#3B7A3B"/><polygon points="20,-31 30,-28 20,-25" fill="#F0A020"/><circle cx="14" cy="-32" r="2" fill="#222"/></g>`;
+    const tor = (t, sichtbar) => {
+      const schild = (y, text, zeichen) => { const w = zeilenBreite(`${zeichen} ${text}`, 15) + 30;
+        return `<rect x="${t + 52}" y="${y}" width="${w}" height="34" rx="8" fill="#fff" stroke="#2E75B6" stroke-width="3"/>
+          <text x="${t + 52 + w / 2}" y="${y + 23}" text-anchor="middle" font-size="15" font-weight="bold" ${SCHRIFT}>${zeichen} ${text}</text>`; };
+      const tb = BODEN - hBoden(t / PX) * PX;
+      return `<g data-tor="${el.x}" opacity="${sichtbar ? 1 : 0}">
+        <rect x="${t - 36}" y="${tb - 268}" width="72" height="100" rx="30" fill="none" stroke="#2E75B6" stroke-width="7" stroke-dasharray="14 8"/>
+        ${schild(tb - 235, el.oben, '⤒ springen:')}
+        <rect x="${t - 44}" y="${tb - 150}" width="10" height="150" fill="#555"/><rect x="${t + 34}" y="${tb - 150}" width="10" height="150" fill="#555"/>
+        <rect x="${t - 44}" y="${tb - 156}" width="88" height="10" fill="#555"/>
+        ${schild(tb - 110, el.unten, '→ durchfahren:')}</g>`;
+    };
+    if (el.typ === 'ampel') {
+      // Haltelinie mit Meterstrichen, Ampel, und FRAGE_ABSTAND dahinter das Tor – erst bei Grün sichtbar
+      return `<rect x="${x - 3}" y="${b - 4}" width="8" height="34" fill="#fff"/>
+        ${Array.from({ length: 16 }, (_, k) => k ? `<line x1="${x - k * PX}" y1="${b + 6}" x2="${x - k * PX}" y2="${b + 18}" stroke="#fff" stroke-width="2"/>
+          <text x="${x - k * PX}" y="${b + 34}" text-anchor="middle" font-size="13" fill="#fff" ${SCHRIFT}>${k}</text>` : '').join('')}
+        <rect x="${x + 20}" y="${b - 160}" width="10" height="160" fill="#333"/><rect x="${x + 6}" y="${b - 210}" width="38" height="70" rx="8" fill="#222"/>
+        <circle data-rot="${el.x}" cx="${x + 25}" cy="${b - 192}" r="12" fill="#E05050"/><circle data-gruen="${el.x}" cx="${x + 25}" cy="${b - 160}" r="12" fill="#444"/>
+        ${tor(x + FRAGE_ABSTAND * PX)}`;
+    }
+    if (el.typ === 'stopp') {
+      // Haltelinie mit Meterstrichen und Stoppschild, FRAGE_ABSTAND dahinter das Tor
+      const acht = Array.from({ length: 8 }, (_, k) => { const w = (k + 0.5) * Math.PI / 4;
+        return `${x + 25 + 26 * Math.cos(w)},${b - 150 + 26 * Math.sin(w)}`; }).join(' ');
+      return `<rect x="${x - 3}" y="${b - 4}" width="8" height="34" fill="#fff"/>
+        ${Array.from({ length: 21 }, (_, k) => k ? `<line x1="${x - k * PX}" y1="${b + 6}" x2="${x - k * PX}" y2="${b + 18}" stroke="#fff" stroke-width="2"/>
+          <text x="${x - k * PX}" y="${b + 34}" text-anchor="middle" font-size="13" fill="#fff" ${SCHRIFT}>${k}</text>` : '').join('')}
+        <rect x="${x + 22}" y="${b - 130}" width="6" height="130" fill="#555"/>
+        <polygon points="${acht}" fill="#D9342B" stroke="#fff" stroke-width="3"/>
+        <text x="${x + 25}" y="${b - 144}" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff" ${SCHRIFT}>STOP</text>
+        ${tor(x + FRAGE_ABSTAND * PX)}`;
+    }
+    if (el.typ === 'vz') return `<g data-tor="${el.x}">
+        <rect x="${x - 40}" y="${b - 268}" width="80" height="100" rx="30" fill="rgba(255,255,255,.55)" stroke="#2E75B6" stroke-width="7" stroke-dasharray="14 8"/>
+        <text x="${x}" y="${b - 211}" text-anchor="middle" font-size="19" font-weight="bold" fill="#2E75B6" ${SCHRIFT}>W &gt; 0</text>
+        <rect x="${x - 44}" y="${b - 150}" width="10" height="150" fill="#555"/><rect x="${x + 34}" y="${b - 150}" width="10" height="150" fill="#555"/>
+        <rect x="${x - 44}" y="${b - 156}" width="88" height="10" fill="#555"/>
+        <rect x="${x - 32}" y="${b - 140}" width="64" height="30" rx="6" fill="#fff" stroke="#2E75B6" stroke-width="2"/>
+        <text x="${x}" y="${b - 119}" text-anchor="middle" font-size="19" font-weight="bold" fill="#2E75B6" ${SCHRIFT}>W &lt; 0</text></g>`;
+    if (el.typ === 'schranke') return `<rect x="${x + 6}" y="${b - 70}" width="14" height="70" fill="#555"/>
+      <g data-balken="${el.x}"><rect x="${x - 120}" y="${b - 70}" width="140" height="12" fill="#fff" stroke="#E05050" stroke-width="3"/>
+        ${[0, 1, 2, 3].map(k => `<rect x="${x - 112 + k * 34}" y="${b - 70}" width="16" height="12" fill="#E05050"/>`).join('')}</g>
+      ${tor(x + FRAGE_ABSTAND * PX)}`;
+    if (el.typ === 'gabel') return `<rect x="${x - 4}" y="${b - 150}" width="8" height="150" fill="#555"/>
+      <polygon points="${x + 4},${b - 150} ${x + 150},${b - 150} ${x + 170},${b - 132} ${x + 150},${b - 114} ${x + 4},${b - 114}" fill="#fff" stroke="#2E75B6" stroke-width="3"/>
+      <text x="${x + 80}" y="${b - 126}" text-anchor="middle" font-size="16" font-weight="bold" ${SCHRIFT}>↗ Rampe</text>
+      <polygon points="${x + 4},${b - 104} ${x + 150},${b - 104} ${x + 170},${b - 86} ${x + 150},${b - 68} ${x + 4},${b - 68}" fill="#fff" stroke="#2E75B6" stroke-width="3"/>
+      <text x="${x + 80}" y="${b - 80}" text-anchor="middle" font-size="16" font-weight="bold" ${SCHRIFT}>↪ Umweg</text>`;
+    if (el.typ === 'ziel') return `<rect x="${x}" y="${b - 200}" width="10" height="200" fill="#555"/>
+      <rect x="${x + 10}" y="${b - 200}" width="180" height="50" fill="#fff" stroke="#222" stroke-width="3"/>
+      <text x="${x + 100}" y="${b - 168}" text-anchor="middle" font-size="20" font-weight="bold" ${SCHRIFT}>🏁 ${L.ziel}</text>`;
+    return '';
+  };
+  buehne.innerHTML = SVG(`
+    <rect width="960" height="470" fill="#cfe6f5"/>
+    <g id="welt">${kulisse}<g id="boden">${bodenSVG()}</g>
+      ${L.kulisse === 'park' ? `<rect x="${(32 + 20) * PX}" y="${BODEN - 6}" width="${16 * PX}" height="30" fill="#5DADE2"/>` : ''}
+      <g id="elemente">${L.elemente.map(elementSVG).join('')}</g>
+      <g id="fahrer"></g></g>
+    <g id="situation"></g><g id="hud"></g><g id="banner"></g><g id="meldung"></g>
+  `);
+  const svg = buehne.querySelector('svg'), welt = svg.querySelector('#welt'), fahrer = svg.querySelector('#fahrer'), hud = svg.querySelector('#hud');
+  let meldungNr = 0;
+  // ort: Mitte oben, oder unter dem Fahrer (Stadtpark – dort kommt rechts schon das nächste Tor)
+  const meldung = (t, farbe = '#FFC000', ort = { x: 480, y: 162 }) => {
+    const g = svg.querySelector('#meldung');
+    const w = Math.max(260, zeilenBreite(t, 22) + 48), cx = Math.max(w / 2 + 8, ort.x);
+    g.innerHTML = t ? `<rect x="${cx - w / 2}" y="${ort.y}" width="${w}" height="44" rx="12" fill="${farbe}"/>${zeile(t, ort.y + 30, 22, farbe === '#FFC000' ? '#222' : '#fff', cx)}` : '';
+    const n = String(++meldungNr); g.dataset.n = n;
+    if (t) spaeter(() => { if (g.dataset.n === n) g.innerHTML = ''; }, ort.dauer || 2600);
+  };
+  const jetzt = () => L.start + S.minuten;
+  const hudZeigen = () => {
+    const anteil = Math.max(0, S.akku / L.akku), farbe = anteil > 0.5 ? '#3BA34B' : anteil > 0.25 ? '#FFC000' : '#D9534F';
+    hud.innerHTML = `<rect x="0" y="0" width="960" height="54" fill="rgba(31,45,58,.85)"/>
+      <text x="18" y="37" font-size="26" font-weight="bold" fill="${jetzt() > L.frist ? '#FF8080' : '#fff'}" ${SCHRIFT}>🕐 ${uhr(jetzt())}</text>
+      <rect x="170" y="16" width="200" height="22" rx="6" fill="#fff"/><rect x="172" y="18" width="${196 * Math.min(1, anteil)}" height="18" rx="5" fill="${farbe}"/>
+      <text x="380" y="34" font-size="18" font-weight="bold" fill="#fff" ${SCHRIFT}>🔋 ${z(Math.max(0, S.akku))} J</text>
+      ${zeile(`${kmhZahl(S.v)} {km/h}`, 34, 20, '#fff', 620)}
+      <rect x="760" y="22" width="180" height="10" rx="5" fill="#555"/><rect x="760" y="22" width="${180 * Math.min(1, S.x / L.laenge)}" height="10" rx="5" fill="#9fd3f5"/>
+      <text x="${760 + 180 * Math.min(1, S.x / L.laenge)}" y="20" text-anchor="middle" font-size="14">🛴</text><text x="944" y="48" text-anchor="end" font-size="12" fill="#fff" ${SCHRIFT}>${L.ziel}</text>`;
+  };
+  const zeichne = () => {
+    const kamera = Math.max(0, S.x * PX - 260);
+    welt.setAttribute('transform', `translate(${-kamera},0)`);
+    // Neigung aus den Höhen unter Hinter- und Vorderrad – bergauf und bergab dreht er sich mit
+    const sx = S.x * PX - 54, hinten = S.x - 98 / PX, vorn = S.x - 20 / PX;
+    const schwebt = S.schwebe != null;                   // am Kranhaken: waagrecht, Seil nach oben
+    const winkel = schwebt ? 0 : Math.atan2(hBoden(vorn) - hBoden(hinten), vorn - hinten) * 180 / Math.PI;
+    const sy = schwebt ? BODEN - S.schwebe * PX : BODEN - ((hBoden(hinten) + hBoden(vorn)) / 2 + S.y) * PX;
+    // Stadtpark: Die nächste Situation fällt oben ins Bild, sobald das vorige Tor passiert ist,
+    // und bleibt stehen, bis man durch ihr Tor ist – lange bevor das Tor selbst zu sehen ist
+    const vzNext = L.elemente.find(el => el.typ === 'vz' && !erledigt.has('vz' + el.x));
+    const vzG = svg.querySelector('#situation');
+    if (vzNext && vzNext.x - S.x < 40) {
+      if (!vzNext.t0) vzNext.t0 = performance.now();
+      const f = Math.max(0, 1 - (performance.now() - vzNext.t0) / 450);
+      vzG.innerHTML = `<text x="480" y="${118 - f * 90}" text-anchor="middle" font-size="32" font-weight="bold" fill="#1f2d3a"
+        stroke="#fff" stroke-width="8" paint-order="stroke" stroke-linejoin="round" ${SCHRIFT}>${vzNext.text}</text>`;
+    } else if (vzG) vzG.innerHTML = '';
+    // Schotter: Tempo in m/s über dem Kopf, Fahrtstreifen so lang wie das Tempo, Staub hinter dem Rad
+    let tempoBild = '';
+    if (S.schotter) {
+      const g = S.schotter, auf = S.x >= g.x && S.x < g.x + g.s, len = S.v * 26;
+      tempoBild = [0, 1, 2].map(k => `<line x1="${sx - 70 - len}" y1="${sy - 30 - k * 26}" x2="${sx - 70}" y2="${sy - 30 - k * 26}" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".85"/>`).join('')
+        + (auf ? [0, 1, 2, 3].map(k => `<circle cx="${sx - 60 - k * 12 - Math.random() * 10}" cy="${sy - 4 - Math.random() * 14}" r="${3 + Math.random() * 4}" fill="#9b8b70" opacity=".8"/>`).join('') : '')
+        + `<rect x="${sx - 70}" y="${sy - 178}" width="116" height="40" rx="10" fill="#fff" stroke="#2E75B6" stroke-width="3"/>${zeile(`${z(S.v, 1)} {m/s}`, sy - 150, 22, '#1f2d3a', sx - 12)}`;
+    }
+    fahrer.innerHTML = `${tempoBild}${schwebt ? `<line x1="${sx - 12}" y1="74" x2="${sx - 12}" y2="${sy - 104}" stroke="#333" stroke-width="3"/>
+      <rect x="${sx - 26}" y="66" width="28" height="12" fill="#555"/>` : ''}<g transform="rotate(${-winkel} ${sx} ${sy})">${scooter(sx, sy)}${person(sx - 12, sy - 6, { helm: '#2E75B6', oberteil: '#3BA34B', s: 0.92 })}</g>`;
+    hudZeigen();
+  };
+  // ---------------------------------------------------------- Steuerung
+  // Tempo in ganzen km/h, wie auf einem echten Tacho
+  leiste.innerHTML = `<button class="k hell steuer" id="bBremse">🛑 Bremse</button>
+    <div class="feldgruppe"><input type="range" id="tempoRegler" min="0" max="25" step="1" value="18" style="width:240px"><span class="lbl">Tempo</span></div>
+    <span class="tempo" id="tempoAnzeige">18 ${KMH}</span>
+    <button class="k steuer" id="bSprung">⤒ Springen</button>`;
+  const regler = leiste.querySelector('#tempoRegler');
+  const reglerSetzen = kmh => { regler.value = kmh; S.zielV = kmh / 3.6; leiste.querySelector('#tempoAnzeige').innerHTML = `${kmh} ${KMH}`; };
+  regler.oninput = () => reglerSetzen(+regler.value);
+  const bremsKnopf = leiste.querySelector('#bBremse');
+  // Bremse: an Ampel, Abfahrt und Auffahrt zählt der Bremsweg. Sonst hält sie an und pausiert –
+  // die Uhr steht, bis „▶ Weiterfahren“ gedrückt wird.
+  let pausiert = false;
+  const bremsKnopfZeigen = () => { bremsKnopf.innerHTML = pausiert ? '▶ Weiterfahren' : '🛑 Bremse'; bremsKnopf.classList.toggle('hell', !pausiert); };
+  const bremse = an => {
+    if (an && pausiert) { pausiert = false; bremsKnopfZeigen(); weiterFahren(); return; }
+    const frei = !S.ampel && !S.halt && !S.schotter && !S.pause && !S.fertig && !S.anhalten && !(S.auffahrt && S.auffahrt.v0 != null);
+    if (an && frei) { S.anhalten = true; return; }
+    S.bremse = an; bremsKnopf.classList.toggle('an', an);
+  };
+  levelFahren.pausiert = () => pausiert;                     // fürs Testskript
+  bremsKnopf.onpointerdown = ev => { ev.preventDefault(); bremse(true); };
+  bremsKnopf.onpointerup = bremsKnopf.onpointerleave = bremsKnopf.onpointercancel = () => bremse(false);
+  // beim Sprung rollt der E-Scooter immer zügig vorwärts – sonst landet er auf dem Hütchen
+  const springen = () => { if (!S.pause && !S.halt && !S.ampel && !S.schotter && !S.auffahrt && S.y === 0) { S.vy = FAHRT.SPRUNG; S.v = Math.max(S.v, FAHRT.SPRUNG_V); } };
+  leiste.querySelector('#bSprung').onpointerdown = ev => { ev.preventDefault(); springen(); };
+  const taste = (ev, an) => {
+    if (meinLauf !== lauf || buehne.querySelector('input')) return;
+    if (an && ev.key === 'ArrowRight' && !regler.disabled) reglerSetzen(Math.min(25, +regler.value + 1));
+    if (an && ev.key === 'ArrowDown' && !regler.disabled) reglerSetzen(Math.max(0, +regler.value - 1));
+    if (ev.key === 'ArrowLeft' && !ev.repeat) bremse(an);
+    if (an && (ev.key === ' ' || ev.key === 'ArrowUp')) { ev.preventDefault(); springen(); }
+  };
+  document.onkeydown = ev => taste(ev, true);
+  document.onkeyup = ev => taste(ev, false);
+
+  // ---------------------------------------------------------- Stationen
+  const erledigt = new Set();
+  const zeitStrafe = (grund, min = L.strafe || FAHRT.STRAFE, ort) => { S.minuten += min; S.fehler++; meldung(`${grund} +${min} min`, '#D9534F', ort); };
+  // Rechenfehler kosten Zeit: je falscher Eingabe 1 min (in den kurzen Etappen ½ min), höchstens 2 min je Aufgabe
+  const aufgabe = (A, n, fertig) => aufgabeZeigen(A, n, f => {
+    fertig(f);
+    if (!f) return;
+    const min = Math.min(2, f * (L.strafe ? 0.5 : 1));
+    S.minuten += min;
+    spaeter(() => meldung(`✘ ${f === 1 ? '1 falsche Eingabe' : `${f} falsche Eingaben`}: +${z(min, min % 1 ? 1 : 0)} min`, '#D9534F'), 1300);
+  });
+  const weiterFahren = levelFahren.weiter = () => { S.pause = false; letzterTick = performance.now(); };
+  function ladesaeule() {
+    S.v = 0; S.pause = true;
+    const A = LADEN[L.laden || L.kulisse];
+    const e = ebene(`<div class="mitte"><h2>⚡ Ladesäule</h2><p>Die Säule lädt nur, wenn du richtig rechnest.</p>
+      <div class="knoepfe"><button class="k hell" id="n">●○○ Laden: +${z(FAHRT.LADEN)} J · dauert ${L.strafe ? 1 : 2} min</button>${L.nurLaden ? '' : `<button class="k" id="p">●●● Schnellladen: +${z(FAHRT.SCHNELL)} J · sofort</button>`}</div></div>`, 600);
+    // normales Laden dauert (2 min, in den kurzen Etappen 1 min), Schnellladen geht sofort – ★★★ verlangt die ●●●-Aufgabe
+    const ladezeit = L.strafe ? 1 : 2;
+    const laden = (aufg, plus, dauer) => aufgabe(aufg, null, () => {
+      S.akku += plus; S.minuten += dauer;
+      meldung(`🔋 +${z(plus)} J${dauer ? ` · Laden dauerte ${dauer} min` : ''}`, '#3BA34B'); weiterFahren(); });
+    const normal = () => laden(A.normal(L), FAHRT.LADEN, ladezeit);
+    e.querySelector('#n').onclick = () => { e.remove(); normal(); };
+    if (!L.nurLaden) e.querySelector('#p').onclick = () => { e.remove(); laden({ ...A.schnell(), extra: { text: '↩ doch normal laden', aktion: normal } }, FAHRT.SCHNELL, 0); };
+  }
+  // Rote Ampel: Bremsweg mit dem eigenen Tempo; der Tempomat hält es, bis gebremst wird
+  function ampelAnfahrt(el) {
+    const v = Math.max(8 / 3.6, S.zielV);
+    S.v = v; S.ampel = el; el.v = v; regler.disabled = true;
+    S.pause = true; S.bremse = false; bremsKnopf.classList.remove('an');
+    const E = 0.5 * FAHRT.MASSE * v * v, sB = E / el.F;
+    aufgabe({ titel: '🚦 Gleich kommt eine rote Ampel!', stufe: '●●○', chips: [`⚖ ${FAHRT.MASSE} kg`, `🛴 ${kmhZahl(v)} ${KMH}`, `🛑 Bremse: ${el.F} N`],
+      frage: 'Wie lang ist dein Bremsweg? Bremse rechtzeitig!',
+      schritte: [{ label: 'Δ<i>s</i> =', einheit: 'm', soll: sB, nks: 1, tol: 0.03, tipp: `<i>F</i> · Δ<i>s</i> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>² <small><i>v</i> in ${MS}</small>` }],
+      einzeln: [
+        { frage: '① Dein Tempo in m/s:', label: '<i>v</i> =', einheit: MS, soll: v, nks: 1, tipp: `1 ${MS} = 3,6 ${KMH}` },
+        { frage: '② Deine Bewegungsenergie:', label: '<i>E</i><sub>kin</sub> =', einheit: 'J', soll: E, nks: 0, tol: 0.03, tipp: `<i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>²` },
+        { frage: '③ Dein Bremsweg:', label: 'Δ<i>s</i> =', einheit: 'm', soll: sB, nks: 1, tol: 0.03, tipp: '<i>W</i> = <i>F</i> · Δ<i>s</i>' }] }, null, weiterFahren);
+  }
+  // Schotter: Motor aus, bremst mit F über Δs – wie schnell danach? (W negativ)
+  function schotterAnfahrt(el) {
+    const v0 = Math.max(3, Math.round(S.zielV)), v1 = v0 - (v0 > 3 ? zufall([1, 2]) : 1), s = el.s, m = FAHRT.MASSE;
+    const W = 0.5 * m * (v1 * v1 - v0 * v0), F = -W / s;
+    S.v = v0; S.pause = true; regler.disabled = true; S.bremse = false; bremsKnopf.classList.remove('an');
+    aufgabe({ titel: '🪨 Achtung, Schotter!', stufe: '●●●',
+      chips: [`⚖ ${m} kg`, `🛴 du fährst ${v0} ${MS}`, `🪨 bremst mit ${F} N`, `📏 Δ<i>s</i> = ${s} m`, 'Motor aus'],
+      frage: 'Wie schnell bist du nach dem Schotter?',
+      schritte: [{ label: '<i>v</i> =', einheit: MS, soll: v1, nks: 1, tipp: '<i>E</i><sub>nachher</sub> = <i>E</i><sub>vorher</sub> + <i>W</i>' }],
+      einzeln: [
+        { frage: '① Wie viel Bewegungsenergie hast du vorher?', label: '<i>E</i><sub>vorher</sub> =', einheit: 'J', soll: 0.5 * m * v0 * v0, nks: 0, tipp: `<i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>²` },
+        { frage: '② Der Schotter bremst dich. Was passiert mit deiner Energie?', optionen: ['Sie nimmt zu: <i>W</i> > 0', 'Sie nimmt ab: <i>W</i> < 0'], richtig: 1,
+          fazit: 'Kraft gegen die Fahrtrichtung: Das System gibt Energie ab.' },
+        { frage: '③ Welche Arbeit verrichtet der Schotter?', label: '<i>W</i> =', einheit: 'J', soll: W, nks: 0, tipp: '<i>W</i> = −<i>F</i> · Δ<i>s</i>' },
+        { frage: '④ Wie viel Bewegungsenergie bleibt dir?', label: '<i>E</i><sub>nachher</sub> =', einheit: 'J', soll: 0.5 * m * v1 * v1, nks: 0, tipp: '<i>E</i><sub>nachher</sub> = <i>E</i><sub>vorher</sub> + <i>W</i>' },
+        { frage: '⑤ Wie schnell bist du dann?', label: '<i>v</i> =', einheit: MS, soll: v1, nks: 1, tipp: `<i>E</i><sub>kin</sub> = ${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>²` }] }, null, () => {
+      S.schotter = { x: el.x, s, F, v0, v1 }; weiterFahren();
+    });
+  }
+  // Kran: hebt dich samt Aktenkiste aufs Gerüst
+  function kranHub(el) {
+    S.x = el.x - 0.3; S.v = 0; S.pause = true;
+    const m = FAHRT.MASSE + el.mK;
+    aufgabe({ titel: '🏗 Der Kran hebt dich aufs Gerüst', stufe: '●●○',
+      chips: [`⚖ du mit E-Scooter: ${FAHRT.MASSE} kg`, `📦 Aktenkiste: ${el.mK} kg`, `📐 Δ<i>h</i> = ${el.h} m`, GN],
+      frage: 'Welche Hubarbeit verrichtet der Kran?',
+      schritte: [
+        { label: '<i>W</i> =', einheit: 'J', soll: m * G * el.h, nks: 0, tipp: '<i>W</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' },
+        { frage: 'Was passiert mit deiner Energie?', optionen: ['Sie nimmt zu: <i>W</i> > 0', 'Sie nimmt ab: <i>W</i> < 0'], richtig: 0,
+          fazit: 'Kraft in Wegrichtung: Dem System wird Energie zugeführt.' }] }, null, () => {
+      // hoch, hinüber, absetzen
+      const x0 = S.x, t0 = performance.now();
+      S.schwebe = 0;
+      const hub = t => {
+        if (meinLauf !== lauf) return;
+        const p = (t - t0) / 1000;
+        if (p < 1.6) S.schwebe = el.h * Math.min(1, p / 1.4);
+        else if (p < 2.8) S.x = x0 + (el.x + 3 - x0) * Math.min(1, (p - 1.6) / 1.0);
+        else { S.schwebe = null; S.x = el.x + 3; meldung(`🏗 +${z(Math.round(m * G * el.h))} J Höhenenergie`, '#3BA34B'); weiterFahren(); return; }
+        requestAnimationFrame(hub);
+      };
+      requestAnimationFrame(hub);
+    });
+  }
+  // Auffahrt zum Gericht: Ab dem Schild ist der Motor aus, der Schwung muss reichen – ½ · m · v² = m · g · Δh.
+  // Das Tempo für den Anlauf stellt man selbst am Regler ein; der steht danach zu langsam.
+  function auffahrtAnfahrt(el) {
+    S.v = 0; S.pause = true; S.bremse = false; bremsKnopf.classList.remove('an');
+    const vMin = Math.sqrt(2 * G * el.h);
+    aufgabe({ titel: '🏛 Die Auffahrt zum Gericht – ab dem Schild ohne Motor!', stufe: '●●●',
+      chips: [`📐 Δ<i>h</i> = ${z(el.h, 1)} m`, GN, 'ohne Motor, ohne Reibung'],
+      frage: 'Wie schnell musst du unten mindestens sein?',
+      schritte: [
+        { label: '<i>v</i> =', einheit: MS, soll: vMin, nks: 1, tipp: `${bruchHTML('1', '2')} · <i>m</i> · <i>v</i>² = <i>m</i> · <i>g</i> · Δ<i>h</i>` },
+        { frage: `Wie viel ist das in ${KMH}?`, label: '<i>v</i> =', einheit: KMH, soll: vMin * 3.6, nks: 1, tol: 0.03, tipp: `1 ${MS} = 3,6 ${KMH}` },
+        { frage: 'Welches Tempo stellst du am Regler ein?', optionen: [`${Math.floor(vMin * 3.6)} ${KMH}`, `${Math.floor(vMin * 3.6) + 1} ${KMH}`], richtig: 1,
+          fazit: 'Aufrunden – mit etwas zu wenig Schwung kommst du nicht hinauf.' }] }, null, () => {
+      reglerSetzen(10);
+      S.auffahrt = { fuss: el.x, oben: el.oben, v0: null };
+      meldung('Stell dein Tempo ein!');
+      weiterFahren();
+    });
+  }
+  // Oben an der Kante: ohne Motor hinab, unten vor dem Stoppschild bremsen
+  function gipfel(el) {
+    const g = L.berg, stopp = L.elemente.find(e => e.typ === 'stopp');
+    S.x = el.x; S.v = 0; S.pause = true; S.bremse = false; bremsKnopf.classList.remove('an');
+    const E = FAHRT.MASSE * G * g.h, sB = E / g.F;
+    aufgabe({ titel: '⛰ Gleich geht es steil bergab – unten ist ein Stoppschild!', stufe: '●●○',
+      chips: [`⚖ ${FAHRT.MASSE} kg`, `📐 Δ<i>h</i> = ${g.h} m`, `🛑 Bremse: ${g.F} N`, GN, 'ohne Motor, Start aus dem Stand'],
+      frage: 'Wie lang ist dein Bremsweg unten? Bremse rechtzeitig!',
+      schritte: [{ label: 'Δ<i>s</i> =', einheit: 'm', soll: sB, nks: 1, tipp: '<i>F</i> · Δ<i>s</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' }],
+      einzeln: [
+        { label: '<i>E</i><sub>H</sub> =', einheit: 'J', soll: E, nks: 0, tipp: '<i>E</i><sub>H</sub> = <i>m</i> · <i>g</i> · Δ<i>h</i>' },
+        { label: 'Δ<i>s</i> =', einheit: 'm', soll: sB, nks: 1, tipp: '<i>W</i> = <i>F</i> · Δ<i>s</i>' }] }, null, () => {
+      // rollen: Tempo allein aus der Höhe, bis unten gebremst wird
+      S.ampel = stopp; stopp.rollen = { hTop: g.h, fuss: g.fuss }; regler.disabled = true;
+      weiterFahren();
+    });
+  }
+  // An Ampel, Schranke oder Stoppschild warten: Frage oben, nach 5 s offen und das Tor erscheint
+  function frageWarten(el, offen) {
+    S.halt = true; S.v = 0;
+    // Frage und beide Antworten schon beim Warten – bei hohem Tempo bleibt nach Grün keine Zeit zum Lesen
+    svg.querySelector('#banner').innerHTML = `<rect x="0" y="54" width="960" height="100" fill="rgba(255,255,255,.95)"/>
+      ${zeile(el.frage, 82, 21, '#222')}
+      ${zeile(`⤒ springen: ${el.oben}`, 112, 19, '#2E75B6', 240)}${zeile(`→ durchfahren: ${el.unten}`, 112, 19, '#2E75B6', 720)}
+      ${zeile({ ampel: 'Fahr bei Grün durch die richtige Antwort!', schranke: 'Fahr bei offener Schranke durch die richtige Antwort!',
+        stopp: 'Ist die Straße frei, fahr durch die richtige Antwort!' }[el.typ], 142, 16, '#555')}`;
+    spaeter(() => { offen(); svg.querySelector(`[data-tor="${el.x}"]`).setAttribute('opacity', '1');
+      S.halt = false; S.ampel = null; regler.disabled = false; }, 12000);
+  }
+  function ampelHalt(el) {
+    const rest = el.x - S.x;
+    S.vollbremsung = null; S.v = 0;
+    if (rest < -0.05) zeitStrafe(el.typ === 'stopp' ? 'Über die Haltelinie!' : 'Über die Linie bei Rot!');
+    else if (rest <= 0.5) meldung('🎯 Punktlandung!', '#3BA34B');
+    else if (rest <= 2) meldung(`✔ ${z(rest, 1)} m vor der Linie`, '#3BA34B');
+    else meldung(`Etwas früh – ${z(rest, 1)} m vor der Linie`);
+    frageWarten(el, () => {
+      if (el.typ !== 'ampel') return;
+      svg.querySelector(`[data-rot="${el.x}"]`).setAttribute('fill', '#444');
+      svg.querySelector(`[data-gruen="${el.x}"]`).setAttribute('fill', '#3BA34B');
+    });
+  }
+  function schrankeHalt(el) {
+    S.x = Math.min(S.x, el.x - 3.6);                // vor dem Schlagbaum, nicht darin
+    frageWarten(el, () => svg.querySelector(`[data-balken="${el.x}"]`).setAttribute('transform', `rotate(-80 ${el.x * PX + 13} ${BODEN - hBoden(el.x) * PX - 64})`));
+  }
+  function torDurchfahren(el) {
+    // oben zählt, wer kurz vor dem Tor in der Luft war – nicht nur genau am Tor
+    const obenGefahren = S.yMax > 0.35;
+    svg.querySelector('#banner').innerHTML = '';
+    if (obenGefahren === el.richtigOben) meldung(`✔ ${el.fazit}`, '#3BA34B');
+    else zeitStrafe(`✘ ${el.fazit}`);
+  }
+  // Gabelung: Rampe oder Umweg. Erst die Kraft auf der Rampe ausrechnen, dann wählen.
+  function gabelung() {
+    const g = L.gabel; S.v = 0; S.pause = true;
+    const A = { titel: '↗ Rampe oder ↪ Umweg?', stufe: '●●○',
+      chips: [`⚖ ${FAHRT.MASSE} kg`, `📐 Δ<i>h</i> = ${g.hH} m`, `↗ Rampe: Δ<i>s</i> = ${g.sR} m`, `🛴 Motor: höchstens ${g.Fmax} N`, GN],
+      frage: 'Welche Kraft braucht der Motor auf der Rampe?',
+      schritte: [
+        { label: '<i>F</i> =', einheit: 'N', soll: g.F, nks: 0, tipp: '<i>F</i> · Δ<i>s</i> = <i>m</i> · <i>g</i> · Δ<i>h</i>' },
+        { frage: 'Welchen Weg nimmst du?', optionen: ['↗ Rampe', '↪ Umweg'], richtig: g.F <= g.Fmax ? 0 : 1, frei: true }] };
+    aufgabe(A, null, () => {
+      // der Weg wird gebaut, wie gewählt – der Umweg ist flach, die Rampe steil
+      const rampe = A.gewaehlt === 0;
+      if (L.berg) L.berg.weg = rampe ? g.sR : g.sU;
+      const vorn = profil.filter(([x]) => x <= g.fuss), hinten = profil.filter(([x]) => x >= g.oben);
+      profil = [...vorn, ...(rampe ? [[g.oben - g.sR, 0]] : []), ...hinten];
+      svg.querySelector('#boden').innerHTML = bodenSVG();
+      svg.querySelector('#elemente').innerHTML = L.elemente.map(elementSVG).join('');
+      if (rampe && g.F > g.Fmax) zeitStrafe('Der Motor schafft die Rampe nicht – du schiebst!');
+      else if (!rampe && g.F <= g.Fmax) zeitStrafe('Die Rampe hätte gereicht – Umweg:', FAHRT.UMWEG);
+      else meldung(rampe ? '✔ Die Rampe schafft der Motor.' : '✔ Richtig – die Rampe wäre zu steil.', '#3BA34B');
+      weiterFahren();
+    });
+  }
+
+  // ---------------------------------------------------------- Spielschleife
+  let letzterTick = performance.now();
+  function tick(t) {
+    if (meinLauf !== lauf) { document.onkeydown = document.onkeyup = null; return; }
+    const dt = Math.min(0.05, (t - letzterTick) / 1000);
+    letzterTick = t;
+    if (!S.pause && !S.fertig) schritt(dt);
+    zeichne();
+    requestAnimationFrame(tick);
+  }
+  function schritt(dt) {
+    const x0 = S.x, h0 = hBoden(S.x);
+    if (!S.halt) S.minuten += dt * (L.uhr || FAHRT.MIN_JE_S);     // beim Nachdenken an der Frage steht die Uhr
+    const steig = (hBoden(S.x + 0.2) - hBoden(S.x - 0.2)) / 0.4;
+    let beschleunigt = false;
+    if (S.halt) S.v = 0;
+    else if (S.schotter) {
+      // Motor aus: vor dem Schotter gleich schnell, darauf bremst er – genau wie gerechnet
+      const g = S.schotter;
+      if (S.x < g.x) S.v = g.v0;
+      else if (S.x < g.x + g.s) S.v = Math.sqrt(Math.max(0.01, g.v0 ** 2 - 2 * g.F * (S.x - g.x) / FAHRT.MASSE));
+      else if (S.x < g.x + g.s + 8) {
+        // danach noch ein Stück ohne Motor weiterrollen – das neue Tempo soll man sehen
+        S.v = g.v1;
+        if (!g.geblitzt) { g.geblitzt = true; meldung(`📸 vorher ${z(g.v0, 1)} {m/s} → nachher ${z(g.v1, 1)} {m/s}`, '#3BA34B'); }
+      } else { S.v = g.v1; S.schotter = null; regler.disabled = false; }
+    } else if (S.auffahrt && S.x >= S.auffahrt.fuss) {
+      // ab dem Schild nur Schwung: Bewegungsenergie wird zu Höhenenergie
+      const a = S.auffahrt;
+      if (a.v0 == null) { a.v0 = S.v; regler.disabled = true; meldung(`Motor aus – du fährst ${kmhZahl(S.v)} {km/h}`); }
+      const v2 = a.v0 ** 2 - 2 * G * hBoden(S.x);
+      if (v2 <= 0.05) { S.auffahrt = null; S.x = a.oben + 0.3; S.v = 1.5; zeitStrafe('Zu wenig Schwung – du schiebst!'); }
+      else { S.v = Math.sqrt(v2); if (S.x >= a.oben) { S.auffahrt = null; meldung('✔ Der Schwung reicht!', '#3BA34B'); } }
+    } else if (S.ampel) {
+      // Tempomat bis zur Bremse, dann Vollbremsung mit genau der Kraft der Aufgabe
+      const r = S.ampel.rollen;
+      if (r && !S.vollbremsung) {
+        // Energieerhaltung: das Tempo kommt nur aus der Höhe, ein kleiner Schubs an der Kante
+        S.v = Math.max(0.8, Math.sqrt(2 * G * Math.max(0, r.hTop - hBoden(S.x))));
+        if (S.bremse && S.x < r.fuss && !erledigt.has('bremsHinweis')) { erledigt.add('bremsHinweis'); meldung('Bremse erst unten!'); }
+      }
+      if (S.bremse && !S.vollbremsung && (!r || S.x >= r.fuss)) S.vollbremsung = S.ampel;
+      if (S.vollbremsung) { S.v = Math.max(0, S.v - S.vollbremsung.F / FAHRT.MASSE * dt); if (S.v === 0) ampelHalt(S.ampel); }
+      else if (S.x > S.ampel.x) ampelHalt(S.ampel);                 // gar nicht gebremst
+    } else {
+      if (steig < -0.01) S.v += 9.81 * -steig / Math.sqrt(1 + steig * steig) * dt;        // bergab: von selbst schneller
+      else if (steig > 0.01 && S.akku <= 0) S.v = Math.max(0, S.v - 9.81 * steig * dt);  // bergauf ohne Akku
+      if (S.bremse || S.anhalten) S.v = Math.max(0, S.v - 300 / FAHRT.MASSE * dt);
+      else if (S.v < S.zielV && S.akku > 0) { S.v = Math.min(S.zielV, S.v + FAHRT.ANFAHRT * dt); beschleunigt = true; }
+      else if (S.v > S.zielV && steig >= -0.01) S.v = Math.max(S.zielV, S.v - FAHRT.AUSROLL * 3 * dt);
+      else if (S.akku <= 0 && steig >= -0.01) S.v = Math.max(0, S.v - FAHRT.AUSROLL * dt);
+    }
+    S.x += S.v * dt;
+    if (S.anhalten && S.v === 0 && S.y === 0) { S.anhalten = false; S.pause = true; pausiert = true; bremsKnopfZeigen(); return; }
+    // Akku: Anfahren kostet W = F · Δs, bergauf die Hubarbeit m · g · Δh
+    if (beschleunigt) S.akku -= FAHRT.MOTOR * (S.x - x0);
+    const dh = hBoden(S.x) - h0;
+    if (dh > 0 && S.akku > 0) S.akku -= FAHRT.MASSE * 9.81 * dh;
+    if (S.akku <= 0 && S.v === 0 && !S.halt && !S.ampel) { S.akku = 1500; zeitStrafe('Akku leer – du schiebst!', FAHRT.SCHIEBEN); }
+    if (S.y > 0 || S.vy > 0) { S.vy -= FAHRT.SCHWERE * dt; S.y = Math.max(0, S.y + S.vy * dt); if (S.y === 0) S.vy = 0; }
+    S.yMax = Math.max(S.yMax, S.y);
+    let vzNaechste = true;
+    for (const el of L.elemente) {
+      const id = el.typ + el.x;
+      if (erledigt.has(id)) continue;
+      if (el.typ === 'vz') {
+        // nur die nächste Situation zählt: oben gefahren, wer kurz davor in der Luft war
+        if (!vzNaechste) continue;
+        vzNaechste = false;
+        if (S.x < el.x - 4) S.yMax = 0;
+        if (x0 < el.x && S.x >= el.x) {
+          erledigt.add(id);
+          const oben = S.yMax > 0.35, vz = el.richtigOben ? '> 0' : '< 0';
+          const ort = { x: 230, y: 412, dauer: 1600 };     // unter der Straße, kurz
+          if (oben === el.richtigOben) meldung(`✔ ${el.text}: W ${vz}`, '#3BA34B', ort);
+          else zeitStrafe(`✘ ${el.text}: W ${vz}`, undefined, ort);
+        }
+        continue;
+      }
+      if (el.typ === 'lade') { if (x0 < el.x && S.x >= el.x) { erledigt.add(id); ladesaeule(); return; } continue; }
+      if (el.typ === 'schotter') { if (!erledigt.has('an' + el.x) && S.x >= el.x - 10) { erledigt.add('an' + el.x); erledigt.add(id); schotterAnfahrt(el); return; } continue; }
+      if (el.typ === 'kran') { if (x0 < el.x - 0.3 && S.x >= el.x - 0.3) { erledigt.add(id); kranHub(el); return; } continue; }
+      if (el.typ === 'auffahrt') { if (S.x >= el.x - 24) { erledigt.add(id); auffahrtAnfahrt(el); return; } continue; }
+      if (el.typ === 'gipfel') { if (x0 < el.x && S.x >= el.x) { erledigt.add(id); gipfel(el); return; } continue; }
+      if (el.typ === 'gabel') { if (x0 < el.x && S.x >= el.x) { erledigt.add(id); gabelung(); return; } continue; }
+      if (el.typ === 'kegel' || el.typ === 'ente' || el.typ === 'stein' || el.typ === 'bake') {
+        // getroffen, wenn irgendein Teil des E-Scooters (Hinterrad bis Vorderrad) am Boden darüber ist
+        if (S.y < 0.4 && el.x <= S.x && el.x >= S.x - LAENGE) { erledigt.add(id); zeitStrafe({ ente: 'Ente!', stein: 'Stein!', bake: 'Bake!' }[el.typ] || 'Hütchen!'); }
+        else if (S.x - LAENGE > el.x) erledigt.add(id);
+        continue;
+      }
+      if (el.typ === 'ampel' || el.typ === 'schranke' || el.typ === 'stopp') {
+        if (el.typ === 'ampel' && !erledigt.has('an' + el.x) && S.x >= el.x - 24) { erledigt.add('an' + el.x); ampelAnfahrt(el); return; }
+        if (el.typ === 'schranke' && !erledigt.has('an' + el.x) && S.x >= el.x - 3.6) { erledigt.add('an' + el.x); schrankeHalt(el); return; }
+        if (S.x < el.x + FRAGE_ABSTAND - 4) S.yMax = 0;
+        if (x0 < el.x + FRAGE_ABSTAND && S.x >= el.x + FRAGE_ABSTAND) { erledigt.add(id); torDurchfahren(el); }
+        continue;
+      }
+      if (el.typ === 'ziel' && S.x >= el.x) { erledigt.add(id); S.fertig = true; spaeter(angekommen, 600); }
+    }
+  }
+  // ---------------------------------------------------------- Ende
+  function angekommen() {
+    // verglichen wird die angezeigte Minute – „11:07“ zählt als 11:07
+    const an = Math.floor(jetzt()), sterne = an <= L.sterne[0] ? 3 : an <= L.sterne[1] ? 2 : an <= L.sterne[2] ? 1 : 0;
+    stand.fahrt.sterne[nr] = Math.max(stand.fahrt.sterne[nr], sterne);
+    const code = sterne && LEVELCODE[nr + 1], letzte = nr === LEVEL.length - 1;
+    const weiter = () => { document.onkeydown = document.onkeyup = null; (letzte ? urkundeZeigen : beweisfahrtStart)(); };
+    if (sterne && nr + 1 < LEVEL.length) stand.fahrt.frei = Math.max(stand.fahrt.frei, nr + 2);
+    const e = ebene(`<div class="mitte"><h2>${sterne ? `${L.ziel} erreicht – um ${uhr(an)} Uhr!` : `Zu spät – erst um ${uhr(an)} Uhr.`}</h2>
+      <div style="font-size:2.6rem;color:#C9A000">${'★'.repeat(sterne)}${'☆'.repeat(3 - sterne)}</div>
+      <p>★★★ bis ${uhr(L.sterne[0])} · ★★ bis ${uhr(L.sterne[1])} · ★ bis ${uhr(L.sterne[2])} Uhr</p>
+      ${code ? `<p>Code für Level ${nr + 2}: <span class="code" style="color:#C9A000;border-color:#C9A000">${code}</span></p>` : ''}
+      <div class="knoepfe"><button class="k hell" id="nochmal">🔄 Noch einmal</button>${sterne ? `<button class="k" id="weiter">${letzte ? '🏆 Zur Urkunde' : 'Weiter ➜'}</button>`
+        : stand.fahrt.joker > 0 ? '<button class="k" id="joker" style="background:#C0392B">🟥 Stempel einlösen – das Gericht wartet</button>' : ''}</div></div>`, 560);
+    e.querySelector('#nochmal').onclick = () => levelFahren(nr);
+    // zu spät: Ein Stempel aus den Fällen rettet die Etappe – sie zählt als geschafft (★)
+    if (e.querySelector('#joker')) e.querySelector('#joker').onclick = () => {
+      stand.fahrt.joker--; stand.stempel = stand.fahrt.joker; kopfZeigen();
+      stand.fahrt.sterne[nr] = Math.max(stand.fahrt.sterne[nr], 1);
+      if (nr + 1 < LEVEL.length) stand.fahrt.frei = Math.max(stand.fahrt.frei, nr + 2);
+      e.querySelector('.blatt').innerHTML = `<div class="mitte"><h2>Das Gericht wartet – ein Stempel weniger.</h2>
+        <div style="font-size:2.6rem;color:#C9A000">★☆☆</div>
+        ${LEVELCODE[nr + 1] ? `<p>Code für Level ${nr + 2}: <span class="code" style="color:#C9A000;border-color:#C9A000">${LEVELCODE[nr + 1]}</span></p>` : ''}
+        <div class="knoepfe"><button class="k" id="weiter">${letzte ? '🏆 Zur Urkunde' : 'Weiter ➜'}</button></div></div>`;
+      e.querySelector('#weiter').onclick = weiter;
+    };
+    if (sterne) e.querySelector('#weiter').onclick = weiter;
+  }
+  zeichne();
+  // Anleitung kurz halten – „Losfahren“ muss ohne Scrollen zu sehen sein
+  const e = ebene(`<div><h2 class="mitte" style="margin-bottom:2px">🛴 ${nr ? `Level ${nr + 1}: ${L.name}` : 'So fährst du'}</h2>
+    <ul style="font-size:1.02rem;line-height:1.38;margin:4px 0;padding-left:22px">
+      <li>Sei bis ${uhr(L.frist)} Uhr am ${L.ziel}${nr === LEVEL.length - 1 ? '' : ', dann schaffst du es bis 12 Uhr ins Gericht'}.</li>
+      ${nr ? L.neu.map(t => `<li>${t}</li>`).join('') : `
+      <li>Der E-Scooter fährt von selbst, der Regler stellt das Tempo ein. Mit <b>🛑 Bremse</b> hältst du an und machst Pause.</li>
+      <li>Über die Hütchen springst du mit <b>⤒ Springen</b>.</li>
+      <li>Fehler kosten Zeit.</li>`}</ul>
+    <div class="knoepfe" style="margin-top:6px"><button class="k" id="losfahren">Losfahren ➜</button></div></div>`, 820);
+  e.querySelector('#losfahren').onclick = () => { e.remove(); weiterFahren(); };
+  requestAnimationFrame(tick);
+}
+
+startZeigen();
+</script>
+</body>
+</html>

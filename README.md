@@ -11,6 +11,7 @@ das Arbeitsblatt verlinkt sie per QR-Code.
 | Adresse | Fach, Jgst. | Inhalt |
 |---|---|---|
 | [`ph09/energieumwandlungen/`](https://pru19.github.io/Unterricht/ph09/energieumwandlungen/) | Physik 9 | Energieumwandlungen – zuordnen, Ketten bauen, Bilderserie, beschreiben |
+| [`ph09/unfallgutachter/`](https://pru19.github.io/Unterricht/ph09/unfallgutachter/) | Physik 9 | Arbeit – Lernspiel *Unfallgutachter*: drei Fälle, Beweisfahrt in fünf Leveln |
 
 Aufbau: je Fach und Jahrgangsstufe ein Ordner (`ph09/`, `m07/`, …), darin je
 Übung einer mit einer `index.html`.
