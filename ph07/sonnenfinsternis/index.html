@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>Die Sonnenfinsternis</title>
 <!--
-  Ph07 II Optische Phänomene – Lernadventure, PROTOTYP: Kapitel 1 (Strand, Glashaus, Leuchtturmfuß, Dunkelkammer).
+  Ph07 II Optische Phänomene – Lernadventure „Die Sonnenfinsternis“ in zwei Kapiteln.
   Planung in "00 Spielplanung.md" (gleicher Ordner). Eine Datei ohne Nachladen.
   Kein Konto, keine Speicherung, keine Übertragung (CLAUDE.md §5b).
 
   Ablauf
-    Strand      Laterne im Boot, Höhle, Glashaus, Leuchtturm (Ende des Prototyps)
+    Strand      Laterne im Boot, Höhle, Glashaus, Leuchtturm
     Höhle       R1  Kiste: Was leuchtet von selbst? Laterne an/aus vergleichen
     Glashaus    R3  rote Blüte unter grünem Glas – mit der Laterne weißes Licht
     Werkbank    R4  Punktebild: der Code erscheint durch das Rotglas
@@ -23,8 +23,8 @@
                 Tisch         R8 Lichtbahn: Kerze anzünden, drei Löcher auf die Gerade Flamme–Kristall
   Entdeckungen erscheinen nicht als Karte, sondern still im Forscherheft (Knopf oben rechts).
     Arbeitszimmer Erdgeschoss des Turms, zwischen Tür und Dunkelkammer: Inselkarte, Globus
-                (Tag und Nacht), Teleskop. Linse ins Teleskop + alle Rätsel → Codewort, Ende Kapitel 1
-  Kapitel 2 (Codewort MONDSCHATTEN oder „Gleich weiterspielen“)
+                (Tag und Nacht), Teleskop. Linse ins Teleskop + alle Rätsel → Nachricht von Lina, Ende Kapitel 1
+  Kapitel 2 (Code MONDSCHATTEN von der Lehrkraft; „Gleich weiterspielen“ nur im Testmodus)
     Arbeitszimmer Hoftür offen; Werklampe in der Werkbank jetzt nehmbar (Verzahnung)
     Schattenhof  drei Blickrichtungen:
                  Hoftor          R9  Laterne ziehen, Schatten der Kugel genau auf die goldenen Steine
@@ -266,7 +266,7 @@ const ENTDECKUNG = {
 
 // ───────────────────────── Farbrechnung ─────────────────────────
 const LAMPE   = [1.0, 0.95, 0.85];          // Laterne, Werklampe: weiß
-const GRUENGL = [0.12, 0.85, 0.22];         // Licht durch grünes Glas
+const GRUENGL = [0.04, 0.85, 0.08];         // Licht durch grünes Glas – fast reines Grün, damit Rot darunter schwarz wird
 const FILTER  = { rotglas: [1, 0.06, 0.04], gruenglas: [0.06, 0.9, 0.1], blauglas: [0.05, 0.15, 1] };
 function rgb(c) { return "rgb(" + c.map(v => Math.round(255 * Math.pow(Math.min(1, Math.max(0, v)), 1 / 1.45))).join(",") + ")"; }
 function mal(refl, licht, filter) { return rgb(refl.map((r, i) => r * licht[i] * (filter ? filter[i] : 1))); }
@@ -694,9 +694,8 @@ function szTitel() {
       <g transform="translate(-168,-2) scale(1.1)"><path d="M-10 -22 q10 -12 20 0" fill="none" stroke="#3a2410" stroke-width="3"/><path d="M-12 -18 h24 l4 7 h-32z" fill="#3a2410"/><rect x="-13" y="-11" width="26" height="28" rx="3" fill="#3a2410"/><circle cy="3" r="7" fill="#fff6c8"/><rect x="-15" y="17" width="30" height="5" fill="#3a2410"/></g>
       <text x="22" y="12" font-size="33" font-weight="800" fill="#3a2410">Abenteuer starten</text></g>
     <g class="knopf" data-a="codewort" transform="translate(540,566)"><rect x="-150" y="-26" width="300" height="52" rx="26" fill="#1e1a2e" stroke="#9a8ac0" stroke-width="2" opacity=".9"/>
-      <text y="8" font-size="22" fill="#e8dcff">Ich habe ein Codewort</text></g>
-  </g>
-  <text x="540" y="880" text-anchor="middle" font-size="16" fill="#8a80a8" style="font-family:'Trebuchet MS','Segoe UI',sans-serif">Prototyp</text>`;
+      <text y="8" font-size="22" fill="#e8dcff">Ich habe einen Code</text></g>
+  </g>`;
 }
 function leuchtturm(cx, yb, k = 1) {
   const h = 260 * k, wb = 30 * k, wt = 20 * k, yt = yb - h; let s = "";
@@ -889,11 +888,11 @@ function schliessKnopf(x, y) {
 
 // ───────────────────────── Szene: Glashaus ─────────────────────────
 const BLUMEN = [   // [x, Grundlinie, Größe, Farbe]
-  [290, 470, .8, "gelb"], [520, 470, .8, "blau"], [750, 470, .8, "weiss"], [980, 470, .8, "orange"], [1210, 470, .8, "rot"], [1420, 470, .8, "weiss"],
-  [420, 770, 1.1, "violett"], [800, 770, 1.1, "gelb"], [1180, 770, 1.1, "blau"]
+  [290, 470, .8, "gelb"], [520, 470, .8, "purpur"], [750, 470, .8, "weiss"], [980, 470, .8, "orange"], [1210, 470, .8, "rot"], [1420, 470, .8, "blau"],
+  [420, 770, 1.1, "violett"], [800, 770, 1.1, "magenta"], [1180, 770, 1.1, "nachtblau"]
 ];
 const REFL = {
-  rot: [0.85, 0.07, 0.09], blau: [0.1, 0.18, 0.85], violett: [0.6, 0.1, 0.72], weiss: [0.92, 0.92, 0.9], gelb: [0.92, 0.8, 0.1], orange: [0.95, 0.48, 0.06],
+  rot: [0.85, 0.07, 0.09], purpur: [0.62, 0.06, 0.42], magenta: [0.88, 0.07, 0.62], nachtblau: [0.1, 0.06, 0.55], blau: [0.1, 0.18, 0.85], violett: [0.6, 0.1, 0.72], weiss: [0.92, 0.92, 0.9], gelb: [0.92, 0.8, 0.1], orange: [0.95, 0.48, 0.06],
   blatt: [0.16, 0.5, 0.12], topf: [0.7, 0.36, 0.22], mitte: [0.65, 0.5, 0.12], holz: [0.42, 0.3, 0.2], erde: [0.3, 0.22, 0.16]
 };
 function f(refl, x, y, extra = "") { return `data-refl="${refl}" data-x="${x}" data-y="${y}" ${extra}`; }
@@ -914,7 +913,10 @@ function blume([x, yb, k, farbe], i) {
 function szGlashaus() {
   let scheiben = "";
   for (let i = 0; i < 8; i++) scheiben += `<path d="M${i * 200} 0 L${i * 200 + 200} 0 L${i * 200 + 200} 300 L${i * 200} 300Z" fill="#1e4a38" opacity="${0.75 + (i % 3) * 0.06}"/>`;
-  const spot = S.laterne ? `<circle id="spot" cx="${S.spot.x}" cy="${S.spot.y}" r="260" fill="url(#spotHof)" style="pointer-events:none"/>` : "";
+  const spot = S.laterne ? `<circle id="spot" cx="${S.spot.x}" cy="${S.spot.y}" r="260" fill="url(#spotHof)" style="pointer-events:none"/>
+    ${S.spotGezogen ? "" : `<g id="spotHand" transform="translate(${S.spot.x},${S.spot.y})" style="pointer-events:none">   <!-- zeigt: den Lichtschein kann man ziehen -->
+      <circle r="44" fill="none" stroke="#ffe9a8" stroke-width="3"><animate attributeName="r" values="38;58;38" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".95;.15;.95" dur="1.8s" repeatCount="indefinite"/></circle>
+      <circle r="26" fill="#f3e6c4" stroke="#3a2914" stroke-width="2.5"/><g transform="scale(1.45)">${HAND}</g></g>`}` : "";
   return `<rect width="1600" height="900" fill="#173226"/>
    ${scheiben}
    <path d="M0 300 H1600 M200 0 V300 M400 0 V300 M600 0 V300 M800 0 V300 M1000 0 V300 M1200 0 V300 M1400 0 V300 M0 150 H1600" stroke="#0d1a14" stroke-width="10"/>
@@ -947,11 +949,12 @@ function szGlashaus() {
    ${pfeil(90, 800, "unten", "strand", "Strand")}`;
 }
 function lichtGlashaus(x, y) {
-  const l = GRUENGL.map(v => v * 0.95);
+  const l = GRUENGL.map(v => v * 0.75);   // dämmrig: dunkle Blüten sind ohne Laterne kaum zu unterscheiden
   if (S.laterne) { const d = Math.hypot(x - S.spot.x, y - S.spot.y), w = Math.max(0, 1 - (d / 240) ** 2) * 1.05;
     return l.map((v, i) => v * (1 - w * 0.6) + LAMPE[i] * w); }
   return l;
 }
+function spotBewegt() { if (!S.spotGezogen) { S.spotGezogen = true; const h = svg.querySelector("#spotHand"); if (h) h.remove(); } }
 function faerbe() {
   if (S.szene !== "glashaus") return;
   svg.querySelectorAll("[data-refl]").forEach(e => {
@@ -1008,6 +1011,11 @@ function szWerkbank() {
    ${S.klappe ? `<circle cx="${kx}" cy="95" r="44" fill="#3a3466"/><circle cx="${kx - 12}" cy="85" r="10" fill="#fff0c8" opacity=".8"/><path d="M${kx - 44} 95 L${kx - 70} 40 L${kx + 20} 30 L${kx + 44} 95" fill="#2f6a4f" opacity=".85" stroke="#0d1a14" stroke-width="4"/>`
               : `<circle cx="${kx}" cy="95" r="44" fill="#3f9a64" opacity=".9"/><path d="M${kx - 30} 75 q20 -20 40 -18" stroke="#c8ffd8" stroke-width="4" opacity=".5" fill="none"/>`}
    <circle class="hs" cx="${kx}" cy="95" r="55" data-a="info:dachfenster"/>
+   <!-- Lichtkegel durch das Dachfenster: weiß und hell bei offener Klappe, schwach grün bei geschlossener -->
+   <linearGradient id="dachKegel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.klappe ? "#fffbe8" : "#7fe0a0"}" stop-opacity="${S.klappe ? ".55" : ".16"}"/><stop offset="1" stop-color="${S.klappe ? "#fffbe8" : "#7fe0a0"}" stop-opacity="0"/></linearGradient>
+   <path d="M${kx - 42} 110 L${kx + 42} 110 L${kx + 150} ${ky + 120} L${kx - 150} ${ky + 120}Z" fill="url(#dachKegel)" style="pointer-events:none">${S.klappe ? `<animate attributeName="opacity" values=".85;1;.85" dur="3s" repeatCount="indefinite"/>` : ""}</path>
+   ${S.klappe ? `<circle cx="${kx}" cy="95" r="90" fill="#fff6d0" opacity=".22" style="pointer-events:none"/><circle cx="${kx}" cy="95" r="62" fill="#fffbe8" opacity=".3" style="pointer-events:none"/>
+     ${[[-50, 210], [30, 260], [-20, 330], [70, 300], [-80, 380], [10, 420]].map(([dx, y], i) => `<circle cx="${kx + dx}" cy="${y}" r="2.5" fill="#fffbe8" opacity=".7" style="pointer-events:none"><animate attributeName="cy" values="${y};${y + 18};${y}" dur="${4 + i % 3}s" repeatCount="indefinite"/></circle>`).join("")}` : ""}
    <!-- Schnur -->
    <path d="M${kx + 50} 110 V${S.klappe ? 410 : 360}" stroke="#c9b98a" stroke-width="3"/><circle cx="${kx + 50}" cy="${S.klappe ? 418 : 368}" r="11" fill="#8a5a2a" stroke="#3a2410" stroke-width="3"/>
    <rect class="hs" x="${kx + 25}" y="110" width="50" height="330" data-a="schnur"/>
@@ -1866,7 +1874,7 @@ function panelMaschine() {
        <circle cx="${M[0]}" cy="${M[1]}" r="55" fill="transparent"/></g>`
      : `<g class="knopf" data-a="mondhalter"><circle cx="${M[0]}" cy="${M[1]}" r="16" fill="#1a1410" stroke="url(#messing)" stroke-width="4"/><circle cx="${M[0]}" cy="${M[1]}" r="50" class="hs"/>
        <text x="${M[0]}" y="${M[1] + 46}" text-anchor="middle" font-size="18" fill="#8a7a60">Hier fehlt der Mond.</text></g>`}
-   ${blick}${zettel(1320, 150, "lies:R12", 4)}${schliessKnopf(1550, 50)}`;
+   ${blick}${zettel(1320, 150, "lies:R12", 4)}${schliessKnopf(1540, 240)}`;
 }
 // Finsternistafel von der Seite (R13, R14): Mond auf der Linie Sonne–Erde verschieben
 const FT = { S: [120, 470], SR: 190, E: [1250, 470], ER: 120, MR: 26, insel: 410, marke: [1000, 452] };
@@ -1890,15 +1898,23 @@ function sonneBlick(anteil) {   // Sonne von der Insel aus, anteil 0…1 verdeck
 }
 function panelTafel() {
   const mx = S.tMondX, my = S.tMondY, E = FT.E, ER = FT.ER, w = ftWerte(), ex = ftEx, drin = S.tMondDrin;
-  let schatten = "";
+  // Sonnenlicht füllt den Raum; Schatten ist, wo es fehlt – in der Farbe des leeren Raums
+  const DUNKEL = "#0e0c18", bis = (px, py, qy) => {   // Randstrahl vom Mond (px, py) zur Höhe qy an der Erde
+    if (Math.abs(qy - E[1]) < ER) return [ex(qy), qy];
+    return [1600, py + (qy - py) * (1600 - px) / (E[0] - px)];   // verfehlt die Erde: läuft weiter
+  };
+  let schatten = `<polygon points="${E[0]},${E[1] - ER} 1600,${E[1] - ER - 30} 1600,${E[1] + ER + 30} ${E[0]},${E[1] + ER}" fill="${DUNKEL}" opacity=".5"/>
+    <polygon points="${E[0]},${E[1] - ER} 1600,${E[1] - 85} 1600,${E[1] + 85} ${E[0]},${E[1] + ER}" fill="${DUNKEL}"/>`;
   if (drin && w.lage === "davor") {
-    const c = w.c, k = w.kern, h = w.halb;
-    schatten = `<polygon points="${mx},${my - FT.MR} ${ex(c - h)},${c - h} ${ex(c - k)},${c - k} ${mx},${my - 4}" fill="#3a3a5a" opacity=".85"/>
-      <polygon points="${mx},${my + FT.MR} ${ex(c + h)},${c + h} ${ex(c + k)},${c + k} ${mx},${my + 4}" fill="#3a3a5a" opacity=".85"/>
-      <polygon points="${mx},${my - FT.MR} ${ex(c - k)},${c - k} ${ex(c + k)},${c + k} ${mx},${my + FT.MR}" fill="#06050a"/>
-      <path d="M${FT.S[0]} ${FT.S[1] + FT.SR} L${ex(c - h)} ${c - h} M${FT.S[0]} ${FT.S[1] - FT.SR} L${ex(c + h)} ${c + h}" stroke="#ffe08a" stroke-width="2" stroke-dasharray="9 7" opacity=".75"/>`;
+    const c = w.c, k = w.kern, h = w.halb, P = (py, qy) => bis(mx, py, qy).join(",");
+    schatten += `<polygon points="${mx},${my - FT.MR} ${P(my - FT.MR, c - h)} ${P(my + FT.MR, c + h)} ${mx},${my + FT.MR}" fill="${DUNKEL}" opacity=".55"/>
+      <polygon points="${mx},${my - FT.MR} ${P(my - FT.MR, c - k)} ${P(my + FT.MR, c + k)} ${mx},${my + FT.MR}" fill="${DUNKEL}"/>
+      <path d="M${FT.S[0]} ${FT.S[1] + FT.SR} L${P(my - FT.MR, c - h).replace(",", " ")} M${FT.S[0]} ${FT.S[1] - FT.SR} L${P(my + FT.MR, c + h).replace(",", " ")}" stroke="#ffe08a" stroke-width="2" stroke-dasharray="9 7" opacity=".6"/>`;
+  } else if (drin && (w.lage === "mitte" || w.mond === "hell")) {   // Mond im Licht neben oder hinter der Erde
+    const lang = 1600 - mx, hb = FT.MR + lang * 0.17, kb = Math.max(4, FT.MR - lang * 0.03);
+    schatten += `<polygon points="${mx},${my - FT.MR} 1600,${my - hb} 1600,${my + hb} ${mx},${my + FT.MR}" fill="${DUNKEL}" opacity=".55"/>
+      <polygon points="${mx},${my - FT.MR} 1600,${my - kb} 1600,${my + kb} ${mx},${my + FT.MR}" fill="${DUNKEL}"/>`;
   }
-  if (drin && w.lage === "dahinter") schatten = `<polygon points="${E[0]},${E[1] - ER} 1600,${E[1] - ER + 40} 1600,${E[1] + ER - 40} ${E[0]},${E[1] + ER}" fill="#06050a" opacity=".85"/>`;
   const mondFarbe = w.mond === "rot" ? "#b8502a" : w.mond === "halb" ? "#8a7a6a" : "url(#mondKugel)";
   const r14 = S.geloest.R13;
   const bilder = [
@@ -1909,7 +1925,7 @@ function panelTafel() {
     return `<g class="knopf" data-a="fbild:${i}" transform="translate(${300 + i * 250},110)"><rect x="-110" y="-64" width="220" height="128" rx="6" fill="${zu ? "#3a3448" : "#efe4c8"}" stroke="${S.finsterOk[i] ? "#3aa04a" : S.finsterWahl === i ? "#ffd36b" : "#8a7a5a"}" stroke-width="${S.finsterOk[i] || S.finsterWahl === i ? 7 : 2}"/>
       ${zu ? `<text y="8" text-anchor="middle" font-size="40" fill="#6a6080">?</text>` : `${inhalt}<text y="46" text-anchor="middle" font-size="18" fill="#3a2a1a" class="hand">${t}</text>`}
       ${S.finsterOk[i] ? `<path d="M70 -56 l10 10 l18 -22" stroke="#3aa04a" stroke-width="6" fill="none"/>` : ""}</g>`; };
-  const fenster = `<g transform="translate(1440,110)"><rect x="-130" y="-64" width="260" height="128" rx="10" fill="#2a2650" stroke="url(#messing)" stroke-width="5"/>
+  const fenster = `<g transform="translate(890,110)"><rect x="-130" y="-64" width="260" height="128" rx="10" fill="#2a2650" stroke="url(#messing)" stroke-width="5"/>
       <g transform="translate(-60,0) scale(.8)">${sonneBlick(drin ? w.sonne : 0)}</g>
       <g transform="translate(62,0)"><circle r="34" fill="#0c0a16"/>${drin && w.lage === "dahinter" ? `<circle r="28" fill="${mondFarbe}"/>` : ""}</g>
       <text x="-60" y="58" text-anchor="middle" font-size="14" fill="#e8dcc0">zur Sonne</text><text x="62" y="58" text-anchor="middle" font-size="14" fill="#e8dcc0">zum Mond</text>
@@ -1919,6 +1935,8 @@ function panelTafel() {
    <text x="800" y="30" text-anchor="middle" font-size="20" fill="#c9b98a">Linas Finsternistafel von der Seite. Tippe eine Zeichnung an und schieb den Mond.</text>
    ${karte(0)}${karte(1)}${fenster}
    <rect x="0" y="206" width="1600" height="560" fill="#0e0c18"/>
+   <linearGradient id="ftLicht" gradientUnits="userSpaceOnUse" x1="${FT.S[0]}" y1="0" x2="1600" y2="0"><stop offset="0" stop-color="#ffcf5a" stop-opacity=".34"/><stop offset="1" stop-color="#ffcf5a" stop-opacity=".16"/></linearGradient>
+   <rect x="0" y="206" width="1600" height="560" fill="url(#ftLicht)"/>
    <circle cx="${FT.S[0]}" cy="${FT.S[1]}" r="${FT.SR + 40}" fill="#ffd36b" opacity=".12"/><circle cx="${FT.S[0]}" cy="${FT.S[1]}" r="${FT.SR}" fill="url(#sonneKugel)"/>
    ${schatten}
    <circle cx="${E[0]}" cy="${E[1]}" r="${ER}" fill="url(#erdeKugel)"/><path d="M${E[0]} ${E[1] - ER} A${ER} ${ER} 0 0 1 ${E[0]} ${E[1] + ER}Z" fill="#000" opacity=".5"/>
@@ -1932,14 +1950,19 @@ function panelTafel() {
      : `<g class="knopf" data-a="tafelmond"><circle cx="${mx}" cy="${my}" r="18" fill="#1a1410" stroke="url(#messing)" stroke-width="4"/><circle cx="${mx}" cy="${my}" r="50" class="hs"/>
        <text x="${mx}" y="${my + 50}" text-anchor="middle" font-size="18" fill="#8a7a60">Hier fehlt die Mondscheibe.</text></g>`}
    <text x="${FT.S[0] + 40}" y="${FT.S[1] + FT.SR + 34}" font-size="20" fill="#e8dcc0">Sonne</text><text x="${E[0]}" y="${E[1] + ER + 34}" text-anchor="middle" font-size="20" fill="#e8dcc0">Erde</text>
-   ${zettel(1080, 112, S.geloest.R13 ? "lies:R14" : "lies:R13", -4)}${schliessKnopf(1560, 40)}`;
+   ${zettel(1130, 112, S.geloest.R13 ? "lies:R14" : "lies:R13", -4)}${schliessKnopf(1550, 250)}`;
 }
 function glasAnLampe(i, k) {
   const l = S.l10[i]; if (!FILTER[k] || !S.inv.includes(k)) return;
   if (l.glas) nimm(l.glas);
   l.glas = k; S.inv = S.inv.filter(x => x !== k); S.wahl = null; render(); pruefeR10();
 }
-function pruefeR12() { if (!S.geloest.R12 && S.zeichnOk.every(Boolean)) { melde("Alle vier Monde stimmen.", 2400); geloest("R12"); } }
+function pruefeR12() { if (!S.geloest.R12 && S.zeichnOk.every(Boolean)) { melde("Alle vier Monde stimmen.", 2400); geloest("R12"); nachKarten(() => setTimeout(pruefeFinsternis, 1200)); } }
+function pruefeFinsternis() {   // die Finsternis beginnt erst, wenn Himmelsmaschine (R12) und Tafel (R14) fertig sind
+  if (S.finsternis || !S.geloest.R14) return;
+  if (!S.geloest.R12) { melde("Bis zehn Uhr ist noch etwas Zeit. Linas Himmelsmaschine wartet noch auf dich.", 4000); return; }
+  startFinsternis();
+}
 function pruefeR13() { if (!S.geloest.R13 && S.finsterOk[0] && S.finsterOk[1]) { melde("Beide Finsternisse stimmen.", 2400); geloest("R13"); nachKarten(() => setTimeout(() => aktion("lies:R14"), 900)); } }
 function kapitel2Start(ausCodewort) {
   if (ausCodewort) {
@@ -1960,7 +1983,7 @@ function panelProjektion() {   // das Teleskop wirft das Sonnenbild auf einen we
    <rect x="980" y="200" width="420" height="460" fill="#f4f0e4" stroke="#8a7a5a" stroke-width="4"/>
    <circle cx="1190" cy="430" r="120" fill="#fff0c0"/><circle cx="1256" cy="382" r="122" fill="#f4f0e4"/>
    <text x="1190" y="700" text-anchor="middle" font-size="24" fill="#e8dcc0" class="schrift">Das Sonnenbild auf dem Karton</text>
-   ${schliessKnopf(1540, 60)}`;
+   ${schliessKnopf(1540, 240)}`;
 }
 function startFinsternis() {
   S.finsternis = true; S.panel = null; render();
@@ -2005,10 +2028,10 @@ function linaAuftritt() {   // Lina kommt ins Bild gelaufen und spricht
    </g>`;
 }
 function kapitelEnde() {
-  const t = "Das Teleskop ist bereit – danke! Morgen früh geht es im Schattenhof weiter. Dort habe ich die Teile meiner Himmelsmaschine eingeschlossen. Merk dir mein Losungswort: MONDSCHATTEN.";
+  const t = "Toll, dass das Teleskop bereit ist! Im Schattenhof habe ich noch meine Himmelsmaschine eingeschlossen. Du erreichst den Hof mit dem Code deiner Lehrkraft.";
   S.seiten.push({ id: "story", stufe: 0, text: t });
   if (heftNeuIds().length) heftKarte(true, ORT_NAME[ORT[S.szene]] ? ORT[S.szene] : null);
-  karte({ titel: "In Linas Tagebuch auf dem Schreibtisch", html: "<p>Eine Seite, die eben noch leer war, ist jetzt beschrieben.</p>" + seiteText(t), knoepfe: [{ t: "Weiter", f: () => { S.ende = true; geh("ende"); } }] });
+  karte({ titel: "Nachricht von Lina", html: "<p>Du hattest Lina eine Nachricht geschrieben, dass du auf der Insel bist und alles für die Sonnenfinsternis vorbereitest. Jetzt antwortet sie:</p>" + seiteText(t), knoepfe: [{ t: "Weiter", f: () => { S.ende = true; geh("ende"); } }] });
 }
 
 // ───────────────────────── Szene: Ende ─────────────────────────
@@ -2025,12 +2048,12 @@ function szEnde() {
 
    <rect y="520" width="1600" height="380" fill="url(#meer)"/>
    <text x="800" y="600" text-anchor="middle" font-size="46" fill="#f3e6c4" class="schrift" font-style="italic">Ende von Kapitel 1</text>
-   <text x="800" y="660" text-anchor="middle" font-size="26" fill="#d9c9a4" class="schrift">Merk dir Linas Losungswort für die nächste Stunde:</text>
-   <text x="800" y="725" text-anchor="middle" font-size="44" fill="#ffd36b" class="schrift" letter-spacing="6">MONDSCHATTEN</text>
-   <g class="knopf" data-a="entdeckungen" transform="translate(640,810)"><rect x="-150" y="-30" width="300" height="60" rx="12" fill="#3a2e22" stroke="#c9a24a" stroke-width="3"/>
+   <text x="800" y="665" text-anchor="middle" font-size="28" fill="#d9c9a4" class="schrift">Im Schattenhof geht es weiter.</text>
+   <text x="800" y="710" text-anchor="middle" font-size="28" fill="#d9c9a4" class="schrift">Den Code dafür bekommst du von deiner Lehrkraft.</text>
+   <g class="knopf" data-a="entdeckungen" transform="translate(${location.hash === "#test" ? 640 : 800},810)"><rect x="-150" y="-30" width="300" height="60" rx="12" fill="#3a2e22" stroke="#c9a24a" stroke-width="3"/>
     <text y="9" text-anchor="middle" font-size="25" fill="#f3e6c4" class="schrift">Deine Entdeckungen</text></g>
-   <g class="knopf" data-a="weiterK2" transform="translate(960,810)"><rect x="-150" y="-30" width="300" height="60" rx="12" fill="#221c30" stroke="#7a6a9a" stroke-width="2"/>
-    <text y="9" text-anchor="middle" font-size="25" fill="#d9c9a4" class="schrift">Gleich weiterspielen</text></g>`;
+   ${location.hash === "#test" ? `<g class="knopf" data-a="weiterK2" transform="translate(960,810)"><rect x="-150" y="-30" width="300" height="60" rx="12" fill="#221c30" stroke="#7a6a9a" stroke-width="2"/>
+    <text y="9" text-anchor="middle" font-size="25" fill="#d9c9a4" class="schrift">Gleich weiterspielen</text></g>` : ""}`;
 }
 
 // ───────────────────────── Aufbau ─────────────────────────
@@ -2126,10 +2149,10 @@ function aktion(a) {
       melde("Die Kerze ist aus.", 1800); return;
     case "loch": { const i = +p1; S.loch8[i] = Math.max(BAHN.oben + 40, Math.min(BAHN.unten - 40, S.loch8[i] + 20 * (+p2))); render(); pruefeBahn(); return; }
     case "codewort":
-      karte({ titel: "Codewort", html: "<p>Linas Losungswort vom Ende des ersten Kapitels:</p><p><input id='cw' autocomplete='off' style='font:inherit;font-size:24px;width:100%;padding:6px 10px;text-transform:uppercase'></p>",
+      karte({ titel: "Code", html: "<p>Den Code für Kapitel 2 bekommst du von deiner Lehrkraft:</p><p><input id='cw' autocomplete='off' style='font:inherit;font-size:24px;width:100%;padding:6px 10px;text-transform:uppercase'></p>",
         knoepfe: [{ t: "Abbrechen", leise: true }, { t: "Weiter", f: () => {
           const w = (document.getElementById("cw").value || "").trim().toUpperCase();
-          if (w !== "MONDSCHATTEN") { melde("Das ist nicht Linas Losungswort.", 2400); return; }
+          if (w !== "MONDSCHATTEN") { melde("Dieser Code stimmt nicht.", 2400); return; }
           kapitel2Start(true);
         } }] });
       setTimeout(() => { const e = document.getElementById("cw"); if (e) e.focus(); }, 100);
@@ -2307,7 +2330,7 @@ function zugEnde() {
       S.tMondX = FT.marke[0]; S.tMondY = FT.marke[1]; render();
       setTimeout(() => karte({ seitlich: true, titel: "Notiz von Lina", html: seiteText("So steht der Mond morgen um zehn Uhr. Schau oben rechts ins Fenster: Wird es auf meiner Insel ganz dunkel?"),
         knoepfe: [{ t: "Ja – die Insel liegt im Kernschatten", leise: true, f: () => { melde("Schau genau ins Fenster: Ist die Sonne von der Insel aus ganz verdeckt?", 3200); fehler("R14"); } },
-                  { t: "Nein – sie liegt im Halbschatten", f: () => { melde("Richtig: Linas Insel liegt im Halbschatten. Die Sonne wird nur zum Teil verdeckt.", 3400); geloest("R14"); nachKarten(() => setTimeout(startFinsternis, 1200)); } }] }), 700);
+                  { t: "Nein – sie liegt im Halbschatten", f: () => { melde("Richtig: Linas Insel liegt im Halbschatten. Die Sonne wird nur zum Teil verdeckt.", 3400); geloest("R14"); nachKarten(() => setTimeout(pruefeFinsternis, 1200)); } }] }), 700);
     }
   }
   render();
@@ -2338,13 +2361,13 @@ svg.addEventListener("pointermove", e => {
     return;
   }
   if (S.szene !== "glashaus" || !S.laterne || S.panel) return;
-  const p = svgPunkt(e); S.spot = { x: p.x, y: p.y }; faerbe();
+  const p = svgPunkt(e); S.spot = { x: p.x, y: p.y }; spotBewegt(); faerbe();
 });
 svg.addEventListener("pointerdown", e => {
   const dz = e.target.closest("[data-drag]");
   if (dz && !karteOffen() && (!S.panel || ["mond", "tmond"].includes(dz.dataset.drag))) { S.drag = dz.dataset.drag; S.dragStart = svgPunkt(e); S.dragMoved = S.drag === "laterne"; svg.setPointerCapture(e.pointerId); e.preventDefault(); return; }
   if (S.szene !== "glashaus" || !S.laterne || S.panel) return;
-  const p = svgPunkt(e); S.spot = { x: p.x, y: p.y }; faerbe();
+  const p = svgPunkt(e); S.spot = { x: p.x, y: p.y }; spotBewegt(); faerbe();
 });
 
 // ───────────────────────── Testmodus ─────────────────────────
