@@ -461,9 +461,13 @@ function bausteine(wurzel) {
         if (!f) return;
         var a = f.selectionStart != null ? f.selectionStart : f.value.length;
         var e = f.selectionEnd != null ? f.selectionEnd : f.value.length;
-        f.value = f.value.slice(0, a) + z + f.value.slice(e);
+        /* Die Wurzel kommt mit Klammer, der Cursor steht darin: So landet
+           x+1 unter der Wurzel. Markierter Text wandert in die Klammer. */
+        var ein = z === '√' ? '√(' + f.value.slice(a, e) + ')' : z;
+        var pos = z === '√' ? a + ein.length - 1 : a + ein.length;
+        f.value = f.value.slice(0, a) + ein + f.value.slice(e);
         f.focus();
-        f.setSelectionRange(a + z.length, a + z.length);
+        f.setSelectionRange(pos, pos);
       });
       leiste.appendChild(b);
     });
