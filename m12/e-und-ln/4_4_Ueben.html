@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Üben</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<p>Bearbeiten Sie die Aufgaben in Ihrem Heft. Bei Aufgabe 1 geben Sie die Ergebnisse ein;
+   zu Aufgabe 2 und 3 vergleichen Sie mit der ausgelegten Lösung und haken die Aufgabe ab.</p>
+
+<div id="aufgaben"></div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+/* Aufgabe 1 aus dem Buch: nur Seite und Nummer, Ergebnis wird eingegeben
+   (f(x) = x^2 - 1 auf [0; ∞[). Aufgabe 2 und 3 sind eigene Aufgaben, ihr Text
+   steht hier; die Lösungen liegen aus (AB11 Lösungen zu den Übungen). */
+Kurs.uebung(document.getElementById('aufgaben'), [
+  { titel: 'Aufgabe 1', stufe: '●○○', stelle: 'Buch S. 156/12', art: 'ergebnis',
+    hinweis: 'Rechnen Sie im Heft und geben Sie die Ergebnisse ein. Wurzel und Hochzahl finden Sie in den Bausteinen.',
+    zeichen: '√ ^ ( ) ² −',
+    felder: [
+      { gruppe: 'a)', frage: '\\( f^{-1}(x) = \\)', terme: ['√(x+1)', '√(1+x)', '(x+1)^(1/2)', '(x+1)^0.5', '(x+1)^0,5'] },
+      { gruppe: 'b)', frage: '\\( (f^{-1})^{-1}(x) = \\)', terme: ['x^2-1', '-1+x^2'] },
+      { gruppe: 'b)', frage: 'Beobachtung:', optionen: ['Man erhält wieder f.', 'Man erhält f⁻¹ noch einmal.', 'Man erhält −f.', 'Man erhält 1 : f.'], richtig: 'Man erhält wieder f.' },
+      { gruppe: 'b)', frage: 'Begründung:', optionen: ['Zweimal an der Winkelhalbierenden spiegeln ergibt den Ausgangsgraphen.', 'Der Graph von f ist symmetrisch zur Winkelhalbierenden.', 'Der Graph von f ist eine Parabel.'], richtig: 'Zweimal an der Winkelhalbierenden spiegeln ergibt den Ausgangsgraphen.' }
+    ] },
+  { titel: 'Aufgabe 2', stufe: '●●○', stelle: 'Umkehrbarkeit mit der Ableitung', art: 'auslage',
+    text: 'a) Zeigen Sie, dass \\( f(x) = x^3 + 2x \\) auf \\( \\mathbb{R} \\) umkehrbar ist.<br>' +
+          'b) Bestimmen Sie die Monotonieintervalle von \\( g(x) = x^3 - 12x \\), auf denen \\(g\\) umkehrbar ist.' },
+  { titel: 'Aufgabe 3', stufe: '●●●', stelle: 'Umkehrfunktion einer e-Funktion', art: 'auslage', vertiefen: true,
+    text: 'Bestimmen Sie den Term der Umkehrfunktion von \\( f(x) = e^x + 1 \\) und geben Sie ihre Definitionsmenge an.<br>' +
+          '<span class="hinweis-klein">Tipp: \\( \\ln \\) ist die Umkehrfunktion von \\( e^x \\). Aus \\( e^y = a \\) folgt \\( y = \\ln(a) \\).</span>' }
+]);
+</script>
+</body>
+</html>

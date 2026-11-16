@@ -46,7 +46,9 @@ var KAPITEL = [
     { datei: '4_2_Umkehrbarkeit.html', nr: '4.2', titel: 'Kriterium der Umkehrbarkeit',
       text: 'Wann ist eine Funktion umkehrbar?' },
     { datei: '4_3_Ableitungen.html', nr: '4.3', titel: 'Umkehrbarkeit und Ableitung',
-      text: 'Strenge Monotonie mit der Ableitung nachweisen' } ] }
+      text: 'Strenge Monotonie mit der Ableitung nachweisen' },
+    { datei: '4_4_Ueben.html', nr: '4.4', titel: 'Üben',
+      text: 'Aufgaben zur Umkehrfunktion' } ] }
 ];
 
 var SEITEN = [];
@@ -501,13 +503,17 @@ function uebung(ziel, aufgaben) {
         if (f.optionen) {
           h += '<select data-feld="' + j + '"><option value="">…</option>' +
                f.optionen.map(function (o) { return '<option>' + o + '</option>'; }).join('') + '</select>';
+        } else if (f.terme) {          /* Term statt Zahl, etwa √(x+1) */
+          h += '<input type="text" class="term" autocomplete="off" autocapitalize="off" data-feld="' + j + '">';
         } else {
           h += '<input type="text" inputmode="decimal" autocomplete="off" data-feld="' + j + '">';
         }
         h += '</label>';
       });
       if (gruppe !== null) h += '</div>';
-      h += '</div><button type="button" class="pruefen">Prüfen</button><div class="rueckmeldung"></div>';
+      h += '</div><div class="knopfzeile">' +
+           (a.zeichen ? '<div class="bausteine" data-zeichen="' + a.zeichen + '" aria-label="Zeichen einfügen"></div>' : '') +
+           '<button type="button" class="pruefen">Prüfen</button></div><div class="rueckmeldung"></div>';
     } else if (a.art === 'loesung') {
       h += '<button type="button" class="zweit loesung-knopf">Lösung anzeigen</button>' +
            '<div class="loesung">' + a.loesung + '</div>' +
@@ -539,6 +545,7 @@ function uebung(ziel, aufgaben) {
         Array.prototype.forEach.call(sec.querySelectorAll('[data-feld]'), function (inp) {
           var f = a.felder[+inp.getAttribute('data-feld')], ok;
           if (f.optionen) ok = inp.value === f.richtig;
+          else if (f.terme) ok = f.terme.map(term).indexOf(term(inp.value)) >= 0;
           else { var z = zahl(inp.value); ok = !isNaN(z) && Math.abs(z - f.wert) <= (f.toleranz || 1e-9); }
           inp.className = ok ? 'richtig' : 'falsch';
           if (!ok) alle = false;
@@ -564,6 +571,12 @@ function uebung(ziel, aufgaben) {
     }
   });
   formeln(ziel);
+}
+
+/* Term vergleichbar machen: wie normal(), dazu ohne Malpunkt, ² als ^2, Wurzel als √ */
+function term(text) {
+  return normal(text).replace(/[·*]/g, '').replace(/²/g, '^2').replace(/³/g, '^3')
+    .replace(/sqrt|wurzel/g, '√');
 }
 
 /* Eingabe vergleichbar machen: klein, ohne Leerzeichen, Sonderzeichen als Text */
