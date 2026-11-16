@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grenzwerte der ln-Funktion</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<!-- Aufgabe 1 -->
+<section class="aufgabe" id="task1-section">
+  <h2>Aufgabe 1: Untersuchung der Grenzwerte</h2>
+  <p>Bestimmen Sie mithilfe des Graphen der natürlichen Logarithmusfunktion \( f(x) = \ln(x) \)
+     das Verhalten an den Rändern der Definitionsmenge \( D_f = \mathbb{R}^+ \).</p>
+  <div class="nebeneinander graph-auswahl">
+    <div class="abbildung"><svg id="graph1" role="img" aria-label="Graph der Funktion f(x) = ln(x)"></svg></div>
+    <div>
+      <div class="auswahl kompakt" id="box-neg" data-name="lim_neg" data-frage="\lim\limits_{x \to 0^+} \ln(x) ="></div>
+      <div id="tipp-neg" class="tipp">Folgen Sie dem Graphen nach links bis dicht an die <span class="nb">\(y\)-Achse</span>: Wohin läuft er dort?</div>
+      <div class="auswahl kompakt" id="box-pos" data-name="lim_pos" data-frage="\lim\limits_{x \to +\infty} \ln(x) ="></div>
+      <div id="tipp-pos" class="tipp">Folgen Sie dem Graphen weit nach rechts: Er steigt immer langsamer. Nähert er sich trotzdem einem Wert, oder wächst er über jede Grenze?</div>
+      <button type="button" class="pruefen" onclick="checkTask1()">Ergebnis prüfen</button>
+      <div id="feedback1" class="rueckmeldung"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Aufgabe 2 -->
+<section id="task2-section" class="aufgabe schritt">
+  <h2>Aufgabe 2: Wachstumsgeschwindigkeit im Vergleich</h2>
+  <p>Vergleichen Sie \( f(x) = \ln(x) \) mit einer Potenzfunktion \( g(x) = x^r \) mit kleinem Exponenten.</p>
+
+  <div class="regler">
+    <label for="exponentSlider">Exponent \(r\)</label>
+    <input type="range" id="exponentSlider" min="0.2" max="0.5" step="0.05" value="0.2">
+    <span class="wert" id="exponentValue"></span>
+    <span class="umschalter">
+      <button type="button" id="btnNear" class="an" onclick="setView('near')">Nahansicht</button>
+      <button type="button" id="btnFar" onclick="setView('far')">Fernansicht</button>
+    </span>
+  </div>
+  <div class="abbildung"><svg id="growth" class="graph" viewBox="0 0 560 320" style="max-width:500px" role="img" aria-label="Graphen von ln(x) und x hoch r"></svg></div>
+  <div class="legende">
+    <span><span class="strich" style="background:var(--k-blau)"></span>\( f(x) = \ln(x) \)</span>
+    <span><span class="strich" style="background:var(--k-rot)"></span>\( g(x) = x^r \)</span>
+  </div>
+
+  <p><b>Bewerten Sie die Beobachtungen am Graphen.</b> Kreuzen Sie alle zutreffenden Aussagen an.</p>
+  <div class="aussagen">
+    <label><input type="checkbox" name="obs" value="p_fast"> <span>Die Potenzfunktion steigt langfristig schneller als die ln-Funktion.</span></label>
+    <label><input type="checkbox" name="obs" value="p_above"> <span>Für sehr große <span class="nb">\(x\)-Werte</span> liegt der Graph von \( x^r \) oberhalb von \( \ln(x) \).</span></label>
+    <label><input type="checkbox" name="obs" value="ln_above"> <span>Für kleine Exponenten \(r\) verläuft \( \ln(x) \) im Unendlichen oberhalb von \( x^r \).</span></label>
+    <label><input type="checkbox" name="obs" value="fixed_intersect"> <span>Die beiden Graphen haben für alle \( r > 0 \) genau einen Schnittpunkt.</span></label>
+    <label><input type="checkbox" name="obs" value="p_overtakes"> <span>Es gibt immer einen Punkt, ab dem \( x^r \) die ln-Funktion endgültig überholt.</span></label>
+    <label><input type="checkbox" name="obs" value="p_wins"> <span>Die Potenzfunktion „gewinnt“ langfristig immer gegen die ln-Funktion.</span></label>
+    <label><input type="checkbox" name="obs" value="no_intersect"> <span>Die beiden Graphen haben unabhängig von \(r\) niemals einen Schnittpunkt.</span></label>
+    <label><input type="checkbox" name="obs" value="ln_fast"> <span>Ab einem sehr kleinen Exponenten \(r\) steigt \( \ln(x) \) dauerhaft schneller als \( x^r \).</span></label>
+  </div>
+  <button type="button" class="pruefen" onclick="checkObservations()">Beobachtungen prüfen</button>
+  <div id="obs-feedback" class="rueckmeldung"></div>
+
+  <p style="margin-top:1rem">Mit diesem Wissen lassen sich die folgenden Grenzwerte bestimmen.</p>
+  <div class="raster-zwei">
+    <div><div class="auswahl kompakt" id="box-frac" data-name="growth_frac" data-frage="\lim\limits_{x \to +\infty} \frac{\ln(x)}{x^r} ="></div>
+      <div id="tipp-frac" class="tipp">Wer wächst schneller: Zähler oder Nenner? Sehen Sie sich die Fernansicht an. Und welches Vorzeichen hat der Bruch für große \(x\)?</div></div>
+    <div><div class="auswahl kompakt" id="box-diff" data-name="growth_diff" data-frage="\lim\limits_{x \to +\infty} (x^r - \ln(x)) ="></div>
+      <div id="tipp-diff" class="tipp">Welcher der beiden Graphen liegt für große \(x\) weit oben?</div></div>
+    <div><div class="auswahl kompakt" id="box-prod" data-name="growth_prod" data-frage="\lim\limits_{x \to 0^+} (x \cdot \ln(x)) ="></div>
+      <div id="tipp-prod" class="tipp">Für \(x \to 0^+\) geht \(x\) gegen \(0\) und \(\ln(x)\) gegen \(-\infty\). Auch hier setzt sich die Potenzfunktion durch. Welches Vorzeichen hat das Produkt?</div></div>
+    <div><div class="auswahl kompakt" id="box-quot" data-name="growth_quot" data-frage="\lim\limits_{x \to 0^+} \frac{\ln(x)}{x} ="></div>
+      <div id="tipp-quot" class="tipp">Hier gibt es keinen Wettstreit: Der Zähler geht gegen \(-\infty\), der Nenner gegen \(0^+\). Was passiert, wenn man eine sehr große negative Zahl durch eine sehr kleine positive teilt?</div></div>
+  </div>
+  <button type="button" class="pruefen" onclick="checkLimits()">Grenzwerte prüfen</button>
+  <div id="feedback2" class="rueckmeldung"></div>
+</section>
+
+<section id="info-box-final" class="merke verdeckt" data-ab="3.3">
+  <h2>Merke: Grenzwerte</h2>
+  <div class="inhalt">
+    <p>\( \lim\limits_{x \to +\infty} \ln(x) = +\infty \) und \( \lim\limits_{x \to 0^+} \ln(x) = -\infty \). Die <span class="nb">\(y\)-Achse</span> ist senkrechte Asymptote.</p>
+    <p><b>Dominanz:</b> Jede Potenzfunktion \( x^r \) mit \( r > 0 \) wächst stärker als die <span class="nb">ln-Funktion</span>. Deshalb gilt zum Beispiel \( \lim\limits_{x \to +\infty} \frac{\ln(x)}{x^r} = 0^+ \) und \( \lim\limits_{x \to 0^+} x^r \cdot \ln(x) = 0^- \).</p>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald beide Aufgaben richtig gelöst sind.</div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+/* ---------- Auswahlkästen: vier Antworten in einer Zeile */
+var ANTWORTEN = [['0plus', '0^+'], ['0minus', '0^-'], ['inf', '+\\infty'], ['ninf', '-\\infty']];
+Array.prototype.forEach.call(document.querySelectorAll('.auswahl.kompakt'), function (box) {
+  var name = box.getAttribute('data-name');
+  var html = '<span class="frage">\\( \\displaystyle ' + box.getAttribute('data-frage') + ' \\)</span><span class="optionen">';
+  ANTWORTEN.forEach(function (a) {
+    html += '<label><input type="radio" name="' + name + '" value="' + a[0] + '"> \\( ' + a[1] + ' \\)</label>';
+  });
+  box.innerHTML = html + '</span>';
+});
+function tipp(id, zeigen) { document.getElementById(id).classList.toggle('zeigen', zeigen); }
+
+/* ---------- Aufgabe 1 */
+function graph1(mitAsymptote) {
+  var g = Kurs.graph(document.getElementById('graph1'), {
+    x: [-1, 7], y: [-5, 3], einheit: 38,
+    kurven: [{ f: function (x) { return x > 0 ? Math.log(x) : NaN; }, farbe: 'blau' }]
+  });
+  if (mitAsymptote) {
+    g.el('line', { x1: g.X(0), y1: g.Y(3), x2: g.X(0), y2: g.Y(-5), 'class': 'asymptote' });
+    g.el('text', { x: g.X(0) + 10, y: g.Y(-4.6), 'class': 'asymptote-text' }).textContent = 'Asymptote x = 0';
+  }
+}
+graph1(false);
+
+function auswahl(name) {
+  var r = document.querySelector('input[name="' + name + '"]:checked');
+  return r ? r.value : null;
+}
+function markiere(id, ok) {
+  var b = document.getElementById(id);
+  b.classList.remove('richtig', 'falsch');
+  b.classList.add(ok ? 'richtig' : 'falsch');
+}
+function melde(id, art, text) {
+  var fb = document.getElementById(id);
+  fb.className = 'rueckmeldung ' + art;
+  fb.innerHTML = text;
+  Kurs.formeln(fb);
+}
+
+function checkTask1() {
+  var neg = auswahl('lim_neg'), pos = auswahl('lim_pos');
+  if (!neg || !pos) { melde('feedback1', 'nochmal', 'Bitte wählen Sie bei beiden Grenzwerten eine Antwort.'); return; }
+  markiere('box-neg', neg === 'ninf');
+  markiere('box-pos', pos === 'inf');
+  tipp('tipp-neg', neg !== 'ninf');
+  tipp('tipp-pos', pos !== 'inf');
+  var falsch = [];
+  if (neg !== 'ninf') falsch.push('der Grenzwert für \\(x \\to 0^+\\)');
+  if (pos !== 'inf') falsch.push('der Grenzwert für \\(x \\to +\\infty\\)');
+  if (!falsch.length) {
+    melde('feedback1', 'gut', 'Richtig! Die \\(y\\)-Achse ist senkrechte Asymptote \\((x = 0)\\).');
+    graph1(true);
+    document.getElementById('task2-section').classList.add('offen');
+    draw();
+  } else {
+    melde('feedback1', 'nochmal', 'Noch nicht richtig: ' + falsch.join(' und ') + '. Betrachten Sie den Verlauf des Graphen genau.');
+  }
+}
+
+/* ---------- Aufgabe 2: ln(x) gegen x^r, Nah- und Fernansicht */
+var slider = document.getElementById('exponentSlider');
+var currentView = 'near';
+var NS = 'http://www.w3.org/2000/svg';
+
+function setView(view) {
+  currentView = view;
+  document.getElementById('btnNear').classList.toggle('an', view === 'near');
+  document.getElementById('btnFar').classList.toggle('an', view === 'far');
+  draw();
+}
+
+function draw() {
+  var svg = document.getElementById('growth');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  var r = parseFloat(slider.value);
+  document.getElementById('exponentValue').innerHTML = Kurs.formel('r = ' + Kurs.komma(r, 2));
+
+  var W = 560, H = 320, L = 62, R = 20, T = 18, B = 36;
+  var near = currentView === 'near';
+  var maxX = near ? 12 : 500000, maxY = near ? 5 : 20;
+  var xStep = near ? 1 : 50000, yStep = near ? 1 : 5;
+  function X(x) { return L + x / maxX * (W - L - R); }
+  function Y(y) { return H - B - y / maxY * (H - T - B); }
+  function el(n, at, txt) {
+    var e = document.createElementNS(NS, n);
+    for (var k in at) e.setAttribute(k, at[k]);
+    if (txt !== undefined) e.textContent = txt;
+    svg.appendChild(e); return e;
+  }
+  var gitter = '';
+  for (var gx = xStep; gx <= maxX; gx += xStep) gitter += 'M' + X(gx) + ' ' + T + 'V' + (H - B);
+  for (var gy = yStep; gy <= maxY; gy += yStep) gitter += 'M' + L + ' ' + Y(gy) + 'H' + (W - R);
+  el('path', { d: gitter, 'class': 'gitter' });
+  el('path', { d: 'M' + L + ' ' + (H - B) + 'H' + (W - 6) + 'M' + L + ' ' + (H - B) + 'V' + 6, 'class': 'achse' });
+  el('path', { d: 'M' + (W - 6) + ' ' + (H - B) + 'l-9 -4.5v9z M' + L + ' 6l-4.5 9h9z', 'class': 'achse-spitze' });
+  el('text', { x: W - 8, y: H - B - 8, 'class': 'achsname', 'text-anchor': 'end' }, 'x');
+  el('text', { x: L + 8, y: 16, 'class': 'achsname' }, 'y');
+  for (var sx = (near ? 2 : 100000); sx < maxX; sx += (near ? 2 : 100000))
+    el('text', { x: X(sx), y: H - B + 16, 'class': 'skala', 'text-anchor': 'middle' },
+       near ? sx : String(sx).replace(/\B(?=(\d{3})+$)/g, ' '));
+  for (var sy = (near ? 1 : 5); sy < maxY; sy += (near ? 1 : 5))
+    el('text', { x: L - 8, y: Y(sy) + 4, 'class': 'skala', 'text-anchor': 'end' }, sy);
+  el('clipPath', { id: 'wachs-clip' }).appendChild((function () {
+    var c = document.createElementNS(NS, 'rect');
+    c.setAttribute('x', L); c.setAttribute('y', T - 6); c.setAttribute('width', W - L - R); c.setAttribute('height', H - B - T + 6);
+    return c;
+  })());
+  function kurve(f, farbe) {
+    var d = '';
+    for (var i = 1; i <= 800; i++) {                     /* fern: links dichter abtasten */
+      var x = maxX * Math.pow(i / 800, near ? 1 : 1.5), y = f(x);
+      d += (i > 1 ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Math.max(-50, Math.min(H + 50, Y(y))).toFixed(1);
+    }
+    el('path', { d: d, 'class': 'kurve', stroke: farbe, 'clip-path': 'url(#wachs-clip)' });
+  }
+  kurve(function (x) { return Math.pow(x, r); }, 'var(--k-rot)');
+  kurve(Math.log, 'var(--k-blau)');
+}
+slider.addEventListener('input', draw);
+
+var task2ObsCorrect = false, task2LimitsCorrect = false;
+
+function checkObservations() {
+  var correctOnes = ['p_fast', 'p_overtakes', 'p_above', 'p_wins'];
+  var falschGewaehlt = false, irgendwas = false, richtigGewaehlt = 0;
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="obs"]'), function (cb) {
+    var label = cb.parentElement;
+    label.classList.remove('gut', 'falsch');
+    if (!cb.checked) return;
+    irgendwas = true;
+    if (correctOnes.indexOf(cb.value) >= 0) { label.classList.add('gut'); richtigGewaehlt++; }
+    else { label.classList.add('falsch'); falschGewaehlt = true; }
+  });
+  task2ObsCorrect = false;
+  if (!irgendwas) melde('obs-feedback', 'nochmal', 'Wählen Sie mindestens eine Aussage aus.');
+  else if (falschGewaehlt) melde('obs-feedback', 'nochmal', 'Einige der gewählten Aussagen sind nicht richtig.');
+  else if (richtigGewaehlt < correctOnes.length)
+    melde('obs-feedback', 'nochmal', 'Die gewählten Aussagen sind richtig, es fehlen aber noch weitere.');
+  else {
+    melde('obs-feedback', 'gut', 'Richtig! Die ln-Funktion steigt zwar immer weiter, verliert aber langfristig gegen jede Potenzfunktion \\(x^r\\) mit \\(r > 0\\).');
+    task2ObsCorrect = true;
+    checkTask2Completion();
+  }
+}
+
+function checkLimits() {
+  var soll = { frac: '0plus', diff: 'inf', prod: '0minus', quot: 'ninf' };
+  var namen = { frac: 'growth_frac', diff: 'growth_diff', prod: 'growth_prod', quot: 'growth_quot' };
+  task2LimitsCorrect = false;
+  var fehlt = Object.keys(soll).some(function (k) { return !auswahl(namen[k]); });
+  if (fehlt) { melde('feedback2', 'nochmal', 'Bitte wählen Sie bei allen vier Grenzwerten eine Antwort.'); return; }
+  var alle = true;
+  Object.keys(soll).forEach(function (k) {
+    var ok = auswahl(namen[k]) === soll[k];
+    markiere('box-' + k, ok);
+    tipp('tipp-' + k, !ok);
+    if (!ok) alle = false;
+  });
+  if (alle) {
+    melde('feedback2', 'gut', 'Richtig! Die Potenzfunktion setzt sich gegen die ln-Funktion durch, für \\(x \\to +\\infty\\) und für \\(x \\to 0^+\\).');
+    task2LimitsCorrect = true;
+    checkTask2Completion();
+  } else {
+    melde('feedback2', 'nochmal', 'Noch nicht alles richtig. Die Tipps unter den roten Kästen helfen.');
+  }
+}
+
+function checkTask2Completion() {
+  if (task2ObsCorrect && task2LimitsCorrect) Kurs.geschafft();
+}
+</script>
+</body>
+</html>

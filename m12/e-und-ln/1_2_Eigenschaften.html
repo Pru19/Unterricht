@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eigenschaften der e-Funktion</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<section class="aufgabe">
+  <h2>Eigenschaften der natürlichen Exponentialfunktion</h2>
+  <p>Ergänzen Sie die wesentlichen Eigenschaften der natürlichen Exponentialfunktion \( f(x) = e^x \).</p>
+  <div class="nebeneinander graph-tabelle">
+    <div class="abbildung"><svg id="graph-e" role="img" aria-label="Graph der Funktion f(x) = e hoch x"></svg></div>
+    <div>
+    <table class="tabelle stapeln">
+      <thead><tr><th style="width:44%">Eigenschaft</th><th>Ihre Antwort</th></tr></thead>
+      <tbody>
+        <tr><td>Definitionsmenge \( D_f \)</td>
+            <td><input type="text" id="df" autocomplete="off" autocapitalize="off"></td></tr>
+        <tr class="tipp-zeile"><td colspan="2">
+                <div id="tip-df" class="tipp">Welche <span class="nb">\(x\)-Werte</span> darf man einsetzen?</div>
+                <div id="note-df" class="tipp">Richtig! Kürzer ist die Zahlenmenge \( \mathbb{R} \).</div></td></tr>
+        <tr><td>Wertemenge \( W_f \)</td>
+            <td><input type="text" id="wf" autocomplete="off" autocapitalize="off"></td></tr>
+        <tr class="tipp-zeile"><td colspan="2">
+                <div id="tip-wf" class="tipp">Welche <span class="nb">\(y\)-Werte</span> nimmt der Graph an? Achten Sie darauf, wie weit er nach oben und nach unten reicht.</div>
+                <div id="note-wf" class="tipp">Richtig! Kürzer ist die Zahlenmenge \( \mathbb{R}^+ \).</div></td></tr>
+        <tr><td>Nullstellen</td>
+            <td><input type="text" id="ns" autocomplete="off" autocapitalize="off"></td></tr>
+        <tr class="tipp-zeile"><td colspan="2">
+                <div id="tip-ns" class="tipp">Wo schneidet oder berührt der Graph die <span class="nb">\(x\)-Achse</span>?</div></td></tr>
+        <tr><td>Symmetrie</td>
+            <td><input type="text" id="sym" autocomplete="off" autocapitalize="off"></td></tr>
+        <tr class="tipp-zeile"><td colspan="2">
+                <div id="tip-sym" class="tipp">Prüfen Sie, ob der Graph achsensymmetrisch zur <span class="nb">\(y\)-Achse</span> oder punktsymmetrisch zum Ursprung ist.</div></td></tr>
+        <tr><td>Monotonie</td>
+            <td><input type="text" id="mon" autocomplete="off" autocapitalize="off"></td></tr>
+        <tr class="tipp-zeile"><td colspan="2">
+                <div id="tip-mon" class="tipp">Betrachten Sie das Steigungsverhalten des Graphen.</div></td></tr>
+        <tr><td>Schnittpunkt mit der <span class="nb">\(y\)-Achse</span></td>
+            <td><input type="text" id="sy" autocomplete="off" autocapitalize="off"></td></tr>
+        <tr class="tipp-zeile"><td colspan="2">
+                <div id="tip-sy" class="tipp">Wo schneidet der Graph die <span class="nb">\(y\)-Achse</span>? Gesucht ist ein <b>Punkt</b> in der Form \( (x|y) \).</div></td></tr>
+      </tbody>
+    </table>
+      <div class="knopfzeile">
+        <div class="bausteine" data-zeichen="ℝ ℝ⁺ ℝ⁻ ∞ − ] [ ; ( | )" aria-label="Zeichen einfügen"></div>
+        <button type="button" class="pruefen" onclick="checkProperties()">Überprüfen</button>
+      </div>
+      <div id="feedback-text" class="rueckmeldung"></div>
+    </div>
+  </div>
+</section>
+
+<section id="final-elements" class="merke verdeckt" data-ab="1.2">
+  <h2>Merke: Eigenschaften der e-Funktion</h2>
+  <div class="inhalt">
+    <ul>
+      <li>Definitionsmenge: \( D_f = \mathbb{R} \)</li>
+      <li>Wertemenge: \( W_f = \mathbb{R}^+ \)</li>
+      <li>Nullstellen: keine</li>
+      <li>Symmetrie: keine</li>
+      <li>Monotonie: streng monoton steigend</li>
+      <li>Schnittpunkt mit der <span class="nb">\(y\)-Achse</span>: \( S_y(0|1) \)</li>
+    </ul>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald die Eigenschaften richtig sind.</div>
+
+<section class="aufgabe">
+  <h2>Transformationen der e-Funktion</h2>
+  <p>Ordnen Sie jedem Funktionsterm die Farbe seines Graphen zu.</p>
+
+  <div class="nebeneinander">
+    <div class="abbildung"><svg id="graph-trans" role="img" aria-label="Sieben verschobene und gespiegelte Graphen der e-Funktion"></svg></div>
+    <div>
+      <table class="tabelle">
+        <thead><tr><th>Funktionsterm</th><th>Farbe</th></tr></thead>
+        <tbody id="trans-zeilen"></tbody>
+      </table>
+      <button type="button" class="pruefen" onclick="checkTransformations()">Überprüfen</button>
+      <button type="button" id="sol-btn-trans" class="zweit" style="display:none" onclick="showTransSolution()">Lösung anzeigen</button>
+      <div id="feedback-transform" class="rueckmeldung"></div>
+      <p id="trans-tipp" class="hinweis-klein ausblenden">Tippen Sie auf einen Funktionsterm, um seinen Graphen hervorzuheben.</p>
+    </div>
+  </div>
+
+  <details class="hilfe">
+    <summary>Hilfe: Transformationen ausprobieren</summary>
+    <div class="nebeneinander">
+      <div class="abbildung"><svg id="graph-probe" role="img" aria-label="Graph von f in Grau und der veränderte Graph g in Blau"></svg></div>
+      <div>
+        <p id="probe-term" class="probe-term"></p>
+        <div class="regler"><input type="range" id="probe-c" aria-label="c" min="-3" max="3" step="0.5" value="0"><span class="wert" id="probe-c-wert"></span></div>
+        <div class="regler"><input type="range" id="probe-d" aria-label="d" min="-3" max="3" step="0.5" value="0"><span class="wert" id="probe-d-wert"></span></div>
+        <label class="haekchen"><input type="checkbox" id="probe-mx"> <span>Minus vor dem \(e\), also \( -e^{\dots} \)</span></label>
+        <label class="haekchen"><input type="checkbox" id="probe-my"> <span>Minus vor dem \(x\), also \( e^{-x \dots} \)</span></label>
+        <p class="hinweis-klein">Verändern Sie immer nur eine Sache und beobachten Sie, was mit dem Graphen passiert.</p>
+      </div>
+    </div>
+  </details>
+
+  <div id="fazit" class="schritt">
+    <hr class="trenner">
+    <h3 class="schritt-titel">Fazit</h3>
+    <p>Wie geht der Graph von \(g\) aus dem Graphen von \( f(x) = e^x \) hervor?</p>
+    <table class="tabelle fazit-tabelle">
+      <tbody id="fazit-zeilen"></tbody>
+    </table>
+    <button type="button" class="pruefen" onclick="checkFazit()">Überprüfen</button>
+    <div id="feedback-fazit" class="rueckmeldung"></div>
+    <p id="fazit-ab" class="ab-hinweis verdeckt" data-ab="1.2">Übertragen Sie das Fazit auf Ihr Arbeitsblatt.</p>
+  </div>
+</section>
+
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+/* ---------- Graphen */
+Kurs.graph(document.getElementById('graph-e'), {
+  x: [-4, 3], y: [-1, 6], einheit: 40,
+  kurven: [{ f: Math.exp, farbe: 'blau', name: 'f(x) = e^x', ort: [-3.8, 3.4] }],
+  punkte: [{ x: 0, y: 1, farbe: 'rot' }]
+});
+
+var TERME = [
+  { term: '\\( f(x) = e^x \\)',     farbe: 'blau',    f: function (x) { return Math.exp(x); } },
+  { term: '\\( f(x) = e^{x+2} \\)', farbe: 'tuerkis', f: function (x) { return Math.exp(x + 2); } },
+  { term: '\\( f(x) = e^{-x} \\)',  farbe: 'rot',     f: function (x) { return Math.exp(-x); } },
+  { term: '\\( f(x) = e^x + 2 \\)', farbe: 'orange',  f: function (x) { return Math.exp(x) + 2; } },
+  { term: '\\( f(x) = e^x - 2 \\)', farbe: 'lila',    f: function (x) { return Math.exp(x) - 2; } },
+  { term: '\\( f(x) = e^{x-2} \\)', farbe: 'pink',    f: function (x) { return Math.exp(x - 2); } },
+  { term: '\\( f(x) = -e^x \\)',    farbe: 'gruen',   f: function (x) { return -Math.exp(x); } }
+];
+var FARBNAMEN = { blau: 'Blau', tuerkis: 'Türkis', pink: 'Pink', orange: 'Orange',
+                  lila: 'Lila', rot: 'Rot', gruen: 'Grün' };
+
+var transGraph = Kurs.graph(document.getElementById('graph-trans'), {
+  x: [-5, 6], y: [-4, 6], einheit: 30,
+  kurven: TERME.map(function (t) { return { f: t.f, farbe: t.farbe }; })
+});
+
+/* Nach dem ersten Prüfen: Antippen einer Zeile hebt ihren Graphen hervor,
+   die anderen werden blass; nochmal antippen hebt es auf. */
+var geprueft = false, hervor = -1;
+function hebeHervor(i) {
+  hervor = (hervor === i) ? -1 : i;
+  transGraph.pfade.forEach(function (p, j) {
+    p.classList.toggle('blass', hervor >= 0 && j !== hervor);
+    p.classList.toggle('hervor', j === hervor);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#trans-zeilen tr'), function (tr, j) {
+    tr.classList.toggle('gewaehlt', j === hervor);
+  });
+}
+
+var zeilen = document.getElementById('trans-zeilen');
+TERME.forEach(function (t) {
+  var opt = '<option value="">wählen …</option>';
+  Object.keys(FARBNAMEN).forEach(function (k) { opt += '<option value="' + k + '">' + FARBNAMEN[k] + '</option>'; });
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + t.term + '</td><td><select class="trans-select" data-correct="' + t.farbe + '">' + opt + '</select></td>';
+  tr.addEventListener('click', function (e) {
+    if (geprueft && e.target.tagName !== 'SELECT') hebeHervor(TERME.indexOf(t));
+  });
+  zeilen.appendChild(tr);
+});
+Kurs.formeln(zeilen);
+
+/* ---------- Prüfen */
+var propertiesDone = false, transformationDone = false;
+
+var normal = Kurs.normal;
+
+/* Wie im Original: Eine Antwort gilt, wenn sie eine der Lösungen ist oder
+   (bei mehr als einem Zeichen) eine davon enthält. */
+var propSolutions = {
+  df:  ['r', 'ir', ']-inf;inf[', ']-inf;+inf['],
+  wf:  ['0;inf', 'positiv', 'r+', ']0;inf[', ']0;+inf['],
+  ns:  ['keine', 'besitztkeine', 'nein', 'kein', '-', '/'],
+  sym: ['keine', 'keinesymmetrie', 'nein', 'kein', '-', '/'],
+  mon: ['strengmonotonsteigend', 'steigend'],
+  sy:  ['(0|1)', '(0/1)', '0|1', '0/1']
+};
+var dfIntervals = [']-inf;inf[', ']-inf;+inf['];
+var wfIntervals = [']0;inf[', ']0;+inf['];
+
+function checkProperties() {
+  var allCorrect = true;
+  for (var key in propSolutions) {
+    var input = document.getElementById(key);
+    var tip = document.getElementById('tip-' + key);
+    var note = document.getElementById('note-' + key);
+    var val = normal(input.value);
+    var isCorrect = propSolutions[key].some(function (sol) {
+      return val === sol || (sol.length > 1 && val.indexOf(sol) >= 0);
+    });
+    if (note) note.classList.remove('zeigen');
+    tip.classList.remove('zeigen');
+    input.classList.remove('richtig', 'falsch');
+
+    if (val === '') {
+      allCorrect = false;
+    } else if (isCorrect) {
+      input.classList.add('richtig');
+      if (key === 'df' && dfIntervals.indexOf(val) >= 0) note.classList.add('zeigen');
+      if (key === 'wf' && wfIntervals.indexOf(val) >= 0) note.classList.add('zeigen');
+    } else {
+      input.classList.add('falsch');
+      tip.classList.add('zeigen');
+      allCorrect = false;
+    }
+  }
+  var fb = document.getElementById('feedback-text');
+  fb.className = 'rueckmeldung ' + (allCorrect ? 'gut' : 'nochmal');
+  fb.textContent = allCorrect ? 'Hervorragend! Alle Eigenschaften sind richtig.'
+                              : 'Einige Angaben fehlen oder sind noch nicht ganz richtig. Nutzen Sie die Tipps!';
+  if (allCorrect) {
+    propertiesDone = true;
+    ['final-elements'].forEach(function (id) { document.getElementById(id).classList.remove('verdeckt'); });
+    var h = document.getElementById('final-elements').previousElementSibling;
+    if (h && h.classList.contains('ab-hinweis')) h.classList.remove('verdeckt');
+    checkCompletion();
+  }
+}
+
+function checkTransformations() {
+  var allCorrect = true;
+  document.getElementById('sol-btn-trans').style.display = 'inline-flex';
+  if (!geprueft) {
+    geprueft = true;
+    document.getElementById('trans-tipp').classList.add('zeigen');
+    zeilen.classList.add('waehlbar');
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.trans-select'), function (sel) {
+    sel.classList.remove('richtig', 'falsch');
+    var ok = sel.value === sel.getAttribute('data-correct');
+    sel.classList.add(ok ? 'richtig' : 'falsch');
+    if (!ok) allCorrect = false;
+  });
+  var fb = document.getElementById('feedback-transform');
+  fb.className = 'rueckmeldung ' + (allCorrect ? 'gut' : 'nochmal');
+  fb.textContent = allCorrect ? 'Perfekt zugeordnet!' : 'Einige Graphen sind noch nicht richtig zugeordnet.';
+  if (allCorrect) { transformationDone = true; checkCompletion(); }
+}
+
+function showTransSolution() {
+  Array.prototype.forEach.call(document.querySelectorAll('.trans-select'), function (sel) {
+    sel.value = sel.getAttribute('data-correct');
+  });
+  checkTransformations();
+}
+
+/* ---------- Hilfe: g(x) = ±e^{±x + c} + d ausprobieren */
+function probe() {
+  var c = parseFloat(document.getElementById('probe-c').value);
+  var d = parseFloat(document.getElementById('probe-d').value);
+  var mx = document.getElementById('probe-mx').checked ? -1 : 1;
+  var my = document.getElementById('probe-my').checked ? -1 : 1;
+  var g = function (x) { return mx * Math.exp(my * x + c) + d; };
+  Kurs.graph(document.getElementById('graph-probe'), {
+    x: [-5, 5], y: [-4, 6], einheit: 26,
+    kurven: [{ f: Math.exp, farbe: 'grau', name: 'f(x) = e^x', ort: [1.4, -3.3] },
+             { f: g, farbe: 'blau', name: 'g(x)', ort: [-4.7, 5.3] }]
+  });
+  function zahl(v) { return Kurs.komma(Math.abs(v), v % 1 ? 1 : 0); }
+  var hoch = (my < 0 ? '-x' : 'x') + (c ? (c > 0 ? '+' : '-') + zahl(c) : '');
+  var term = 'g(x) = ' + (mx < 0 ? '-' : '') + 'e^{' + hoch + '}' + (d ? (d > 0 ? '+' : '-') + zahl(d) : '');
+  document.getElementById('probe-term').innerHTML = Kurs.formel(term);
+  document.getElementById('probe-c-wert').innerHTML = Kurs.formel('c = ' + Kurs.komma(c, 1));
+  document.getElementById('probe-d-wert').innerHTML = Kurs.formel('d = ' + Kurs.komma(d, 1));
+}
+['probe-c', 'probe-d', 'probe-mx', 'probe-my'].forEach(function (id) {
+  document.getElementById(id).addEventListener('input', probe);
+});
+probe();
+
+/* ---------- Fazit: die vier Transformationen benennen */
+var FAZIT = [
+  { term: '\\( g(x) = e^x + 2 \\)', richtig: 'oben' },
+  { term: '\\( g(x) = e^{x+2} \\)', richtig: 'links' },
+  { term: '\\( g(x) = -e^x \\)',    richtig: 'xachse' },
+  { term: '\\( g(x) = e^{-x} \\)',  richtig: 'yachse' }
+];
+/* vier richtige Wirkungen und zwei Ablenker (die Gegenrichtungen) */
+var WIRKUNG = { oben: 'Verschiebung um 2 in positive y-Richtung',
+                unten: 'Verschiebung um 2 in negative y-Richtung',
+                rechts: 'Verschiebung um 2 in positive x-Richtung',
+                links: 'Verschiebung um 2 in negative x-Richtung',
+                xachse: 'Spiegelung an der x-Achse',
+                yachse: 'Spiegelung an der y-Achse' };
+var fazitZeilen = document.getElementById('fazit-zeilen');
+FAZIT.forEach(function (z) {
+  var opt = '<option value="">wählen …</option>';
+  Object.keys(WIRKUNG).forEach(function (k) { opt += '<option value="' + k + '">' + WIRKUNG[k] + '</option>'; });
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + z.term + '</td><td><select class="fazit-select" data-correct="' + z.richtig + '">' + opt + '</select></td>';
+  fazitZeilen.appendChild(tr);
+});
+Kurs.formeln(fazitZeilen);
+
+var fazitDone = false;
+function checkFazit() {
+  var alle = true;
+  Array.prototype.forEach.call(document.querySelectorAll('.fazit-select'), function (sel) {
+    sel.classList.remove('richtig', 'falsch');
+    var ok = sel.value === sel.getAttribute('data-correct');
+    sel.classList.add(ok ? 'richtig' : 'falsch');
+    if (!ok) alle = false;
+  });
+  var fb = document.getElementById('feedback-fazit');
+  fb.className = 'rueckmeldung ' + (alle ? 'gut' : 'nochmal');
+  fb.textContent = alle ? 'Richtig!' : 'Noch nicht alles richtig. Vergleichen Sie die Graphen oben.';
+  fazitDone = alle;
+  if (alle) document.getElementById('fazit-ab').classList.remove('verdeckt');
+  checkCompletion();
+}
+
+function checkCompletion() {
+  if (transformationDone) document.getElementById('fazit').classList.add('offen');
+  if (propertiesDone && transformationDone && fazitDone) Kurs.geschafft();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Üben</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<p>Bearbeiten Sie die folgenden Aufgaben aus dem Buch in Ihrem Heft. Vergleichen Sie danach mit
+   der ausgelegten Lösung und haken Sie die Aufgabe ab.</p>
+
+<div id="aufgaben"></div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+/* Die Aufgaben dieser Seite. Aus dem Buch stehen hier nur Seite, Nummer und
+   Endergebnis – kein Aufgabentext (der Kurs wird öffentlich). */
+/* Alle Aufgaben im Heft; die Lösungen liegen aus
+   (AB11 Lösungen zu den Übungen.docx). Im Kurs steht nur, was zu tun ist. */
+Kurs.uebung(document.getElementById('aufgaben'), [
+  { titel: 'Aufgabe 1', stufe: '●○○', stelle: 'Buch S. 33/4 a, d, f', art: 'auslage' },
+  { titel: 'Aufgabe 2', stufe: '●○○', stelle: 'Buch S. 33/7', art: 'auslage' },
+  { titel: 'Aufgabe 3', stufe: '●○○', stelle: 'Buch S. 49/7 c, d, e', art: 'auslage' }
+]);
+</script>
+</body>
+</html>

@@ -13,14 +13,20 @@ das Arbeitsblatt verlinkt sie per QR-Code.
 | [`ph07/sonnenfinsternis/`](https://pru19.github.io/Unterricht/ph07/sonnenfinsternis/) | Physik 7 | Optik – Lernspiel *Die Sonnenfinsternis*: zwei Kapitel, Forscherheft zum AB22 |
 | [`ph09/energieumwandlungen/`](https://pru19.github.io/Unterricht/ph09/energieumwandlungen/) | Physik 9 | Energieumwandlungen – zuordnen, Ketten bauen, Bilderserie, beschreiben |
 | [`ph09/unfallgutachter/`](https://pru19.github.io/Unterricht/ph09/unfallgutachter/) | Physik 9 | Arbeit – Lernspiel *Unfallgutachter*: drei Fälle, Beweisfahrt in fünf Leveln |
+| [`m12/e-und-ln/`](https://pru19.github.io/Unterricht/m12/e-und-ln/) | Mathematik 12 | Lernkurs *e und ln*: natürliche Exponentialfunktion, Umkehrfunktion, natürliche Logarithmusfunktion; begleitet von einem Theorieblatt |
 
 Aufbau: je Fach und Jahrgangsstufe ein Ordner (`ph09/`, `m07/`, …), darin je
 Übung einer mit einer `index.html`.
 
 ## Datenschutz
 
-Keine Anmeldung, keine Auswertung, keine Übertragung. Die Seiten speichern nichts
-und laden nichts von fremden Servern nach.
+Keine Anmeldung, keine Auswertung, keine Übertragung. Die Seiten laden nichts
+von fremden Servern nach. Gespeichert wird nichts, außer beim Lernkurs
+(`m12/e-und-ln/`): Er merkt sich, welche Seiten gelöst sind, und zwar nur im
+Browser des Geräts.
+
+`.nojekyll` im Wurzelverzeichnis sorgt dafür, dass GitHub Pages auch Ordner mit
+Unterstrich ausliefert (`m12/e-und-ln/_Quellen/`).
 
 ## Erzeugt, nicht geschrieben
 

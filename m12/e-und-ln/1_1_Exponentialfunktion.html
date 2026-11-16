@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Die Zahl e</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<!-- Schritt 1: Wachstumsfunktion aufstellen -->
+<section class="aufgabe">
+  <h2>Marktanalyse: Der Sneaker-Hype</h2>
+  <p>Ein neues Sneaker-Modell einer angesagten Marke kommt auf den Markt. In der ersten
+     Woche werden \(500\) Paar verkauft. Nach einem Social-Media-Post eines bekannten
+     Influencers steigt die wöchentliche Verkaufszahl jede Woche um \(15\,\%\).</p>
+  <p>Stellen Sie die Wachstumsfunktion \( f(x) = b \cdot a^x \) auf.</p>
+  <div class="eingabezeile">
+    <label class="kurz">Startwert \(b =\) <input type="text" inputmode="decimal" id="inputB" autocomplete="off"></label>
+    <label class="kurz">Wachstumsfaktor \(a =\) <input type="text" inputmode="decimal" id="inputA" autocomplete="off"></label>
+    <span id="assembledFormula" style="font-size:1.15rem"></span>
+    <button type="button" class="pruefen" onclick="checkTask1()">Überprüfen</button>
+  </div>
+  <div id="feedback-task1" class="rueckmeldung"></div>
+</section>
+
+<!-- Schritt 2: Basis suchen, bei der f und f' übereinstimmen -->
+<section id="block-visualisation" class="aufgabe schritt">
+  <h2>Exponentialfunktion und Ableitung</h2>
+  <p>Wie schnell die Verkaufszahlen in einer bestimmten Woche zunehmen, gibt die Ableitung
+     \( f' \) an. Bei Exponentialfunktionen ist sie besonders einfach: Für \( f(x) = a^x \) ist
+     \( f'(x) = k \cdot a^x \). Das ist wieder eine Exponentialfunktion mit derselben Basis, nur mit
+     einem Faktor \(k\) davor, der von \(a\) abhängt.</p>
+  <p><b>Gibt es eine Basis, bei der dieser Faktor genau \(1\) ist, bei der die Funktion also mit
+     ihrer Ableitung übereinstimmt?</b></p>
+  <p>Das Diagramm zeigt \(f\) und \(f'\). Ermitteln Sie die Basis, bei der die Graphen von \(f\)
+     und \(f'\) übereinstimmen.</p>
+
+  <div class="regler">
+    <button type="button" onclick="schiebe(-0.001)" aria-label="Basis um 0,001 verkleinern">−</button>
+    <input type="range" id="regler-a" min="0.1" max="5" step="0.001" value="1.25" aria-label="Basis a">
+    <button type="button" onclick="schiebe(0.001)" aria-label="Basis um 0,001 vergrößern">+</button>
+    <span class="wert" id="anzeige-a"></span>
+  </div>
+
+  <div class="nebeneinander lupe-zeile">
+    <div class="abbildung">
+      <svg id="graph-e" role="img" aria-label="Graph von f(x) = a hoch x und seiner Ableitung"></svg>
+      <p class="hinweis-klein" style="text-align:left">Mit dem Schieberegler verändern Sie die Basis \(a\):
+         zuerst grob, dann mit − und + in Tausendstel-Schritten. In der Lupe sehen Sie, ob die beiden
+         Graphen wirklich übereinanderliegen. Tragen Sie die Basis dann auf drei Dezimalstellen genau ein.</p>
+    </div>
+    <div class="seitenspalte">
+      <figure class="lupe">
+        <svg id="lupe" viewBox="0 0 240 240" role="img" aria-label="Vergrößerter Ausschnitt der beiden Graphen bei x = 1,5"></svg>
+        <figcaption>Lupe bei \( x = 1{,}5 \)</figcaption>
+      </figure>
+      <div class="legende">
+        <span><span class="strich" style="background:var(--k-blau)"></span><span id="legende-f"></span></span>
+        <span><span class="strich" style="background:var(--k-rot)"></span><span id="legende-fs"></span></span>
+      </div>
+      <div class="ergebnis-box">
+        <h3>Basis ermittelt?</h3>
+        <div class="eingabezeile">
+          <input type="text" inputmode="decimal" id="eulerInput" autocomplete="off" style="max-width:7rem; text-align:center">
+          <button type="button" class="pruefen" onclick="checkEulerValue()">Prüfen</button>
+        </div>
+        <div id="feedback-euler" class="rueckmeldung"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Schritt 3: Herleitung für Interessierte -->
+<details id="checkbox-container" class="aufklapp schritt">
+  <summary>Für Interessierte: Herleitung der Eulerschen Zahl</summary>
+  <div class="vertiefung">
+    <h3>Herleitung über die h-Methode</h3>
+    <p>Wir suchen die Ableitung mit der h-Methode:</p>
+    <p>\[ f'(x) = \lim\limits_{h \to 0} \frac{a^{x+h} - a^x}{h} = a^x \cdot \lim\limits_{h \to 0} \frac{a^h - 1}{h} = a^x \cdot f'(0) \]</p>
+    <p>Der Faktor \(k\) von oben ist also die Steigung \( f'(0) \) an der Stelle \( x = 0 \).
+       Funktion und Ableitung stimmen genau dann überein, wenn \( f'(0) = 1 \) ist:</p>
+    <p>\[ \lim\limits_{h \to 0} \frac{a^h - 1}{h} = 1 \]</p>
+    <p><b>Nach \(a\) auflösen.</b> Für kleine \(h\) ist der Bruch also ungefähr \(1\):</p>
+    <div class="rechnung">
+      \( \dfrac{a^h - 1}{h} \approx 1 \quad | \cdot h \)<br>
+      \( a^h - 1 \approx h \quad | + 1 \)<br>
+      \( a^h \approx 1 + h \quad | \sqrt[h]{\;} \)<br>
+      <b>\( a \approx \sqrt[h]{1 + h} = (1 + h)^{\frac{1}{h}} \)</b>
+    </div>
+    <p>Die Näherung wird umso besser, je kleiner \(h\) ist:</p>
+    <table class="tabelle wertetabelle">
+      <tr><th>\(h\)</th><td>\(0{,}1\)</td><td>\(0{,}01\)</td><td>\(0{,}001\)</td><td>\(0{,}0001\)</td></tr>
+      <tr><th>\( (1 + h)^{\frac{1}{h}} \)</th><td>\(2{,}5937\)</td><td>\(2{,}7048\)</td><td>\(2{,}7169\)</td><td>\(2{,}7181\)</td></tr>
+    </table>
+    <p>Für \( h \to 0 \) wird aus dem \(\approx\) ein \(=\). Der Grenzwert ist die Eulersche Zahl:</p>
+    <p>\[ e = \lim\limits_{h \to 0} \, (1 + h)^{\frac{1}{h}} \approx 2{,}718 \]</p>
+  </div>
+</details>
+
+<section id="block-foundations" class="merke definition verdeckt" data-ab="1.1">
+  <h2>Definition: Natürliche Exponentialfunktion</h2>
+  <div class="inhalt">
+    <p>Die Exponentialfunktion \( f(x) = e^x \) mit der Basis \( e \approx 2{,}718 \) heißt <b>natürliche Exponentialfunktion</b>.</p>
+    <p>Sie ist die einzige Exponentialfunktion, bei der Funktionsterm und Term der Ableitungsfunktion übereinstimmen:</p>
+    <p>\[ f(x) = e^x \;\Rightarrow\; f'(x) = e^x \]</p>
+    <p><i>Die Zahl \(e\) heißt Eulersche Zahl.</i></p>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald die Basis gefunden ist.</div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+/* ---------- Schritt 1 */
+var feldB = document.getElementById('inputB'), feldA = document.getElementById('inputA');
+
+function updateAssembled() {
+  /* Eingaben als TeX: nur Ziffern, Komma und Punkt, das Komma als {,} */
+  function tex(w, platzhalter) {
+    w = w.trim();
+    return /^[0-9.,]+$/.test(w) ? w.replace(/,/g, '{,}') : platzhalter;
+  }
+  var b = tex(feldB.value, 'b'), a = tex(feldA.value, 'a');
+  document.getElementById('assembledFormula').innerHTML = Kurs.formel('f(x) = ' + b + ' \\cdot ' + a + '^x');
+}
+feldB.addEventListener('input', updateAssembled);
+feldA.addEventListener('input', updateAssembled);
+updateAssembled();
+
+function checkTask1() {
+  var b = Kurs.zahl(feldB.value), a = Kurs.zahl(feldA.value);
+  var fb = document.getElementById('feedback-task1');
+  feldB.className = b === 500 ? 'richtig' : 'falsch';
+  feldA.className = Math.abs(a - 1.15) < 1e-9 ? 'richtig' : 'falsch';
+  if (b === 500 && Math.abs(a - 1.15) < 1e-9) {
+    fb.className = 'rueckmeldung gut';
+    fb.textContent = 'Richtig! Die Funktion ist korrekt aufgestellt.';
+    document.getElementById('block-visualisation').classList.add('offen');
+  } else {
+    fb.className = 'rueckmeldung nochmal';
+    fb.textContent = 'Überprüfen Sie den Startwert b und den Wachstumsfaktor a.';
+  }
+}
+
+/* ---------- Schritt 2: Schieberegler wie in der GeoGebra-Datei
+   f(x) = a^x (blau), f'(x) = ln(a) · a^x (rot), Hinweis bei 2,7 ≤ a ≤ 2,8 */
+var regler = document.getElementById('regler-a');
+
+var LX = 1.5, LB = 0.004, LH = 0.02;   /* Lupe: Stelle, halbe Breite, halbe Höhe */
+
+function zeichne() {
+  var a = parseFloat(regler.value), k = Math.log(a);
+  var f = function (x) { return Math.pow(a, x); };
+  var fs = function (x) { return k * Math.pow(a, x); };
+  document.getElementById('anzeige-a').innerHTML = Kurs.formel('a = ' + Kurs.komma(a, 3));
+  var g = Kurs.graph(document.getElementById('graph-e'), {
+    x: [-4, 3], y: [-1, 6], einheit: 36,
+    kurven: [ { f: f, farbe: 'blau' }, { f: fs, farbe: 'rot' } ]
+  });
+  /* Kreis im großen Bild: dort liegt die Lupe */
+  if (f(LX) < 6) g.el('circle', { cx: g.X(LX), cy: g.Y(f(LX)), r: 11, 'class': 'lupe-ring' });
+  lupe(f, fs);
+  document.getElementById('legende-f').innerHTML = Kurs.formel('f(x) = ' + Kurs.komma(a, 3) + '^x');
+  document.getElementById('legende-fs').innerHTML =
+    Kurs.formel("f'(x) = " + Kurs.komma(k, 3) + ' \\cdot ' + Kurs.komma(a, 3) + '^x');
+}
+
+/* Die Lupe zeigt einen winzigen Ausschnitt um (1,5 | f(1,5)): 0,008 breit,
+   0,04 hoch. Der blaue Graph geht immer durch die Mitte; wie weit der rote
+   darüber oder darunter liegt, zeigt den Unterschied zwischen f und f'. */
+function lupe(f, fs) {
+  var svg = document.getElementById('lupe'), NS = 'http://www.w3.org/2000/svg', c = f(LX);
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  function X(x) { return 120 + (x - LX) / LB * 120; }
+  function Y(y) { return 120 - (y - c) / LH * 120; }
+  function el(n, at) { var e = document.createElementNS(NS, n); for (var k in at) e.setAttribute(k, at[k]); svg.appendChild(e); return e; }
+  var clip = el('clipPath', { id: 'lupe-kreis' });
+  var r = document.createElementNS(NS, 'circle');
+  r.setAttribute('cx', 120); r.setAttribute('cy', 120); r.setAttribute('r', 112); clip.appendChild(r);
+  var innen = el('g', { 'clip-path': 'url(#lupe-kreis)' });
+  function linie(fn, farbe) {
+    var p = document.createElementNS(NS, 'path'), d = '';
+    for (var i = 0; i <= 40; i++) {
+      var x = LX - LB + 2 * LB * i / 40, y = fn(x);
+      d += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Math.max(-2000, Math.min(2000, Y(y))).toFixed(1);
+    }
+    p.setAttribute('d', d); p.setAttribute('class', 'kurve'); p.setAttribute('stroke', farbe);
+    innen.appendChild(p);
+  }
+  var bg = document.createElementNS(NS, 'rect');
+  bg.setAttribute('width', 240); bg.setAttribute('height', 240); bg.setAttribute('class', 'lupe-grund');
+  innen.appendChild(bg);
+  var gitter = document.createElementNS(NS, 'path'), d = '';
+  for (var t = 0; t <= 240; t += 30) d += 'M' + t + ' 0V240M0 ' + t + 'H240';
+  gitter.setAttribute('d', d); gitter.setAttribute('class', 'gitter'); innen.appendChild(gitter);
+  linie(f, 'var(--k-blau)');
+  linie(fs, 'var(--k-rot)');
+  el('circle', { cx: 120, cy: 120, r: 112, 'class': 'lupe-rand' });
+}
+
+function schiebe(d) {
+  regler.value = Math.min(5, Math.max(0.1, parseFloat(regler.value) + d)).toFixed(3);
+  zeichne();
+}
+regler.addEventListener('input', zeichne);
+zeichne();
+
+function checkEulerValue() {
+  var feld = document.getElementById('eulerInput'), val = Kurs.zahl(feld.value);
+  var fb = document.getElementById('feedback-euler');
+  if (Math.abs(val - 2.718) < 1e-9) {
+    feld.className = 'richtig';
+    fb.className = 'rueckmeldung gut';
+    fb.textContent = 'Richtig! Das ist die gesuchte Basis e.';
+    document.getElementById('checkbox-container').classList.add('offen');
+    Kurs.geschafft();
+  } else {
+    feld.className = 'falsch';
+    fb.className = 'rueckmeldung nochmal';
+    fb.textContent = 'Leider falsch. Achten Sie auf die Lupe: Erst wenn Blau und Rot dort genau übereinanderliegen, ist die Basis gefunden.';
+  }
+}
+</script>
+</body>
+</html>

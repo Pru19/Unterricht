@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Die ln-Funktion</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<section class="aufgabe">
+  <h2>Die Umkehrfunktion der e-Funktion bekommt einen Namen</h2>
+  <div class="nebeneinander graph-tabelle">
+    <div class="abbildung"><svg id="graph-ln" role="img" aria-label="Graph von e hoch x in Blau, seine Spiegelung an der Winkelhalbierenden in Orange"></svg></div>
+    <div>
+      <p>In Kapitel 2 haben Sie den <b>orangen Graphen</b> durch Spiegeln des Graphen von
+         \( f(x) = e^x \) an der Winkelhalbierenden erhalten. Er gehört zur Umkehrfunktion
+         \( f^{-1} \).</p>
+      <p>Diese Umkehrfunktion heißt <b>natürliche Logarithmusfunktion</b>, kurz \( \ln \).
+         Sie hat eine eigene Taste auf dem Taschenrechner. Damit geht es jetzt
+         <b>rechnerisch</b>, ohne Probieren und ohne Ablesen.</p>
+
+      <h3 class="schritt-titel">Zurück zum Sneaker</h3>
+      <p>Wann wurden \(7000\) bzw. \(20\,000\) Sneakers verkauft?</p>
+      <p>Berechnen Sie mit der Taste <kbd>ln</kbd> auf zwei Nachkommastellen:</p>
+      <div class="eingabezeile">
+        <label class="kurz">\( \ln(7) \approx \) <input type="text" inputmode="decimal" id="ln7" autocomplete="off"></label>
+        <label class="kurz">\( \ln(20) \approx \) <input type="text" inputmode="decimal" id="ln20" autocomplete="off"></label>
+      </div>
+      <div class="eingabezeile">
+        <button type="button" class="pruefen" onclick="pruefeLn()">Prüfen</button>
+        <button type="button" class="zweit" onclick="zeige('tr-hilfe')">Tipp: \( \ln \) am Taschenrechner</button>
+      </div>
+      <div id="tr-hilfe" class="tipp">
+        Casio fx-87DE Plus: Drücken Sie <kbd>ln</kbd>, geben Sie die Zahl ein, etwa <kbd>7</kbd>,
+        und drücken Sie <kbd>=</kbd>.
+      </div>
+      <div id="feedback-ln" class="rueckmeldung"></div>
+    </div>
+  </div>
+</section>
+
+<section class="merke definition verdeckt">
+  <h2>Definition: Natürliche Logarithmusfunktion</h2>
+  <div class="inhalt">
+    <p>Die Umkehrfunktion der natürlichen Exponentialfunktion \( f(x) = e^x \) heißt
+       <b>natürliche Logarithmusfunktion</b>: \( f^{-1}(x) = \ln(x) \).</p>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald beide Werte stimmen.</div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+function melde(id, art, html) {
+  var el = document.getElementById(id);
+  el.className = 'rueckmeldung ' + art;
+  el.innerHTML = html;
+  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]);
+}
+function zeige(id) { document.getElementById(id).classList.toggle('zeigen'); }
+
+var gerechnet = { 7: false, 20: false };
+
+function zeichne() {
+  var g = Kurs.graph(document.getElementById('graph-ln'), {
+    x: [-3, 8], y: [-3, 8], einheit: 30,
+    kurven: [
+      { f: Math.exp, farbe: 'blau', name: 'f(x) = e^x', ort: [-2.8, 6.5] },
+      { f: function (x) { return x > 0 ? Math.log(x) : NaN; }, farbe: 'orange',
+        name: 'f^{-1}(x) = ln(x)', ort: [4.2, 0.9] }
+    ],
+    punkte: [{ x: 0, y: 1, farbe: 'blau' }, { x: 1, y: 0, farbe: 'orange' }]
+      .concat(gerechnet[7] ? [{ x: 7, y: Math.log(7), farbe: 'orange', name: '(7|1{,}95)', dx: -4, dy: -10, anker: 'end' }] : [])
+  });
+  g.el('line', { x1: g.X(-3), y1: g.Y(-3), x2: g.X(8), y2: g.Y(8), 'class': 'winkelhalbierende' });
+}
+zeichne();
+
+function pruefeLn() {
+  var teile = [];
+  [7, 20].forEach(function (z) {
+    var feld = document.getElementById('ln' + z), x = Kurs.zahl(feld.value);
+    var ok = Math.abs(x - Math.log(z)) < 0.006;
+    feld.className = feld.value.trim() ? (ok ? 'richtig' : 'falsch') : '';
+    gerechnet[z] = ok;
+  });
+  zeichne();
+  if (gerechnet[7]) teile.push('\\( \\ln(7) \\approx 1{,}95 \\): In Kapitel 2 haben Sie „knapp \\(2\\) Wochen“ abgelesen, jetzt ist es genau.');
+  if (gerechnet[20]) teile.push('\\( \\ln(20) \\approx 3{,}00 \\): Nach etwa \\(3\\) Wochen sind \\(20\\,000\\) Stück verkauft. Das Ergebnis ist dasselbe wie beim Probieren, nur in einem Schritt.');
+  if (gerechnet[7] && gerechnet[20]) {
+    melde('feedback-ln', 'gut', teile.join('<br>'));
+    Kurs.geschafft();
+  } else {
+    melde('feedback-ln', 'nochmal', (teile.length ? teile.join('<br>') + '<br>' : '') +
+      'Noch nicht alles richtig. Runden Sie auf zwei Nachkommastellen.');
+  }
+}
+</script>
+</body>
+</html>

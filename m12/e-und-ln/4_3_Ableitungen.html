@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Umkehrbarkeit und Ableitung</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<!-- Teil 1: Umkehrbarkeit über das Vorzeichen der Ableitung -->
+<section class="aufgabe">
+  <h2>Umkehrbarkeit mit der Ableitung prüfen</h2>
+  <p>In 4.2 haben Sie gesehen: Eine streng monotone Funktion ist umkehrbar. Ob eine Funktion streng
+     monoton ist, verrät ihre Ableitung.</p>
+  <div class="nebeneinander graph-tabelle">
+    <div class="abbildung"><svg id="graph-f" role="img" aria-label="Graph der Funktion f, nach dem Lösen sichtbar"></svg></div>
+    <div>
+      <h3 class="schritt-titel">Beispiel 1: \( f(x) = e^x + x \)</h3>
+      <div class="eingabezeile">
+        <span>\( f'(x) = \)</span>
+        <input type="text" id="f1" autocomplete="off" autocapitalize="off" style="max-width:10rem">
+        <button type="button" class="pruefen" onclick="pruefeF1()">Prüfen</button>
+      </div>
+      <p class="hinweis-klein">Schreiben Sie Potenzen mit „^“, z. B. e^x oder x^2.</p>
+      <div id="tipp-f1" class="tipp">Leiten Sie jeden Summanden einzeln ab: \( (e^x)' = e^x \) und \( (x)' = 1 \).</div>
+      <div id="feedback-f1" class="rueckmeldung"></div>
+
+      <div id="schritt-f2" class="schritt">
+        <p>Was folgt daraus?</p>
+        <div class="auswahl" id="box-f">
+          <label><input type="radio" name="wf" value="a"> <span>\( f'(x) > 0 \) für alle \(x\): \(f\) ist streng monoton steigend und auf \( \mathbb{R} \) umkehrbar.</span></label>
+          <label><input type="radio" name="wf" value="b"> <span>\( f'(0) = 2 \): \(f\) ist nur in der Nähe von \( x = 0 \) umkehrbar.</span></label>
+          <label><input type="radio" name="wf" value="c"> <span>\( f'(x) \) wird beliebig groß: \(f\) ist nicht umkehrbar.</span></label>
+          <label><input type="radio" name="wf" value="d"> <span>Ohne den Graphen lässt sich das nicht entscheiden.</span></label>
+        </div>
+        <div id="tipp-f2" class="tipp">Welches Vorzeichen hat \( e^x \)? Und damit \( e^x + 1 \)?</div>
+        <div class="knopfzeile">
+          <button type="button" class="pruefen" onclick="pruefeF2()">Prüfen</button>
+          <div id="feedback-f2" class="rueckmeldung"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="schritt-g" class="schritt">
+    <hr class="trenner">
+    <div class="nebeneinander graph-tabelle">
+      <div class="abbildung"><svg id="graph-g" role="img" aria-label="Graph der Funktion g, nach dem Lösen sichtbar"></svg></div>
+      <div>
+        <h3 class="schritt-titel">Beispiel 2: \( g(x) = x^3 - 3x \)</h3>
+        <div class="eingabezeile">
+          <span>\( g'(x) = \)</span>
+          <input type="text" id="g1" autocomplete="off" autocapitalize="off" style="max-width:10rem">
+          <button type="button" class="pruefen" onclick="pruefeG1()">Prüfen</button>
+        </div>
+        <p class="hinweis-klein">Schreiben Sie Potenzen mit „^“, z. B. x^2.</p>
+        <div id="tipp-g1" class="tipp">Potenzregel: \( (x^3)' = 3x^2 \) und \( (3x)' = 3 \).</div>
+        <div id="feedback-g1" class="rueckmeldung"></div>
+
+        <div id="schritt-g2" class="schritt">
+          <p>Es gilt \( g'(0) = -3 \) und \( g'(2) = 9 \). Was folgt daraus?</p>
+          <div class="auswahl" id="box-g">
+            <label><input type="radio" name="wg" value="a"> <span>\(g\) ist umkehrbar, weil \( g'(2) > 0 \) ist.</span></label>
+            <label><input type="radio" name="wg" value="b"> <span>\(g\) ist streng monoton fallend, weil \( g'(0) < 0 \) ist.</span></label>
+            <label><input type="radio" name="wg" value="c"> <span>\(g'\) wechselt das Vorzeichen: \(g\) ist auf \( \mathbb{R} \) nicht streng monoton und nicht umkehrbar.</span></label>
+            <label><input type="radio" name="wg" value="d"> <span>\(g\) ist umkehrbar, weil \( g'(x) \) nie gleich null ist.</span></label>
+          </div>
+          <div id="tipp-g2" class="tipp">Einmal ist die Steigung negativ, einmal positiv. Was heißt das für den Verlauf des Graphen?</div>
+          <div class="knopfzeile">
+            <button type="button" class="pruefen" onclick="pruefeG2()">Prüfen</button>
+            <div id="feedback-g2" class="rueckmeldung"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="schritt-g3" class="schritt">
+      <hr class="trenner">
+      <h3 class="schritt-titel">Wo ist \(g\) umkehrbar?</h3>
+      <p>\(g\) ist zwar nicht auf ganz \( \mathbb{R} \) umkehrbar, aber auf Teilintervallen. Diese findet man mit der Ableitung.</p>
+      <p><b>1.</b> Lösen Sie \( g'(x) = 0 \).</p>
+      <div class="eingabezeile">
+        <label class="kurz">\( x_1 = \) <input type="text" inputmode="decimal" id="n1" autocomplete="off"></label>
+        <label class="kurz">\( x_2 = \) <input type="text" inputmode="decimal" id="n2" autocomplete="off"></label>
+        <button type="button" class="pruefen" onclick="pruefeNull()">Prüfen</button>
+      </div>
+      <div id="tipp-null" class="tipp">\( 3x^2 - 3 = 0 \;\Leftrightarrow\; x^2 = 1 \). Es gibt zwei Lösungen.</div>
+      <div id="feedback-null" class="rueckmeldung"></div>
+
+      <div id="schritt-vz" class="schritt">
+        <p><b>2.</b> Bestimmen Sie das Vorzeichen von \( g' \) zwischen diesen Stellen und damit das Monotonieverhalten.</p>
+        <table class="tabelle wertetabelle vz-tabelle">
+          <tr><th></th><td>\( x < -1 \)</td><td>\( -1 < x < 1 \)</td><td>\( x > 1 \)</td></tr>
+          <tr><th>\( g'(x) \)</th><td><select id="v1" class="vz"><option value="">…</option><option value="+">+</option><option value="-">−</option></select></td><td><select id="v2" class="vz"><option value="">…</option><option value="+">+</option><option value="-">−</option></select></td><td><select id="v3" class="vz"><option value="">…</option><option value="+">+</option><option value="-">−</option></select></td></tr>
+          <tr><th>\( G_g \)</th><td><select id="mo1" class="vz"><option value="">…</option><option value="s">steigend</option><option value="f">fallend</option></select></td><td><select id="mo2" class="vz"><option value="">…</option><option value="s">steigend</option><option value="f">fallend</option></select></td><td><select id="mo3" class="vz"><option value="">…</option><option value="s">steigend</option><option value="f">fallend</option></select></td></tr>
+        </table>
+        <div id="tipp-vz" class="tipp">Setzen Sie je eine Zahl aus dem Bereich in \( g'(x) = 3x^2 - 3 \) ein, etwa \(-2\), \(0\) und \(2\).</div>
+        <div class="knopfzeile">
+          <button type="button" class="pruefen" onclick="pruefeVZ()">Prüfen</button>
+          <div id="feedback-vz" class="rueckmeldung"></div>
+        </div>
+      </div>
+
+      <div id="schritt-int" class="schritt">
+        <p><b>3.</b> Auf welchem größtmöglichen Intervall ist \(g\) umkehrbar?</p>
+        <div class="auswahl kompakt" id="box-int"><span class="optionen">
+          <label><input type="radio" name="int" value="a"> \( ]{-\infty}; -1] \)</label>
+          <label><input type="radio" name="int" value="b"> \( [-1; 1] \)</label>
+          <label><input type="radio" name="int" value="c"> \( [1; \infty[ \)</label>
+        </span></div>
+        <div id="tipp-int" class="tipp">Welche der drei Monotonieintervalle sind am größten?</div>
+        <div class="knopfzeile">
+          <button type="button" class="pruefen" onclick="pruefeIntervallG()">Prüfen</button>
+          <div id="feedback-int" class="rueckmeldung"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Teil 2: Ableitung der ln-Funktion entdecken -->
+<section id="teil-ln" class="aufgabe schritt">
+  <h2>Die Ableitung der ln-Funktion</h2>
+  <p>Zur Untersuchung der Umkehrbarkeit benötigt man also die Ableitung. Die Ableitung von \( e^x \)
+     kennen Sie aus 1.1. Doch wie lautet die Ableitung von \( \ln(x) \)?</p>
+  <p>Verschieben Sie den Berührpunkt und lesen Sie die Steigung der Tangente ab.</p>
+  <div class="nebeneinander graph-tabelle">
+    <div class="abbildung">
+      <p id="steigung" class="probe-term" style="text-align:center"></p>
+      <svg id="graph-ln" role="img" aria-label="Graph von ln(x) mit Tangente im Berührpunkt und Steigungsdreieck"></svg>
+    </div>
+    <div>
+      <div class="regler">
+        <label for="x0">Stelle \( x_0 \)</label>
+        <input type="range" id="x0" min="0.25" max="5" step="0.25" value="1">
+        <span class="wert" id="x0-wert"></span>
+      </div>
+      <table class="tabelle wertetabelle">
+        <tr><th>\( x_0 \)</th><td>\( \tfrac{1}{2} \)</td><td>\(1\)</td><td>\(2\)</td><td>\(4\)</td></tr>
+        <tr><th>Steigung</th>
+          <td><input type="text" inputmode="decimal" id="m0" autocomplete="off"></td>
+          <td><input type="text" inputmode="decimal" id="m1" autocomplete="off"></td>
+          <td><input type="text" inputmode="decimal" id="m2" autocomplete="off"></td>
+          <td><input type="text" inputmode="decimal" id="m3" autocomplete="off"></td></tr>
+      </table>
+      <div class="knopfzeile">
+        <button type="button" class="pruefen" onclick="pruefeTabelle()">Prüfen</button>
+        <div id="feedback-tab" class="rueckmeldung"></div>
+      </div>
+
+      <div id="schritt-term" class="schritt">
+        <hr class="trenner">
+        <p>Welcher Term liefert diese Steigungen?</p>
+        <div class="auswahl" id="box-term">
+          <label><input type="radio" name="term" value="a"> <span>\( \ln'(x) = x \)</span></label>
+          <label><input type="radio" name="term" value="b"> <span>\( \ln'(x) = \frac{1}{x} \)</span></label>
+          <label><input type="radio" name="term" value="c"> <span>\( \ln'(x) = \ln(x) \)</span></label>
+          <label><input type="radio" name="term" value="d"> <span>\( \ln'(x) = e^x \)</span></label>
+        </div>
+        <div id="tipp-term" class="tipp">Setzen Sie die Stellen aus der Tabelle in die Terme ein und vergleichen Sie.</div>
+        <div class="knopfzeile">
+          <button type="button" class="pruefen" onclick="pruefeTerm()">Prüfen</button>
+          <div id="feedback-term" class="rueckmeldung"></div>
+        </div>
+        <details id="interessiert" class="aufklapp schritt">
+          <summary>Für Interessierte: Was \( \ln'(x) \) über den Graphen verrät</summary>
+          <div class="vertiefung">
+            <p>Für \( x > 0 \) ist \( \frac{1}{x} > 0 \). Die ln-Funktion ist also überall streng monoton
+               steigend. Das passt zum Graphen aus 3.2.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="merke verdeckt" data-ab="4.3">
+  <h2>Merke: Umkehrbarkeit und Ableitung</h2>
+  <div class="inhalt">
+    <p>Gilt in einem Intervall \( f'(x) > 0 \) bzw. \( f'(x) < 0 \), so ist \(f\) dort streng monoton steigend bzw. fallend und somit umkehrbar.</p>
+  </div>
+</section>
+<div id="vorgehen" class="ausblenden">
+  <p style="margin-bottom:.15rem"><b>Vorgehen, wenn \(f\) nicht auf ganz \( \mathbb{R} \) umkehrbar ist:</b></p>
+  <ol style="margin-top:0">
+    <li>\( f'(x) \) bilden.</li>
+    <li>\( f'(x) = 0 \) lösen.</li>
+    <li>Mit dem Vorzeichen von \( f' \) die Monotonieintervalle bestimmen. Auf ihnen ist \(f\) umkehrbar.</li>
+  </ol>
+</div>
+<section class="merke verdeckt">
+  <h2>Merke: Ableitungen</h2>
+  <div class="inhalt">
+    <ul>
+      <li>\( f(x) = e^x \;\Rightarrow\; f'(x) = e^x \)</li>
+      <li>\( f(x) = \ln(x) \;\Rightarrow\; f'(x) = \frac{1}{x} \)</li>
+    </ul>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald beide Teile gelöst sind.</div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+function melde(id, art, html) {
+  var fb = document.getElementById(id);
+  fb.className = 'rueckmeldung ' + art;
+  fb.innerHTML = html;
+  Kurs.formeln(fb);
+}
+function tipp(id, an) { document.getElementById(id).classList.toggle('zeigen', an); }
+function auswahl(name) {
+  var r = document.querySelector('input[name="' + name + '"]:checked');
+  return r ? r.value : null;
+}
+function markiere(id, ok) {
+  var b = document.getElementById(id);
+  b.classList.remove('richtig', 'falsch');
+  b.classList.add(ok ? 'richtig' : 'falsch');
+}
+/* Term vergleichbar machen: ohne Leerzeichen und Malpunkte, ² als ^2 */
+function term(s) {
+  return String(s).toLowerCase().replace(/\s+/g, '').replace(/[·*]/g, '')
+    .replace(/²/g, '^2').replace(/−/g, '-').replace(/^f'\(x\)=|^g'\(x\)=/, '');
+}
+
+/* ---------- Graphen von f und g: erst nach dem Lösen mit Kurve */
+function zeichneF(zeigen) {
+  Kurs.graph(document.getElementById('graph-f'), {
+    x: [-4, 3], y: [-4, 5], einheit: 28,
+    kurven: zeigen ? [{ f: function (x) { return Math.exp(x) + x; }, farbe: 'blau', name: 'f(x) = e^x + x', ort: [-3.8, 2.6] }] : []
+  });
+}
+var gStand = 0, gAst = 1;    /* 0 leer, 1 Graph, 2 mit Stellen x = ±1, 3 Intervall [1; ∞[ hervorgehoben */
+function zeichneG(zeigen) {
+  if (zeigen && gStand < 1) gStand = 1;
+  var gf = function (x) { return x * x * x - 3 * x; };
+  var g = Kurs.graph(document.getElementById('graph-g'), {
+    x: [-3, 3], y: [-4, 4], einheit: 30,
+    kurven: !gStand ? [] : gStand < 3
+      ? [{ f: gf, farbe: 'blau', name: 'g(x) = x^3 - 3x', ort: [0.15, -3.4] }]
+      : [{ f: gf, farbe: 'blau', blass: true, name: 'g(x) = x^3 - 3x', ort: [0.15, -3.4] },
+         { f: function (x) { return x * gAst >= 1 ? gf(x) : NaN; }, farbe: 'orange' }],
+    punkte: gStand ? [{ x: -1, y: 2, farbe: 'rot' }, { x: 1, y: -2, farbe: 'rot' }] : []
+  });
+  if (gStand >= 2) [-1, 1].forEach(function (x) {
+    g.el('line', { x1: g.X(x), y1: g.Y(4), x2: g.X(x), y2: g.Y(-4), 'class': 'ablesen' });
+  });
+}
+zeichneF(false);
+zeichneG(false);
+
+/* ---------- Beispiel 1 */
+function pruefeF1() {
+  var feld = document.getElementById('f1'), v = term(feld.value);
+  var ok = ['e^x+1', '1+e^x'].indexOf(v) >= 0;
+  feld.className = ok ? 'richtig' : 'falsch';
+  tipp('tipp-f1', !ok);
+  if (ok) {
+    melde('feedback-f1', 'gut', '');
+    document.getElementById('schritt-f2').classList.add('offen');
+  } else {
+    melde('feedback-f1', 'nochmal', 'Noch nicht richtig.');
+  }
+}
+function pruefeF2() {
+  var w = auswahl('wf');
+  if (!w) { melde('feedback-f2', 'nochmal', 'Bitte wählen Sie eine Antwort.'); return; }
+  markiere('box-f', w === 'a');
+  tipp('tipp-f2', w !== 'a');
+  if (w === 'a') {
+    melde('feedback-f2', 'gut', 'Richtig! Da \\( e^x > 0 \\), ist \\( e^x + 1 > 0 \\) \\(\\Rightarrow\\) der Graph steigt überall.');
+    zeichneF(true);
+    document.getElementById('schritt-g').classList.add('offen');
+  } else {
+    melde('feedback-f2', 'nochmal', 'Nicht richtig.');
+  }
+}
+
+/* ---------- Beispiel 2 */
+function pruefeG1() {
+  var feld = document.getElementById('g1'), v = term(feld.value);
+  var ok = ['3x^2-3', '-3+3x^2', '3(x^2-1)'].indexOf(v) >= 0;
+  feld.className = ok ? 'richtig' : 'falsch';
+  tipp('tipp-g1', !ok);
+  if (ok) {
+    melde('feedback-g1', 'gut', '');
+    document.getElementById('schritt-g2').classList.add('offen');
+  } else {
+    melde('feedback-g1', 'nochmal', 'Noch nicht richtig.');
+  }
+}
+var teil1 = false, teil2 = false;
+function pruefeG2() {
+  var w = auswahl('wg');
+  if (!w) { melde('feedback-g2', 'nochmal', 'Bitte wählen Sie eine Antwort.'); return; }
+  markiere('box-g', w === 'c');
+  tipp('tipp-g2', w !== 'c');
+  if (w === 'c') {
+    melde('feedback-g2', 'gut', 'Richtig! Der Graph steigt, fällt und steigt wieder. Manche Funktionswerte kommen deshalb dreimal vor.');
+    zeichneG(true);
+    document.getElementById('schritt-g3').classList.add('offen');
+  } else {
+    melde('feedback-g2', 'nochmal', 'Nicht richtig.');
+  }
+}
+
+/* ---------- Wo ist g umkehrbar? */
+function pruefeNull() {
+  var a = Kurs.zahl(document.getElementById('n1').value), b = Kurs.zahl(document.getElementById('n2').value);
+  var ok = (a === 1 && b === -1) || (a === -1 && b === 1);
+  document.getElementById('n1').className = ok || ((a === 1 || a === -1) && a !== b) ? 'richtig' : 'falsch';
+  document.getElementById('n2').className = ok ? 'richtig' : 'falsch';
+  tipp('tipp-null', !ok);
+  if (ok) {
+    gStand = 2; zeichneG(true);
+    melde('feedback-null', 'gut', 'Richtig! An diesen Stellen kann \\(g\'\\) das Vorzeichen wechseln.');
+    document.getElementById('schritt-vz').classList.add('offen');
+  } else {
+    melde('feedback-null', 'nochmal', 'Noch nicht richtig.');
+  }
+}
+function pruefeVZ() {
+  var soll = { v1: '+', v2: '-', v3: '+', mo1: 's', mo2: 'f', mo3: 's' }, alle = true;
+  for (var id in soll) {
+    var f = document.getElementById(id), ok = f.value === soll[id];
+    f.className = 'vz ' + (f.value ? (ok ? 'richtig' : 'falsch') : '');
+    if (!ok) alle = false;
+  }
+  tipp('tipp-vz', !alle);
+  if (alle) {
+    melde('feedback-vz', 'gut', 'Richtig! Die Monotonieintervalle sind \\( ]{-\\infty}; -1] \\), \\( [-1; 1] \\) und \\( [1; \\infty[ \\).');
+    document.getElementById('schritt-int').classList.add('offen');
+  } else {
+    melde('feedback-vz', 'nochmal', 'Noch nicht alles richtig.');
+  }
+}
+function pruefeIntervallG() {
+  var w = auswahl('int');
+  if (!w) { melde('feedback-int', 'nochmal', 'Bitte wählen Sie eine Antwort.'); return; }
+  var ok = w === 'a' || w === 'c';
+  markiere('box-int', ok);
+  tipp('tipp-int', !ok);
+  if (ok) {
+    gStand = 3; gAst = w === 'a' ? -1 : 1; zeichneG(true);
+    melde('feedback-int', 'gut', 'Richtig! Auf \\( ]{-\\infty}; -1] \\) und auf \\( [1; \\infty[ \\) ist \\(g\\) jeweils streng monoton steigend und damit umkehrbar. Beide Antworten sind richtig.');
+    teil1 = true;
+    document.getElementById('teil-ln').classList.add('offen');
+    zeichneLn();
+  } else {
+    melde('feedback-int', 'nochmal', 'Nicht richtig.');
+  }
+}
+
+/* ---------- Teil 2: Tangente an ln(x) */
+var regler = document.getElementById('x0');
+function zeichneLn() {
+  var x0 = parseFloat(regler.value), y0 = Math.log(x0), m = 1 / x0;
+  var g = Kurs.graph(document.getElementById('graph-ln'), {
+    x: [-1, 6], y: [-3, 3], einheit: 36,
+    kurven: [{ f: function (x) { return x > 0 ? Math.log(x) : NaN; }, farbe: 'blau', name: 'ln(x)', ort: [3.8, -0.9] },
+             { f: function (x) { return y0 + m * (x - x0); }, farbe: 'rot' }],
+    punkte: [{ x: x0, y: y0, farbe: 'rot' }]
+  });
+  document.getElementById('x0-wert').innerHTML = Kurs.formel('x_0 = ' + Kurs.komma(x0, 2));
+  /* Steigungsdreieck: 1 nach rechts, m nach oben */
+  g.el('path', { d: 'M' + g.X(x0) + ' ' + g.Y(y0) + 'H' + g.X(x0 + 1) + 'V' + g.Y(y0 + m), 'class': 'steigungsdreieck' });
+  g.el('text', { x: (g.X(x0) + g.X(x0 + 1)) / 2, y: g.Y(y0) + 15, 'class': 'dreieck-text', 'text-anchor': 'middle' }).textContent = '1';
+  g.el('text', { x: g.X(x0 + 1) + 5, y: (g.Y(y0) + g.Y(y0 + m)) / 2 + 5, 'class': 'dreieck-text' }).textContent = 'm';
+  document.getElementById('steigung').innerHTML = 'Steigung der Tangente: ' + Kurs.formel('m = ' + Kurs.komma(m, 3));
+}
+regler.addEventListener('input', zeichneLn);
+
+function pruefeTabelle() {
+  var soll = [2, 1, 0.5, 0.25], alle = true;
+  soll.forEach(function (w, i) {
+    var feld = document.getElementById('m' + i), ok = Math.abs(Kurs.zahl(feld.value) - w) < 0.005;
+    feld.className = feld.value.trim() ? (ok ? 'richtig' : 'falsch') : '';
+    if (!ok) alle = false;
+  });
+  if (alle) {
+    melde('feedback-tab', 'gut', 'Richtig!');
+    document.getElementById('schritt-term').classList.add('offen');
+  } else {
+    melde('feedback-tab', 'nochmal', 'Noch nicht alles richtig. Stellen Sie \\( x_0 \\) mit dem Regler ein und lesen Sie \\(m\\) ab.');
+  }
+}
+function pruefeTerm() {
+  var w = auswahl('term');
+  if (!w) { melde('feedback-term', 'nochmal', 'Bitte wählen Sie eine Antwort.'); return; }
+  markiere('box-term', w === 'b');
+  tipp('tipp-term', w !== 'b');
+  if (w === 'b') {
+    melde('feedback-term', 'gut', 'Richtig! Die Steigung der ln-Funktion an der Stelle \\(x\\) ist \\( \\frac{1}{x} \\).');
+    teil2 = true;
+    document.getElementById('interessiert').classList.add('offen');
+    if (teil1 && teil2) { Kurs.geschafft(); document.getElementById('vorgehen').classList.add('zeigen'); }
+  } else {
+    melde('feedback-term', 'nochmal', 'Nicht richtig.');
+  }
+}
+</script>
+</body>
+</html>

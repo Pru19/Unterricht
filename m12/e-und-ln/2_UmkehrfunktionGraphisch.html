@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Umkehrfunktion graphisch</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<!-- Block 1 -->
+<section class="aufgabe" id="step1">
+  <h2>Marktanalyse: Wann werden \(20\,000\) Verkäufe erreicht?</h2>
+  <p>Die Verkaufszahlen eines Sneakers (in \(1000\) Stück) folgen der Funktion \( f(x) = e^x \)
+     (\(x\) in Wochen).</p>
+  <h3 class="schritt-titel">Schritt 1: Ansatz wählen</h3>
+  <p>Wählen Sie die Gleichung, mit der sich diese Frage beantworten lässt.</p>
+  <div class="auswahl gleichungen" id="box-eq">
+    <label><input type="radio" name="eq" value="wrong1"> \( e^x = 20\,000 \)</label>
+    <label><input type="radio" name="eq" value="wrong2"> \( x^e = 20 \)</label>
+    <label><input type="radio" name="eq" value="correct"> \( e^x = 20 \)</label>
+    <label><input type="radio" name="eq" value="wrong3"> \( e \cdot x = 20 \)</label>
+    <label><input type="radio" name="eq" value="wrong4"> \( e^{20} = x \)</label>
+    <label><input type="radio" name="eq" value="wrong5"> \( f(20) = e \)</label>
+  </div>
+  <div id="tipp-eq" class="tipp">Achten Sie auf die Einheit: \(f(x)\) gibt die Verkäufe in \(1000\) Stück an.</div>
+  <div class="knopfzeile">
+    <button type="button" class="pruefen" onclick="checkStep1()">Gleichung prüfen</button>
+    <div id="feedback1" class="rueckmeldung"></div>
+  </div>
+
+  <div id="probieren-container" class="schritt">
+    <hr class="trenner">
+    <h3 class="schritt-titel">Schritt 2: Lösen Sie die Gleichung durch systematisches Probieren mit dem Taschenrechner</h3>
+    <p>Welcher ganzzahlige Wert für \(x\) kommt dem Zielwert am nächsten?</p>
+    <div class="eingabezeile">
+      <span>\( x \approx \)</span>
+      <input type="text" inputmode="decimal" id="guess-input" autocomplete="off" style="max-width:8rem">
+      <button type="button" class="pruefen" onclick="checkStep2()">Lösung prüfen</button>
+      <button type="button" class="zweit" onclick="zeige('tr-hilfe')">Tipp: \(e^x\) am Taschenrechner</button>
+    </div>
+    <div id="tr-hilfe" class="tipp">
+      Casio fx-87DE Plus: Drücken Sie <kbd>SHIFT</kbd> und dann <kbd>ln</kbd>. Über der Taste
+      <kbd>ln</kbd> steht \(e^{\square}\). Geben Sie den Exponenten ein, etwa <kbd>2</kbd>, und
+      drücken Sie <kbd>=</kbd>. So erhalten Sie \( e^2 \approx 7{,}39 \).
+    </div>
+    <div id="feedback2" class="rueckmeldung"></div>
+    <p id="problem" class="ausblenden problem">Das Probieren klappt, ist aber mühsam. Und für jede
+       neue Verkaufszahl beginnt es von vorn: Wann sind \(5000\) Stück verkauft? Wann \(50\,000\)?
+       Gibt es einen Weg, die Woche zu einer Verkaufszahl <b>direkt</b> zu bekommen?</p>
+  </div>
+</section>
+
+<!-- Block 2 -->
+<section class="aufgabe schritt" id="table-card">
+  <h2>Ohne Probieren: Von der Verkaufszahl direkt zur Woche</h2>
+  <p>Gesucht ist eine Zuordnung, die zu jeder Verkaufszahl die passende Woche liefert:
+     Verkäufe \(\mapsto\) Woche, also genau andersherum als \(f\). Dafür sammeln wir zuerst
+     einige Wertepaare.</p>
+  <h3 class="schritt-titel">Schritt 1: Einige Wertepaare durch Probieren</h3>
+  <div class="nebeneinander graph-tabelle">
+    <div>
+      <p>Bestimmen Sie durch Probieren auf eine Nachkommastelle genau, in welcher Woche die
+         Verkaufszahlen erreicht werden. Jeder richtige Wert erscheint als Punkt auf dem Graphen von \(f\).</p>
+      <table class="tabelle wertetabelle">
+        <tr><th><span class="nb">Verkäufe \(y\)</span><br>(in \(1000\))</th><td>\(1\)</td><td>\(2\)</td><td>\(3\)</td><td>\(6\)</td><td>\(10\)</td></tr>
+        <tr><th>Wochen \(x\)</th>
+          <td><input type="text" inputmode="decimal" id="xval0" autocomplete="off"></td>
+          <td><input type="text" inputmode="decimal" id="xval1" autocomplete="off"></td>
+          <td><input type="text" inputmode="decimal" id="xval2" autocomplete="off"></td>
+          <td><input type="text" inputmode="decimal" id="xval3" autocomplete="off"></td>
+          <td><input type="text" inputmode="decimal" id="xval4" autocomplete="off"></td></tr>
+      </table>
+      <div class="knopfzeile">
+        <button type="button" class="pruefen" onclick="checkTable()">Wochen prüfen</button>
+        <button type="button" class="zweit" onclick="zeige('tipp-tabelle')">Tipp</button>
+      </div>
+      <div id="tipp-tabelle" class="tipp">Gesucht ist jeweils \(x\) mit \( e^x = y \). Probieren Sie
+         zuerst ganze Zahlen, dann Zehntel: Für \( y = 3 \) ist \( e^1 \approx 2{,}72 \) zu klein und
+         \( e^{1{,}2} \approx 3{,}32 \) zu groß. Also liegt \(x\) dazwischen.</div>
+      <div id="feedback3" class="rueckmeldung"></div>
+    </div>
+    <div class="abbildung"><svg id="graph-werte" role="img" aria-label="Graph von f(x) = e hoch x mit den berechneten Punkten"></svg></div>
+  </div>
+
+  <div id="inverse-step" class="schritt">
+    <hr class="trenner">
+    <h3 class="schritt-titel">Schritt 2: Wertepaare vertauschen und ablesen statt probieren</h3>
+    <div class="nebeneinander graph-tabelle">
+      <div class="abbildung"><svg id="graph-umkehr" role="img" aria-label="Graph von f in Blau, Graph der umgekehrten Zuordnung in Orange und die Winkelhalbierende"></svg></div>
+      <div>
+        <p>Der <b>blaue Graph</b> ordnet jeder Woche \(x\) die Verkäufe \(y\) zu. Für die umgekehrte
+           Zuordnung vertauscht man in jedem Wertepaar die Rollen von \(x\) und \(y\): Aus
+           \( (1{,}1|3) \) wird \( (3|1{,}1) \). Jetzt steht die Verkaufszahl auf der \(x\)-Achse und die Woche auf der \(y\)-Achse.</p>
+        <p>Verbindet man die vertauschten Punkte, entsteht der <b>orange Graph</b>. An ihm kann man zu
+           <b>jeder</b> Verkaufszahl die Woche ablesen, ohne zu probieren.</p>
+        <p class="achsen-legende"><span class="blau-text">Blau:</span> \(x\)-Achse Woche, \(y\)-Achse Verkäufe (in \(1000\))<br>
+           <span class="orange-text">Orange:</span> \(x\)-Achse Verkäufe (in \(1000\)), \(y\)-Achse Woche</p>
+        <p><b>Lesen Sie ab:</b> In welcher Woche sind \(7000\) Stück verkauft?</p>
+        <div class="knopfzeile">
+          <span>Woche \( y \approx \)</span>
+          <input type="text" inputmode="decimal" id="ablesen" autocomplete="off" style="max-width:6rem">
+          <button type="button" class="pruefen" onclick="checkAblesen()">Prüfen</button>
+          <div id="feedback-ablesen" class="rueckmeldung"></div>
+        </div>
+        <div id="tipp-ablesen" class="tipp">Gehen Sie auf der \(x\)-Achse bis \(7\), senkrecht nach oben
+           bis zum orangen Graphen und von dort waagrecht zur \(y\)-Achse.</div>
+      </div>
+    </div>
+
+    <div id="spiegel-step" class="schritt">
+      <hr class="trenner">
+      <h3 class="schritt-titel">Schritt 3: Wie hängen die beiden Graphen zusammen?</h3>
+      <p>Wie gelangt man geometrisch vom blauen zum orangen Graphen?</p>
+      <textarea id="geo-answer" rows="2" placeholder="Beschreiben Sie den geometrischen Vorgang …"></textarea>
+      <button type="button" class="pruefen" onclick="checkInverseFreeText()">Antwort prüfen</button>
+      <div id="feedback4" class="rueckmeldung"></div>
+      <div id="tipp-spiegel" class="tipp">Achten Sie auf die gestrichelte Linie \( y = x \): Wie liegen
+         blauer und oranger Graph und die zusammengehörigen Punkte zu ihr?</div>
+      <div id="begriff" class="ausblenden">
+        <p>Die umgekehrte Zuordnung heißt <b>Umkehrfunktion</b> \( f^{-1} \) von \(f\); ihr Graph ist \( G_{f^{-1}} \).</p>
+        <p class="problem">Am Graphen ablesen ist schon besser als Probieren, aber ungenau. Es geht auch
+           rechnerisch. Dafür braucht es eine neue Funktion, die Sie im nächsten Kapitel kennenlernen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="merke verdeckt" id="merke-box" data-ab="2">
+  <h2>Merke: Umkehrfunktion graphisch</h2>
+  <div class="inhalt">
+    <p>Den Graphen der Umkehrfunktion \( f^{-1} \) erhält man, indem man den Graphen der Funktion \(f\) an der Winkelhalbierenden \( y = x \) spiegelt.</p>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald alle Schritte gelöst sind.</div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+function melde(id, art, html) {
+  var fb = document.getElementById(id);
+  fb.className = 'rueckmeldung ' + art;
+  fb.innerHTML = html;
+  Kurs.formeln(fb);
+}
+function zeige(id) { document.getElementById(id).classList.toggle('zeigen'); }
+function tipp(id, an) { document.getElementById(id).classList.toggle('zeigen', an); }
+
+/* ---------- Werte: Verkäufe y (in 1000) und die Woche x = ln(y) auf Zehntel */
+var Y = [1, 2, 3, 6, 10];
+var SOLL = Y.map(function (y) { return Math.round(Math.log(y) * 10) / 10; });   /* 0; 0,7; 1,1; 1,8; 2,3 */
+var gefunden = [false, false, false, false, false];
+
+/* Schritt 1: Graph von e^x mit den gefundenen Punkten (x|y) */
+function zeichneWerte() {
+  var g = Kurs.graph(document.getElementById('graph-werte'), {
+    x: [-1, 3], y: [0, 11], einheit: 60, einheitY: 22, skalaY: 2, gitterY: 1,
+    kurven: [{ f: Math.exp, farbe: 'blau', name: 'f(x) = e^x', ort: [0.2, 9.8] }],
+    punkte: Y.map(function (y, i) { return gefunden[i] ? { x: SOLL[i], y: y, farbe: 'rot' } : null; })
+             .filter(Boolean)
+  });
+}
+zeichneWerte();
+
+/* Schritt 2: f, die vertauschten Punkte, der Graph der Umkehrfunktion, y = x */
+var abgelesen = false;
+function zeichneUmkehr(mitBegriff) {
+  var g = Kurs.graph(document.getElementById('graph-umkehr'), {
+    x: [-1, 10], y: [-1, 10], einheit: 30,
+    kurven: [
+      { f: function (x) { return x >= 0 ? Math.exp(x) : NaN; }, farbe: 'blau', name: 'G_f', ort: [2.4, 9.3] },
+      { f: function (x) { return x >= 1 ? Math.log(x) : NaN; }, farbe: 'orange',
+        name: mitBegriff ? 'G_{f^{-1}}' : '', ort: [7.2, 3.2] }
+    ],
+    punkte: Y.map(function (y, i) { return { x: SOLL[i], y: y, farbe: 'blau' }; })
+      .concat(Y.map(function (y, i) { return { x: y, y: SOLL[i], farbe: 'orange' }; }))
+  });
+  g.el('line', { x1: g.X(-1), y1: g.Y(-1), x2: g.X(10), y2: g.Y(10), 'class': 'winkelhalbierende' });
+  /* was die Achsen für den orangen Graphen bedeuten */
+  g.el('text', { x: g.X(9.6), y: g.Y(0) - 18, 'class': 'achsen-text', 'text-anchor': 'end' }).textContent = 'Verkäufe';
+  g.el('text', { x: g.X(0) + 6, y: g.Y(9.6), 'class': 'achsen-text', 'text-anchor': 'start' }).textContent = 'Woche';
+  /* jeder Punkt mit seinem vertauschten Partner – senkrecht zur Winkelhalbierenden */
+  Y.forEach(function (y, i) {
+    g.el('line', { x1: g.X(SOLL[i]), y1: g.Y(y), x2: g.X(y), y2: g.Y(SOLL[i]), 'class': 'paarlinie' });
+  });
+  if (abgelesen) {                          /* Ablesehilfe: x = 7 hoch, waagrecht zur y-Achse */
+    var w = Math.log(7);
+    g.el('path', { d: 'M' + g.X(7) + ' ' + g.Y(0) + 'V' + g.Y(w) + 'H' + g.X(0), 'class': 'ablesen' });
+    g.el('circle', { cx: g.X(7), cy: g.Y(w), r: 4, 'class': 'ablesepunkt' });
+  }
+}
+
+function checkAblesen() {
+  var feld = document.getElementById('ablesen'), x = Kurs.zahl(feld.value);
+  var ok = Math.abs(x - Math.log(7)) <= 0.16;          /* ln 7 ≈ 1,95 – abgelesen: 1,8 bis 2,1 */
+  feld.className = ok ? 'richtig' : 'falsch';
+  tipp('tipp-ablesen', !ok);
+  if (ok) {
+    abgelesen = true;
+    zeichneUmkehr(false);
+    melde('feedback-ablesen', 'gut', 'Richtig! Nach knapp \\(2\\) Wochen.');
+    document.getElementById('spiegel-step').classList.add('offen');
+  } else {
+    melde('feedback-ablesen', 'nochmal', 'Noch nicht.');
+  }
+}
+
+/* ---------- Block 1 */
+function checkStep1() {
+  var sel = document.querySelector('input[name="eq"]:checked');
+  var box = document.getElementById('box-eq');
+  box.classList.remove('richtig', 'falsch');
+  var ok = sel && sel.value === 'correct';
+  box.classList.add(ok ? 'richtig' : 'falsch');
+  tipp('tipp-eq', !ok);
+  if (ok) {
+    melde('feedback1', 'gut', 'Richtig! \\(20\\,000\\) Verkäufe sind \\(20\\) Tausend.');
+    document.getElementById('probieren-container').classList.add('offen');
+  } else {
+    melde('feedback1', 'nochmal', 'Das ist leider falsch.');
+    document.getElementById('probieren-container').classList.remove('offen');
+  }
+}
+
+function checkStep2() {
+  var feld = document.getElementById('guess-input');
+  if (Kurs.zahl(feld.value) === 3) {
+    feld.className = 'richtig';
+    melde('feedback2', 'gut', 'Sehr gut! \\(e^3 \\approx 20{,}09\\). Nach etwa \\(3\\) Wochen sind \\(20\\,000\\) Verkäufe erreicht.');
+    document.getElementById('problem').classList.add('zeigen');
+    document.getElementById('table-card').classList.add('offen');
+  } else {
+    feld.className = 'falsch';
+    melde('feedback2', 'nochmal', 'Probieren Sie es noch einmal: Setzen Sie ganze Zahlen für \\(x\\) in \\(e^x\\) ein und vergleichen Sie mit \\(20\\).');
+  }
+}
+
+/* ---------- Block 2 */
+function checkTable() {
+  var alle = true;
+  Y.forEach(function (y, i) {
+    var feld = document.getElementById('xval' + i), x = Kurs.zahl(feld.value);
+    var ok = Math.abs(x - SOLL[i]) < 0.05;
+    feld.className = feld.value.trim() ? (ok ? 'richtig' : 'falsch') : '';
+    gefunden[i] = ok;
+    if (!ok) alle = false;
+  });
+  zeichneWerte();
+  if (alle) {
+    melde('feedback3', 'gut', 'Hervorragend! Alle Zeitpunkte sind richtig bestimmt.');
+    document.getElementById('inverse-step').classList.add('offen');
+    zeichneUmkehr(false);
+  } else {
+    melde('feedback3', 'nochmal', 'Noch nicht alle Zeitpunkte stimmen.');
+  }
+}
+
+function checkInverseFreeText() {
+  var antwort = document.getElementById('geo-answer').value.toLowerCase();
+  var spiegeln = antwort.indexOf('spiegel') >= 0;
+  var achse = antwort.indexOf('winkelhalbierende') >= 0 || antwort.replace(/\s+/g, '').indexOf('y=x') >= 0;
+  var linie = /gestrichelt|linie|gerade|diagonale/.test(antwort);
+  var tauschen = /tausch|wechsel/.test(antwort);
+  tipp('tipp-spiegel', false);
+  if (spiegeln && achse) {
+    melde('feedback4', 'gut', 'Hervorragend erkannt! Das ist die genaue mathematische Beschreibung.');
+    document.getElementById('begriff').classList.add('zeigen');
+    zeichneUmkehr(true);
+    Kurs.geschafft();
+  } else if (spiegeln && linie) {
+    melde('feedback4', 'nochmal', 'Richtig, gespiegelt wird an der gestrichelten Linie. Welche besondere Gerade ist das? Nennen Sie ihren Namen oder ihre Gleichung.');
+  } else if (spiegeln) {
+    melde('feedback4', 'nochmal', 'Guter Ansatz! An welcher Geraden wird gespiegelt?');
+  } else if (tauschen) {
+    melde('feedback4', 'nochmal', 'Stimmt: \\(x\\) und \\(y\\) werden vertauscht. So überträgt man einzelne Punkte und kann den Graphen grob skizzieren. Gesucht ist hier aber eine <b>geometrische</b> Beschreibung: Wie entsteht der orange Graph als Ganzes aus dem blauen?');
+  } else {
+    melde('feedback4', 'nochmal', 'Noch nicht.');
+    tipp('tipp-spiegel', true);
+  }
+}
+</script>
+</body>
+</html>

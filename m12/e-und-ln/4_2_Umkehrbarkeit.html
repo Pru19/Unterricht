@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kriterium der Umkehrbarkeit</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<section class="aufgabe">
+  <h2>Ist jede Funktion umkehrbar?</h2>
+  <p>Wie in 4.1 bilden Sie die Umkehrfunktion graphisch, diesmal für die Normalparabel \( f(x) = x^2 \).</p>
+  <div class="nebeneinander graph-tabelle">
+    <div class="abbildung"><svg id="graph-parabel" role="img" aria-label="Graph der Normalparabel, nach dem Lösen mit den vertauschten Punkten und der gespiegelten Parabel"></svg></div>
+    <div>
+      <h3 class="schritt-titel">Schritt 1: Punkte mit dem Funktionswert \(4\)</h3>
+      <p>\(f\) hat zwei Stellen mit dem Funktionswert \(4\). Geben Sie die zugehörigen Punkte an.</p>
+      <div class="punkte-eingabe">
+        <div class="koordinate"><span class="mf">P<sub>1</sub> <span class="up">(</span></span><input type="text" inputmode="decimal" id="x1" placeholder="x₁" aria-label="x-Koordinate von P1"><span class="mf up">|</span><span class="mf">4</span><span class="mf up">)</span></div>
+        <div class="koordinate"><span class="mf">P<sub>2</sub> <span class="up">(</span></span><input type="text" inputmode="decimal" id="x2" placeholder="x₂" aria-label="x-Koordinate von P2"><span class="mf up">|</span><span class="mf">4</span><span class="mf up">)</span></div>
+      </div>
+      <div id="tipp-stellen" class="tipp">Gesucht sind die Lösungen von \( x^2 = 4 \).</div>
+      <div class="knopfzeile">
+        <button type="button" class="pruefen" onclick="pruefeStellen()">Prüfen</button>
+        <div id="feedback-stellen" class="rueckmeldung"></div>
+      </div>
+
+      <div id="schritt-tausch" class="schritt">
+        <hr class="trenner">
+        <h3 class="schritt-titel">Schritt 2: Punkte vertauschen</h3>
+        <p>Geben Sie die zugehörigen Punkte der Umkehrung an.</p>
+        <div class="punkte-eingabe">
+          <div class="koordinate"><span class="mf">P<sub>1</sub><sup>*</sup> <span class="up">(</span></span><input type="text" inputmode="decimal" id="p1x" placeholder="" aria-label="x-Koordinate von P1*"><span class="mf up">|</span><input type="text" inputmode="decimal" id="p1y" placeholder="" aria-label="y-Koordinate von P1*"><span class="mf up">)</span></div>
+          <div class="koordinate"><span class="mf">P<sub>2</sub><sup>*</sup> <span class="up">(</span></span><input type="text" inputmode="decimal" id="p2x" placeholder="" aria-label="x-Koordinate von P2*"><span class="mf up">|</span><input type="text" inputmode="decimal" id="p2y" placeholder="" aria-label="y-Koordinate von P2*"><span class="mf up">)</span></div>
+        </div>
+        <div id="tipp-tausch" class="tipp">Vertauschen Sie wie in 4.1 bei jedem Punkt die <span class="nb">\(x\)-</span> und die <span class="nb">\(y\)-Koordinate</span>.</div>
+        <div class="knopfzeile">
+          <button type="button" class="pruefen" onclick="pruefeTausch()">Prüfen</button>
+          <div id="feedback-tausch" class="rueckmeldung"></div>
+        </div>
+      </div>
+
+      <div id="schritt-funktion" class="schritt">
+        <hr class="trenner">
+        <h3 class="schritt-titel">Schritt 3: Ist das noch eine Funktion?</h3>
+        <p>Ist der orange, gespiegelte Graph der Graph einer Funktion?</p>
+        <div class="auswahl" id="box-fkt">
+          <label><input type="radio" name="fkt" value="a"> <span>Ja, jeder Punkt der Parabel hat einen gespiegelten Partner.</span></label>
+          <label><input type="radio" name="fkt" value="b"> <span>Nein, zu \( x = 4 \) gehören zwei <span class="nb">\(y\)-Werte</span>: \(2\) und \(-2\).</span></label>
+          <label><input type="radio" name="fkt" value="c"> <span>Ja, der gespiegelte Graph ist wieder eine Parabel.</span></label>
+          <label><input type="radio" name="fkt" value="d"> <span>Nein, der gespiegelte Graph schneidet die Winkelhalbierende.</span></label>
+        </div>
+        <div class="knopfzeile">
+          <button type="button" class="pruefen" onclick="pruefeFunktion()">Prüfen</button>
+          <div id="feedback-fkt" class="rueckmeldung"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p id="problem" class="ausblenden problem">Eine Funktion ordnet jedem <span class="nb">\(x\)-Wert</span> genau
+     einen <span class="nb">\(y\)-Wert</span> zu. Die Normalparabel ist deshalb auf \( \mathbb{R} \)
+     <b>nicht umkehrbar</b>. Lässt sich das retten?</p>
+</section>
+
+<section id="einschraenken" class="aufgabe schritt">
+  <h2>Definitionsmenge einschränken</h2>
+  <p>Man kann die Definitionsmenge auf ein Intervall einschränken, sodass jeder Funktionswert nur noch einmal vorkommt.
+     Geben Sie ein möglichst großes Intervall an, auf dem \( f(x) = x^2 \) umkehrbar ist.</p>
+  <div class="knopfzeile">
+    <span>\( D = \)</span>
+    <input type="text" id="intervall" autocomplete="off" autocapitalize="off" style="max-width:10rem">
+    <div class="bausteine" data-zeichen="∞ − ] [ ; 0" aria-label="Zeichen einfügen"></div>
+    <button type="button" class="pruefen" onclick="pruefeIntervall()">Prüfen</button>
+  </div>
+  <div id="tipp-intervall" class="tipp">Nehmen Sie nur einen der beiden Äste der Parabel, mit dem Scheitel \( (0|0) \).</div>
+  <div id="feedback-intervall" class="rueckmeldung"></div>
+
+  <div id="schritt-eigenschaft" class="schritt">
+    <hr class="trenner">
+    <h3 class="schritt-titel">Was macht die eingeschränkte Parabel umkehrbar?</h3>
+    <div class="auswahl" id="box-eig">
+      <label><input type="radio" name="eig" value="a"> <span>Sie geht durch den Ursprung.</span></label>
+      <label><input type="radio" name="eig" value="b"> <span>Sie ist streng monoton.</span></label>
+      <label><input type="radio" name="eig" value="c"> <span>Ihre Funktionswerte sind nicht negativ.</span></label>
+      <label><input type="radio" name="eig" value="d"> <span>Sie ist achsensymmetrisch.</span></label>
+    </div>
+    <div id="tipp-eig" class="tipp">Welche der Eigenschaften hat die ganze Parabel <b>nicht</b>, die eingeschränkte aber schon?</div>
+    <div class="knopfzeile">
+      <button type="button" class="pruefen" onclick="pruefeEigenschaft()">Prüfen</button>
+      <div id="feedback-eig" class="rueckmeldung"></div>
+    </div>
+  </div>
+</section>
+
+<section id="basics-box" class="merke verdeckt" data-ab="4.2">
+  <h2>Merke: Monotoniekriterium</h2>
+  <div class="inhalt">
+    <p>Ist eine Funktion \(f\) in einem Intervall streng monoton steigend oder fallend, so ist sie dort umkehrbar.</p>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald die gesuchte Eigenschaft gefunden ist.</div>
+<p id="beispiel" class="ausblenden"><i>Beispiel: \( f(x) = x^2 \) ist auf \( \mathbb{R} \) nicht umkehrbar, wohl aber auf \( [0; \infty[ \).</i></p>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+function melde(id, art, html) {
+  var fb = document.getElementById(id);
+  fb.className = 'rueckmeldung ' + art;
+  fb.innerHTML = html;
+  Kurs.formeln(fb);
+}
+function tipp(id, an) { document.getElementById(id).classList.toggle('zeigen', an); }
+function auswahl(name) {
+  var r = document.querySelector('input[name="' + name + '"]:checked');
+  return r ? r.value : null;
+}
+
+/* ---------- Graph: Parabel; nach Schritt 1 Punkte und Spiegelung,
+   nach dem Einschränken nur noch ein Ast und seine Spiegelung */
+var stand = 'start', ast = 1;     /* ast: +1 rechts, −1 links */
+function zeichne() {
+  var p = function (x) { return x * x; };
+  var kurven = [], punkte = [];
+  if (stand === 'eingeschraenkt') {
+    kurven.push({ f: p, farbe: 'blau', blass: true });
+    kurven.push({ f: function (x) { return x * ast >= 0 ? x * x : NaN; }, farbe: 'blau', name: 'G_f', ort: [ast > 0 ? 1.6 : -2.9, 4.6] });
+    kurven.push({ f: function (x) { return x >= 0 ? ast * Math.sqrt(x) : NaN; }, farbe: 'orange', name: 'G_{f^{-1}}', ort: [3.2, ast > 0 ? 2.3 : -1.4] });
+  } else {
+    kurven.push({ f: p, farbe: 'blau', name: 'G_f', ort: [-2.9, 2.4] });
+    if (stand !== 'start') punkte.push({ x: -2, y: 4, farbe: 'blau', name: '(-2|4)', dx: 8, dy: 4 },
+                                       { x: 2, y: 4, farbe: 'blau', name: '(2|4)', dx: 8, dy: 4 });
+    if (stand === 'gespiegelt') {
+      kurven.push({ f: function (x) { return x >= 0 ? Math.sqrt(x) : NaN; }, farbe: 'orange' });
+      kurven.push({ f: function (x) { return x >= 0 ? -Math.sqrt(x) : NaN; }, farbe: 'orange' });
+      punkte.push({ x: 4, y: 2, farbe: 'orange', name: '(4|2)', dx: -8, dy: -8, anker: 'end' },
+                  { x: 4, y: -2, farbe: 'orange', name: '(4|{-2})', dx: -8, dy: 18, anker: 'end' });
+    }
+  }
+  var g = Kurs.graph(document.getElementById('graph-parabel'), {
+    x: [-3, 5], y: [-3, 5], einheit: 30, kurven: kurven, punkte: punkte
+  });
+  if (stand === 'gespiegelt' || stand === 'eingeschraenkt') g.el('line', { x1: g.X(-3), y1: g.Y(-3), x2: g.X(5), y2: g.Y(5), 'class': 'winkelhalbierende' });
+  if (stand === 'gespiegelt') g.el('line', { x1: g.X(4), y1: g.Y(2), x2: g.X(4), y2: g.Y(-2), 'class': 'fehlerlinie' });
+}
+zeichne();
+
+/* ---------- Schritt 1 */
+var stelle1, stelle2;
+function pruefeStellen() {
+  var f1 = document.getElementById('x1'), f2 = document.getElementById('x2');
+  var a = Kurs.zahl(f1.value), b = Kurs.zahl(f2.value);
+  var ok = (a === 2 && b === -2) || (a === -2 && b === 2);
+  f1.className = ok || ((a === 2 || a === -2) && a !== b) ? 'richtig' : 'falsch';
+  f2.className = ok ? 'richtig' : 'falsch';
+  tipp('tipp-stellen', !ok);
+  if (ok) {
+    stelle1 = a; stelle2 = b;
+    stand = 'punkte';
+    zeichne();
+    melde('feedback-stellen', 'gut', 'Richtig!');
+    document.getElementById('schritt-tausch').classList.add('offen');
+  } else {
+    melde('feedback-stellen', 'nochmal', 'Noch nicht richtig.');
+  }
+}
+
+/* ---------- Schritt 2: vertauschen – P1* gehört zu P1, P2* zu P2 */
+function pruefeTausch() {
+  var soll = { p1x: 4, p1y: stelle1, p2x: 4, p2y: stelle2 }, alle = true;
+  for (var id in soll) {
+    var feld = document.getElementById(id), ok = Kurs.zahl(feld.value) === soll[id];
+    feld.className = ok ? 'richtig' : 'falsch';
+    if (!ok) alle = false;
+  }
+  tipp('tipp-tausch', !alle);
+  if (alle) {
+    stand = 'gespiegelt';
+    zeichne();
+    melde('feedback-tausch', 'gut', 'Richtig! Die vertauschten Punkte liegen auf der orangen, gespiegelten Parabel.');
+    document.getElementById('schritt-funktion').classList.add('offen');
+  } else {
+    melde('feedback-tausch', 'nochmal', 'Noch nicht richtig.');
+  }
+}
+
+/* ---------- Schritt 3 */
+
+function pruefeFunktion() {
+  var w = auswahl('fkt'), box = document.getElementById('box-fkt');
+  if (!w) { melde('feedback-fkt', 'nochmal', 'Bitte wählen Sie eine Antwort.'); return; }
+  box.classList.remove('richtig', 'falsch');
+  box.classList.add(w === 'b' ? 'richtig' : 'falsch');
+  if (w === 'b') {
+    melde('feedback-fkt', 'gut', 'Richtig!');
+    document.getElementById('problem').classList.add('zeigen');
+    document.getElementById('einschraenken').classList.add('offen');
+  } else {
+    melde('feedback-fkt', 'nochmal', 'Nicht richtig. Sehen Sie sich die rote Linie bei \\( x = 4 \\) an.');
+  }
+}
+
+/* ---------- Definitionsmenge einschränken */
+function pruefeIntervall() {
+  var feld = document.getElementById('intervall'), v = Kurs.normal(feld.value);
+  var rechts = ['[0;inf[', '[0;+inf['].indexOf(v) >= 0, links = v === ']-inf;0]';
+  var offen = [']0;inf[', ']0;+inf[', ']-inf;0['].indexOf(v) >= 0;
+  feld.className = rechts || links ? 'richtig' : 'falsch';
+  tipp('tipp-intervall', !(rechts || links) && !offen);
+  if (rechts || links) {
+    ast = rechts ? 1 : -1;
+    stand = 'eingeschraenkt';
+    zeichne();
+    melde('feedback-intervall', 'gut', 'Richtig! Auf ' + (rechts ? '\\( [0; \\infty[ \\)' : '\\( ]{-\\infty}; 0] \\)') +
+      ' kommt jeder Funktionswert nur einmal vor. Der gespiegelte Ast ist der Graph einer Funktion.');
+    document.getElementById('schritt-eigenschaft').classList.add('offen');
+  } else if (offen) {
+    melde('feedback-intervall', 'nochmal', 'Fast! Die Stelle \\(0\\) dürfen Sie noch mitnehmen. Das Intervall soll möglichst groß sein.');
+  } else {
+    melde('feedback-intervall', 'nochmal', 'Noch nicht richtig.');
+  }
+}
+
+/* ---------- Eigenschaft */
+function pruefeEigenschaft() {
+  var w = auswahl('eig'), box = document.getElementById('box-eig');
+  if (!w) { melde('feedback-eig', 'nochmal', 'Bitte wählen Sie eine Antwort.'); return; }
+  box.classList.remove('richtig', 'falsch');
+  box.classList.add(w === 'b' ? 'richtig' : 'falsch');
+  tipp('tipp-eig', w !== 'b');
+  if (w === 'b') {
+    melde('feedback-eig', 'gut', 'Richtig! Ein streng monotoner Graph nimmt jeden Funktionswert höchstens einmal an. Beim Spiegeln entsteht wieder eine Funktion.');
+    Kurs.geschafft();
+    document.getElementById('beispiel').classList.add('zeigen');
+  } else {
+    melde('feedback-eig', 'nochmal', 'Nicht richtig.');
+  }
+}
+</script>
+</body>
+</html>

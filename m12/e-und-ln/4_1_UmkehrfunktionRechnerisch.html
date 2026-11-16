@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Umkehrfunktion rechnerisch</title>
+<link rel="stylesheet" href="_Quellen/kurs.css">
+<script src="_Quellen/kurs-mathjax.js"></script>
+<script src="_Quellen/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<div class="huelle">
+<!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
+<main>
+
+<section class="aufgabe" id="task1-card">
+  <h2>Wiederholung: Die Umkehrfunktion graphisch</h2>
+  <p>In Kapitel 2 haben Sie gelernt, wie man den Graphen der Umkehrfunktion graphisch erhält.</p>
+  <div class="nebeneinander graph-tabelle">
+    <div class="abbildung"><svg id="graph-f" role="img" aria-label="Graph der Funktion f mit den Punkten A(0|2), B(1|5) und C(−1|−1)"></svg></div>
+    <div>
+      <p>Auf dem Graphen der umkehrbaren Funktion \(f\) liegen die Punkte \( A(0|2) \), \( B(1|5) \)
+         und \( C(-1|{-1}) \).<br>Bestimmen Sie die zugehörigen Punkte \( A^* \), \( B^* \) und \( C^* \)
+         auf dem Graphen der Umkehrfunktion \( f^{-1} \).</p>
+      <div class="punkte-eingabe">
+        <div class="koordinate"><span class="mf">A<sup>*</sup> <span class="up">(</span></span><input type="text" inputmode="decimal" id="ax" aria-label="x-Koordinate von A*"><span class="mf up">|</span><input type="text" inputmode="decimal" id="ay" aria-label="y-Koordinate von A*"><span class="mf up">)</span></div>
+        <div class="koordinate"><span class="mf">B<sup>*</sup> <span class="up">(</span></span><input type="text" inputmode="decimal" id="bx" aria-label="x-Koordinate von B*"><span class="mf up">|</span><input type="text" inputmode="decimal" id="by" aria-label="y-Koordinate von B*"><span class="mf up">)</span></div>
+        <div class="koordinate"><span class="mf">C<sup>*</sup> <span class="up">(</span></span><input type="text" inputmode="decimal" id="cx" aria-label="x-Koordinate von C*"><span class="mf up">|</span><input type="text" inputmode="decimal" id="cy" aria-label="y-Koordinate von C*"><span class="mf up">)</span></div>
+      </div>
+      <div id="tipp-punkte" class="tipp">Vertauschen Sie bei jedem Punkt die <span class="nb">\(x\)-</span> und die <span class="nb">\(y\)-Koordinate</span>.</div>
+      <button type="button" id="btn-coords" class="pruefen" onclick="checkAnswers()">Eingaben prüfen</button>
+      <div id="feedback" class="rueckmeldung"></div>
+    </div>
+  </div>
+  <p id="problem" class="ausblenden problem">Der orange Graph zeigt \( f^{-1} \). Aber welcher
+     <b>Funktionsterm</b> gehört dazu? Am Graphen lässt er sich oft nur ungefähr ablesen. Genauer geht es rechnerisch.</p>
+</section>
+
+<section id="calculation-block" class="aufgabe schritt">
+  <h2>Neu: Die Umkehrfunktion rechnerisch</h2>
+  <p>Am Beispiel der Funktion von oben lernen Sie das Verfahren Schritt für Schritt kennen:</p>
+  <p>\[ f(x) = 3x + 2 \]</p>
+
+  <div id="calc-step-1">
+    <h3 class="schritt-titel">Schritt 1: Variablen tauschen</h3>
+    <p>Schreiben Sie \(y\) statt \(f(x)\). Vertauschen Sie dann wie bei den Punkten \(x\) und \(y\) und geben Sie die neue Gleichung an.</p>
+    <div class="eingabezeile">
+      <input type="text" id="step1-input" placeholder="neue Gleichung" autocomplete="off" autocapitalize="off" style="max-width:16rem">
+      <button type="button" class="pruefen" id="btn-step1" onclick="checkStep1()">Prüfen</button>
+    </div>
+    <div id="feedback-step1" class="rueckmeldung"></div>
+  </div>
+
+  <div id="calc-step-2" class="schritt">
+    <h3 class="schritt-titel">Schritt 2: Nach \(y\) auflösen</h3>
+    <p>Lösen Sie die Gleichung nach \(y\) auf und geben Sie die vollständige Gleichung an.</p>
+    <p class="hinweis-klein">Schreiben Sie Brüche mit „/“, z. B. 1/3.</p>
+    <div class="eingabezeile">
+      <input type="text" id="step2-input" placeholder="y = …" autocomplete="off" autocapitalize="off" style="max-width:16rem">
+      <button type="button" class="pruefen" id="btn-step2" onclick="checkStep2()">Prüfen</button>
+    </div>
+    <div id="feedback-step2" class="rueckmeldung"></div>
+  </div>
+
+  <div id="final-success-msg"></div>
+</section>
+
+<section class="merke verdeckt" id="main-info-box" data-ab="4.1">
+  <h2>Merke: Umkehrfunktion berechnen</h2>
+  <div class="inhalt">
+    <ol>
+      <li>Funktionsgleichung in der Form \( y = f(x) \) schreiben.</li>
+      <li>\(x\) und \(y\) vertauschen.</li>
+      <li>Gleichung nach \(y\) auflösen.</li>
+      <li>Das Ergebnis als \( f^{-1}(x) \) notieren.</li>
+    </ol>
+    <p><i>Die Definitionsmenge einer Funktion ist die Wertemenge ihrer Umkehrfunktion und umgekehrt.</i></p>
+  </div>
+</section>
+<div class="merke-platzhalter">Der Merkkasten erscheint hier, sobald die Umkehrfunktion berechnet ist.</div>
+
+</main>
+</div>
+
+<script src="_Quellen/kurs.js"></script>
+<script>
+var punkteRichtig = false, termRichtig = false;
+function zeichne() {
+  var g = Kurs.graph(document.getElementById('graph-f'), {
+    x: [-6, 6], y: [-6, 6], einheit: 26,
+    kurven: [{ f: function (x) { return 3 * x + 2; }, farbe: 'blau', name: 'G_f', ort: [-2.8, 5] }]
+      .concat(punkteRichtig ? [{ f: function (x) { return (x - 2) / 3; }, farbe: 'orange',
+        name: termRichtig ? 'f^{-1}(x) = 1/3 · (x-2)' : 'G_{f^{-1}}', ort: termRichtig ? [-0.3, -3.6] : [3.2, -0.6] }] : []),
+    punkte: [
+      { x: 0, y: 2, farbe: 'blau', name: 'A', dx: 8, dy: 14 },
+      { x: 1, y: 5, farbe: 'blau', name: 'B', dx: 9, dy: 4 },
+      { x: -1, y: -1, farbe: 'blau', name: punkteRichtig ? 'C = C^*' : 'C', dx: -12, dy: 34, anker: 'end' }
+    ].concat(punkteRichtig ? [
+      { x: 2, y: 0, farbe: 'orange', name: 'A^*', dx: -6, dy: -8, anker: 'end' },
+      { x: 5, y: 1, farbe: 'orange', name: 'B^*', dx: 0, dy: -10 }
+    ] : [])
+  });
+  if (punkteRichtig) g.el('line', { x1: g.X(-6), y1: g.Y(-6), x2: g.X(6), y2: g.Y(6), 'class': 'winkelhalbierende' });
+}
+zeichne();
+
+function melde(id, art, html) {
+  var fb = document.getElementById(id);
+  fb.className = 'rueckmeldung ' + art;
+  fb.innerHTML = html;
+  Kurs.formeln(fb);
+}
+
+function checkAnswers() {
+  var solutions = { ax: 2, ay: 0, bx: 5, by: 1, cx: -1, cy: -1 }, allCorrect = true;
+  for (var id in solutions) {
+    var input = document.getElementById(id), ok = Kurs.zahl(input.value) === solutions[id];
+    input.className = ok ? 'richtig' : 'falsch';
+    if (!ok) allCorrect = false;
+  }
+  document.getElementById('tipp-punkte').classList.toggle('zeigen', !allCorrect);
+  if (allCorrect) {
+    punkteRichtig = true;
+    zeichne();
+    melde('feedback', 'gut', 'Richtig! Zur graphischen Bestimmung einer Umkehrfunktion vertauscht man die Koordinaten einzelner Punkte. Das ist das Spiegeln an der Winkelhalbierenden.<br>Verbindet man die Punkte, erhält man den Graphen von \\( f^{-1} \\).');
+    document.getElementById('problem').classList.add('zeigen');
+    document.getElementById('calculation-block').classList.add('offen');
+  } else {
+    melde('feedback', 'nochmal', 'Noch nicht alles richtig.');
+  }
+}
+
+function checkStep1() {
+  var feld = document.getElementById('step1-input');
+  var input = feld.value.replace(/\s+/g, '').toLowerCase();
+  if (input === 'x=3y+2') {
+    feld.className = 'richtig';
+    melde('feedback-step1', 'gut', 'Richtig! Durch das Vertauschen erhalten Sie \\( x = 3y + 2 \\).');
+    document.getElementById('calc-step-2').classList.add('offen');
+    document.getElementById('btn-step1').disabled = true;
+  } else {
+    feld.className = 'falsch';
+    melde('feedback-step1', 'nochmal', 'Noch nicht ganz. Ersetzen Sie in \\( y = 3x + 2 \\) (das ist \\( f(x) = 3x + 2 \\) mit \\(y\\) statt \\(f(x)\\)) jedes \\(y\\) durch \\(x\\) und jedes \\(x\\) durch \\(y\\).');
+  }
+}
+
+function checkStep2() {
+  var feld = document.getElementById('step2-input');
+  /* Doppelpunkt und Schrägstrich gelten beide als Bruchstrich */
+  var input = feld.value.replace(/\s+/g, '').replace(/:/g, '/').replace(/·/g, '*').toLowerCase();
+  var solutions = ['y=(x-2)/3', 'y=1/3x-2/3', 'y=1/3*(x-2)', 'y=x/3-2/3', 'y=1/3(x-2)', 'y=(x-2)*1/3', 'y=1/3*x-2/3'];
+  if (solutions.indexOf(input) >= 0) {
+    feld.className = 'richtig';
+    melde('feedback-step2', 'gut', 'Richtig aufgelöst!');
+    var erfolg = document.getElementById('final-success-msg');
+    erfolg.innerHTML = '<p class="rueckmeldung gut">Die Umkehrfunktion lautet</p><p>\\[ f^{-1}(x) = \\frac{1}{3} \\cdot (x - 2) \\]</p>';
+    erfolg.innerHTML += '<p class="ab-hinweis" data-ab="4.1">Übertragen Sie diese Rechnung als Beispiel in Abschnitt 4.1 Ihres Arbeitsblatts.</p>';
+    Kurs.formeln(erfolg);
+    Kurs.abHinweise(erfolg);
+    document.getElementById('btn-step2').disabled = true;
+    termRichtig = true;
+    zeichne();
+    Kurs.geschafft();
+  } else {
+    feld.className = 'falsch';
+    if (input.indexOf('y=') !== 0)
+      melde('feedback-step2', 'nochmal', 'Bitte geben Sie die ganze Gleichung an, beginnend mit \\( y = \\).');
+    else
+      melde('feedback-step2', 'nochmal', 'Überprüfen Sie Ihre Umformung: Subtrahieren Sie zuerst \\(2\\) und teilen Sie dann durch \\(3\\).');
+  }
+}
+</script>
+</body>
+</html>
