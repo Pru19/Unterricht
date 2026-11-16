@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Umkehrbarkeit und Ableitung</title>
-<link rel="stylesheet" href="_Quellen/kurs.css?v=243cf65a">
-<script src="_Quellen/kurs-mathjax.js?v=243cf65a"></script>
+<link rel="stylesheet" href="_Quellen/kurs.css?v=5f9caaec">
+<script src="_Quellen/kurs-mathjax.js?v=5f9caaec"></script>
 <script src="_Quellen/mathjax/tex-svg.js"></script>
+<script src="_Quellen/mathlive/mathlive.min.js"></script>
 </head>
 <body>
 <div class="huelle">
@@ -24,10 +25,10 @@
       <h3 class="schritt-titel">Beispiel 1: \( f(x) = e^x + x \)</h3>
       <div class="eingabezeile">
         <span>\( f'(x) = \)</span>
-        <input type="text" id="f1" autocomplete="off" autocapitalize="off" style="max-width:10rem">
+        <math-field id="f1" class="term"></math-field>
         <button type="button" class="pruefen" onclick="pruefeF1()">Prüfen</button>
       </div>
-      <p class="hinweis-klein">Schreiben Sie Potenzen mit „^“, z. B. e^x oder x^2.</p>
+      <p class="hinweis-klein">Beim Antippen des Felds öffnet sich eine Mathe-Tastatur. Die Hochzahl erscheint mit einem Kästchen; mit dem Pfeil nach rechts geht es wieder heraus.</p>
       <div id="tipp-f1" class="tipp">Leiten Sie jeden Summanden einzeln ab: \( (e^x)' = e^x \) und \( (x)' = 1 \).</div>
       <div id="feedback-f1" class="rueckmeldung"></div>
 
@@ -56,10 +57,9 @@
         <h3 class="schritt-titel">Beispiel 2: \( g(x) = x^3 - 3x \)</h3>
         <div class="eingabezeile">
           <span>\( g'(x) = \)</span>
-          <input type="text" id="g1" autocomplete="off" autocapitalize="off" style="max-width:10rem">
+          <math-field id="g1" class="term"></math-field>
           <button type="button" class="pruefen" onclick="pruefeG1()">Prüfen</button>
         </div>
-        <p class="hinweis-klein">Schreiben Sie Potenzen mit „^“, z. B. x^2.</p>
         <div id="tipp-g1" class="tipp">Potenzregel: \( (x^3)' = 3x^2 \) und \( (3x)' = 3 \).</div>
         <div id="feedback-g1" class="rueckmeldung"></div>
 
@@ -208,7 +208,7 @@
 </main>
 </div>
 
-<script src="_Quellen/kurs.js?v=243cf65a"></script>
+<script src="_Quellen/kurs.js?v=5f9caaec"></script>
 <script>
 function melde(id, art, html) {
   var fb = document.getElementById(id);
@@ -260,9 +260,9 @@ zeichneG(false);
 
 /* ---------- Beispiel 1 */
 function pruefeF1() {
-  var feld = document.getElementById('f1'), v = term(feld.value);
+  var feld = document.getElementById('f1'), v = Kurs.term(Kurs.ausLatex(feld.value));
   var ok = ['e^x+1', '1+e^x'].indexOf(v) >= 0;
-  feld.className = ok ? 'richtig' : 'falsch';
+  feld.classList.remove('richtig', 'falsch'); feld.classList.add(ok ? 'richtig' : 'falsch');
   tipp('tipp-f1', !ok);
   if (ok) {
     melde('feedback-f1', 'gut', '');
@@ -287,9 +287,9 @@ function pruefeF2() {
 
 /* ---------- Beispiel 2 */
 function pruefeG1() {
-  var feld = document.getElementById('g1'), v = term(feld.value);
+  var feld = document.getElementById('g1'), v = Kurs.term(Kurs.ausLatex(feld.value));
   var ok = ['3x^2-3', '-3+3x^2', '3(x^2-1)'].indexOf(v) >= 0;
-  feld.className = ok ? 'richtig' : 'falsch';
+  feld.classList.remove('richtig', 'falsch'); feld.classList.add(ok ? 'richtig' : 'falsch');
   tipp('tipp-g1', !ok);
   if (ok) {
     melde('feedback-g1', 'gut', '');

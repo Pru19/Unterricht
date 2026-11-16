@@ -60,6 +60,16 @@ KAPITEL.forEach(function (k) {
 
 var SPEICHER = 'kurs-e-ln-fortschritt';
 
+/* Formeleditor (MathLive, nur auf Seiten mit Termfeldern geladen): Schriften
+   aus dem eigenen Ordner neben diesem Skript, keine Klänge */
+var SKRIPT = (document.currentScript && document.currentScript.src) || location.href;
+if (window.MathfieldElement) {
+  MathfieldElement.fontsDirectory = new URL('mathlive/fonts/', SKRIPT).href;
+  MathfieldElement.soundsDirectory = null;
+  MathfieldElement.plonkSound = null;
+  MathfieldElement.keypressSound = null;
+}
+
 function fortschritt() {
   try { return JSON.parse(localStorage.getItem(SPEICHER)) || {}; }
   catch (e) { return {}; }
@@ -514,7 +524,7 @@ function uebung(ziel, aufgaben) {
           h += '<select data-feld="' + j + '"><option value="">…</option>' +
                f.optionen.map(function (o) { return '<option>' + o + '</option>'; }).join('') + '</select>';
         } else if (f.terme && window.MathfieldElement) {   /* Formeleditor: Wurzel mit Kästchen */
-          h += '<math-field class="term" data-feld="' + j + '" math-virtual-keyboard-policy="auto"></math-field>';
+          h += '<math-field class="term" data-feld="' + j + '"></math-field>';
         } else if (f.terme) {          /* ohne MathLive: Textfeld, darunter als Formel */
           h += '<span class="term-feld"><input type="text" class="term" autocomplete="off" autocapitalize="off" data-feld="' + j + '">' +
                '<span class="term-vorschau" aria-live="polite"></span></span>';
@@ -592,6 +602,7 @@ function uebung(ziel, aufgaben) {
       });
     }
   });
+  formelfelder(ziel);
   /* Vorschau: der eingegebene Term als Formel, damit man sieht, was unter
      der Wurzel und im Exponenten steht */
   Array.prototype.forEach.call(ziel.querySelectorAll('input.term'), function (inp) {
@@ -603,15 +614,42 @@ function uebung(ziel, aufgaben) {
   formeln(ziel);
 }
 
+/* Formelfelder: Antippen öffnet die Mathe-Tastatur, Verlassen des Felds oder
+   die Eingabetaste schließt sie wieder */
+function formelfelder(wurzel) {
+  if (!window.mathVirtualKeyboard) return;
+  Array.prototype.forEach.call(wurzel.querySelectorAll('math-field'), function (mf) {
+    if (mf.hasAttribute('data-bereit')) return;
+    mf.setAttribute('data-bereit', '');
+    mf.setAttribute('math-virtual-keyboard-policy', 'manual');
+    /* Beim Einblenden holt MathLive den Fokus kurz weg und wieder zurück:
+       erst nach einem Moment prüfen, ob wirklich kein Formelfeld mehr aktiv ist */
+    mf.addEventListener('focusin', function () {
+      if (!mathVirtualKeyboard.visible) mathVirtualKeyboard.show({ animate: true });
+    });
+    mf.addEventListener('focusout', function () {
+      setTimeout(function () {
+        var a = document.activeElement;
+        if (!a || a.tagName !== 'MATH-FIELD') mathVirtualKeyboard.hide({ animate: true });
+      }, 150);
+    });
+    mf.addEventListener('change', function () { mf.blur(); });
+  });
+}
+
 /* LaTeX aus dem Formeleditor in die Schreibweise der Lösungen:
    \sqrt{x+1} → √(x+1), x^{2} → x^2, ohne \left, \right, \cdot */
 function ausLatex(t) {
   t = String(t).replace(/\\left|\\right|\\,|\\;|\\!|\\ /g, '').replace(/\\cdot|\\times/g, '')
+    .replace(/\\exponentialE|\\mathrm\{e\}/g, 'e')
     .replace(/\\placeholder\{\}/g, '').replace(/\s+/g, '');
   var aus = '';
   for (var i = 0; i < t.length; i++) {
     var c = t[i];
-    if (t.slice(i, i + 5) === '\\sqrt' && t[i + 5] === '{') {
+    if (t.slice(i, i + 5) === '\\frac' && t[i + 5] === '{') {     /* \frac{a}{b} → (a)/(b) */
+      var z = klammerZu(t, i + 5), n = klammerZu(t, z + 1);
+      aus += '(' + ausLatex(t.slice(i + 6, z)) + ')/(' + ausLatex(t.slice(z + 2, n)) + ')'; i = n;
+    } else if (t.slice(i, i + 5) === '\\sqrt' && t[i + 5] === '{') {
       var e = klammerZu(t, i + 5), innen = ausLatex(t.slice(i + 6, e));
       aus += '√(' + innen + ')'; i = e;
     } else if (c === '^' && t[i + 1] === '{') {
@@ -679,13 +717,14 @@ function zahl(text) {
 function komma(x, stellen) { return x.toFixed(stellen).replace('.', '{,}'); }   /* für TeX */
 
 window.Kurs = { formeln: formeln, formel: formel, graph: graph, geschafft: geschafft, abHinweise: abHinweise,
-                normal: normal, uebung: uebung,
+                normal: normal, uebung: uebung, ausLatex: ausLatex, term: term,
                 zahl: zahl, komma: komma,
                 home: home, zuruecksetzen: zuruecksetzen, seiten: SEITEN };
 
 function start() {
   abHinweise(document.body);
   bausteine(document.body);
+  formelfelder(document.body);
   rahmen();
   var ziel = document.getElementById('uebersicht');
   if (ziel) home(ziel);

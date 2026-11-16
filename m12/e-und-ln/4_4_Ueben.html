@@ -4,19 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Üben</title>
-<link rel="stylesheet" href="_Quellen/kurs.css?v=243cf65a">
-<script src="_Quellen/kurs-mathjax.js?v=243cf65a"></script>
+<link rel="stylesheet" href="_Quellen/kurs.css?v=5f9caaec">
+<script src="_Quellen/kurs-mathjax.js?v=5f9caaec"></script>
 <script src="_Quellen/mathjax/tex-svg.js"></script>
 <script src="_Quellen/mathlive/mathlive.min.js"></script>
 </head>
 <body>
-<script>
-  /* Formeleditor: Schriften aus dem eigenen Ordner, ohne Klänge; erst im body, MathLive braucht ihn */
-  MathfieldElement.fontsDirectory = new URL('_Quellen/mathlive/fonts/', location.href).href;
-  MathfieldElement.soundsDirectory = null;
-  MathfieldElement.plonkSound = null;
-  MathfieldElement.keypressSound = null;
-</script>
 <div class="huelle">
 <!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
 <main>
@@ -29,15 +22,14 @@
 </main>
 </div>
 
-<script src="_Quellen/kurs.js?v=243cf65a"></script>
+<script src="_Quellen/kurs.js?v=5f9caaec"></script>
 <script>
 /* Aufgabe 1 aus dem Buch: nur Seite und Nummer, Ergebnis wird eingegeben
    (f(x) = x^2 - 1 auf [0; ∞[). Aufgabe 2 und 3 sind eigene Aufgaben, ihr Text
    steht hier; die Lösungen liegen aus (AB11 Lösungen zu den Übungen). */
 Kurs.uebung(document.getElementById('aufgaben'), [
   { titel: 'Aufgabe 1', stufe: '●○○', stelle: 'Buch S. 156/12', art: 'ergebnis',
-    hinweis: 'Rechnen Sie im Heft und geben Sie die Ergebnisse ein. Wurzel und Hochzahl erscheinen mit einem Kästchen: Schreiben Sie hinein und gehen Sie mit der Pfeiltaste nach rechts wieder heraus.',
-    zeichen: '√ ^ ²',
+    hinweis: 'Rechnen Sie im Heft und geben Sie die Ergebnisse ein. Beim Antippen eines Felds öffnet sich eine Mathe-Tastatur: Wurzel und Hochzahl erscheinen mit einem Kästchen, mit dem Pfeil nach rechts geht es wieder heraus.',
     felder: [
       { gruppe: 'a)', frage: '\\( f^{-1}(x) = \\)', terme: ['√(x+1)', '√(1+x)', '(x+1)^(1/2)', '(x+1)^0.5', '(x+1)^0,5'] },
       { gruppe: 'b)', frage: '\\( (f^{-1})^{-1}(x) = \\)', terme: ['x^2-1', '-1+x^2'] },
