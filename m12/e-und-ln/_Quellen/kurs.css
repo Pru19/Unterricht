@@ -193,6 +193,13 @@ button.zweit{
 .blaettern .gesperrt-text{color:var(--falsch)}
 .blaettern .fertig-text{display:none}
 body.geschafft .blaettern .fertig-text{display:inline}
+/* letzte Seite: statt „Weiter“ das Ende des Kurses, nach dem Lösen „Fertig!“ */
+.blaettern .ende-marke{color:var(--leise); font-size:.9rem; align-self:center; padding:0 .4rem}
+.kurs-ende{display:none; flex:1 0 100%; margin:.4rem 0 0; padding:.6rem .9rem; border-radius:10px;
+  background:var(--gut-hell); color:var(--gut); border:1.5px solid var(--gut)}
+.kurs-ende b{font-size:1.05rem}
+.gesamt p.kurs-ende{color:var(--gut); font-size:1rem}
+body.geschafft .kurs-ende,.kurs-ende.zeigen{display:block}
 body.geschafft .blaettern .offen-text{display:none}
 /* Formeln von MathJax */
 mjx-container[display="true"]{margin:.5em 0 !important}

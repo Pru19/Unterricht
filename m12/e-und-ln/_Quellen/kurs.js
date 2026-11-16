@@ -301,10 +301,12 @@ function rahmen() {
        Besuch gelöst ist (Kurs.geschafft); die Übersicht ist immer offen. */
     (nach ? '<a class="weiter" data-href="' + nach.datei + '" aria-disabled="true" role="link">' +
             '<span>Weiter</span>' + RECHTS + '</a>'
-          : '') +                       /* letzte Seite: zurück geht es über das Haus */
+          : '<span class="ende-marke">Ende des Lernkurses</span>') +   /* letzte Seite */
     '</span>' +
     (nach ? '<p class="als-naechstes"><span class="gesperrt-text" aria-live="polite"></span>' +
-            '<span class="fertig-text">Als Nächstes: ' + nach.nr + ' ' + nach.titel + '</span></p>' : '');
+            '<span class="fertig-text">Als Nächstes: ' + nach.nr + ' ' + nach.titel + '</span></p>'
+          : '<p class="kurs-ende" aria-live="polite"><b>Fertig!</b> Sie haben das Ende des ' +
+            'Lernkurses erreicht. Die Übersicht zeigt, ob alle Seiten abgehakt sind.</p>');
   main.parentNode.insertBefore(fuss, main.nextSibling);
   /* Wer das blasse „Weiter“ antippt, erfährt, warum es nicht geht */
   var weiter = fuss.querySelector('.weiter');
@@ -375,7 +377,8 @@ function home(ziel) {
     Math.round(100 * erledigt / SEITEN.length) + '%"></span></div>' +
     '<p>' + erledigt + ' von ' + SEITEN.length + ' Seiten bearbeitet</p>' +
     (naechste ? '<a class="knopf" href="' + naechste.datei + '">' +
-      (erledigt ? 'Weiter mit ' : 'Beginnen mit ') + naechste.nr + ' ' + naechste.titel + ' →</a>' : '') +
+      (erledigt ? 'Weiter mit ' : 'Beginnen mit ') + naechste.nr + ' ' + naechste.titel + ' →</a>'
+              : '<p class="kurs-ende zeigen"><b>Fertig!</b> Alle Seiten sind abgehakt: Sie haben den Lernkurs abgeschlossen.</p>') +
     '</div>';
   KAPITEL.forEach(function (k) {
     var fertig = k.seiten.filter(function (s) { return stand[s.datei]; }).length;
@@ -616,15 +619,65 @@ function uebung(ziel, aufgaben) {
 
 /* Formelfelder: Antippen öffnet die Mathe-Tastatur, Verlassen des Felds oder
    die Eingabetaste schließt sie wieder */
+var TASTATUR = {
+  label: '123', labelClass: 'MLK__tex-math', rows: [
+    [{ latex: 'x', shift: 'y', variants: ['y', 't', 'x^2', 'x^{#?}'] },
+     { latex: 'n', shift: 'a', variants: ['a', 'k'] },
+     '[separator-5]', '[7]', '[8]', '[9]', '[/]', '[separator-5]',
+     { latex: '\\exponentialE', shift: '\\ln', variants: ['\\ln', '\\exp'] },
+     { latex: '\\frac{#@}{#?}', class: 'small' },          /* Bruch statt i */
+     { latex: '\\pi', shift: '\\sin', variants: ['\\sin', '\\cos', '\\tan'] }],
+    [{ label: '<', latex: '<', class: 'hide-shift', shift: { latex: '\\le', label: '\u2264' } },
+     { label: '>', latex: '>', class: 'hide-shift', shift: { latex: '\\ge', label: '\u2265' } },
+     '[separator-5]', '[4]', '[5]', '[6]', '[*]', '[separator-5]',
+     { class: 'hide-shift', latex: '#@^2' },
+     { class: 'hide-shift', latex: '#@^{#0}' },
+     { class: 'hide-shift', latex: '\\sqrt{#0}' }],
+    ['[(]', '[)]', '[separator-5]', '[1]', '[2]', '[3]', '[-]', '[separator-5]',
+     { latex: '\\int^{\\infty}_{0}\\!#?\\,\\mathrm{d}x', class: 'small hide-shift', shift: '\\int' },
+     { class: 'hide-shift', latex: '\\forall', shift: '\\exists' },
+     { label: '[backspace]', width: 1 }],
+    [{ label: '[shift]', width: 2 }, '[separator-5]', '[0]', '[.]', '[=]', '[+]', '[separator-5]',
+     '[left]', '[right]',
+     { label: 'Fertig', class: 'action kurs-fertig', width: 1, command: ['commit'] }]   /* schließt die Tastatur */
+  ]
+};
+
 function formelfelder(wurzel) {
   if (!window.mathVirtualKeyboard) return;
+  if (!formelfelder.tastatur) {
+    formelfelder.tastatur = true;
+    mathVirtualKeyboard.layouts = [TASTATUR, 'symbols', 'alphabetic', 'greek'];
+    /* „Fertig“ auf der Tastatur: Feld verlassen und Tastatur schließen */
+    function fertig(e) {
+      /* die Taste liegt im Shadow DOM der Tastatur: über den Pfad suchen */
+      var taste = e.composedPath().some(function (n) { return n.classList && n.classList.contains('kurs-fertig'); });
+      if (!taste) return;
+      formelfelder.zu = Date.now();
+      mathVirtualKeyboard.hide({ animate: true });
+      setTimeout(function () {
+        var a = document.activeElement;
+        if (a && a.tagName === 'MATH-FIELD') a.blur();
+      }, 50);
+    }
+    document.addEventListener('pointerup', fertig, true);
+    /* MathLive öffnet nach „Fertig“ kurz darauf von selbst wieder: Wer nicht
+       inzwischen ein Feld angetippt hat, bekommt sie gleich wieder zu */
+    mathVirtualKeyboard.addEventListener('virtual-keyboard-toggle', function () {
+      if (mathVirtualKeyboard.visible && Date.now() - (formelfelder.zu || 0) < 1500)
+        mathVirtualKeyboard.hide();
+    });
+  }
   Array.prototype.forEach.call(wurzel.querySelectorAll('math-field'), function (mf) {
     if (mf.hasAttribute('data-bereit')) return;
     mf.setAttribute('data-bereit', '');
     mf.setAttribute('math-virtual-keyboard-policy', 'manual');
     /* Beim Einblenden holt MathLive den Fokus kurz weg und wieder zurück:
        erst nach einem Moment prüfen, ob wirklich kein Formelfeld mehr aktiv ist */
-    mf.addEventListener('focusin', function () {
+    /* geöffnet wird beim Antippen, nicht bei jedem Fokus: MathLive holt den
+       Fokus nach dem Schließen zurück, die Tastatur bliebe sonst nie zu */
+    mf.addEventListener('pointerdown', function () {
+      formelfelder.zu = 0;
       if (!mathVirtualKeyboard.visible) mathVirtualKeyboard.show({ animate: true });
     });
     mf.addEventListener('focusout', function () {
@@ -695,8 +748,15 @@ function alsTex(s) {
 
 /* Term vergleichbar machen: wie normal(), dazu ohne Malpunkt, ² als ^2, Wurzel als √ */
 function term(text) {
-  return normal(text).replace(/[·*]/g, '').replace(/²/g, '^2').replace(/³/g, '^3')
-    .replace(/sqrt|wurzel/g, '√');
+  var t = normal(text).replace(/[·*]/g, '').replace(/²/g, '^2').replace(/³/g, '^3')
+    .replace(/sqrt|wurzel/g, '√').replace(/\\/g, '');
+  /* Klammern um einen Ausdruck ohne Rechenzeichen fallen weg:
+     cos(x) → cosx, (7)/(7x+5) → 7/(7x+5); nicht hinter √, dort gehören sie dazu */
+  for (var alt = ''; alt !== t;) {
+    alt = t;
+    t = t.replace(/(^|[^√^])\(([^()+\-\/]*)\)/g, '$1$2');
+  }
+  return t;
 }
 
 /* Eingabe vergleichbar machen: klein, ohne Leerzeichen, Sonderzeichen als Text */

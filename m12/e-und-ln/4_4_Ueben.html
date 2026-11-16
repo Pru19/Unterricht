@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Üben</title>
-<link rel="stylesheet" href="_Quellen/kurs.css?v=5f9caaec">
-<script src="_Quellen/kurs-mathjax.js?v=5f9caaec"></script>
+<link rel="stylesheet" href="_Quellen/kurs.css?v=162ff1f3">
+<script src="_Quellen/kurs-mathjax.js?v=162ff1f3"></script>
 <script src="_Quellen/mathjax/tex-svg.js"></script>
 <script src="_Quellen/mathlive/mathlive.min.js"></script>
 </head>
@@ -14,15 +14,15 @@
 <!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
 <main>
 
-<p>Bearbeiten Sie die Aufgaben in Ihrem Heft. Bei Aufgabe 1 geben Sie die Ergebnisse ein;
-   zu Aufgabe 2 und 3 vergleichen Sie mit der ausgelegten Lösung und haken die Aufgabe ab.</p>
+<p>Bearbeiten Sie die Aufgaben in Ihrem Heft. Bei Aufgabe 1 und 2 geben Sie die Ergebnisse ein;
+   zu Aufgabe 3 und 4 vergleichen Sie mit der ausgelegten Lösung und haken die Aufgabe ab.</p>
 
 <div id="aufgaben"></div>
 
 </main>
 </div>
 
-<script src="_Quellen/kurs.js?v=5f9caaec"></script>
+<script src="_Quellen/kurs.js?v=162ff1f3"></script>
 <script>
 /* Aufgabe 1 aus dem Buch: nur Seite und Nummer, Ergebnis wird eingegeben
    (f(x) = x^2 - 1 auf [0; ∞[). Aufgabe 2 und 3 sind eigene Aufgaben, ihr Text
@@ -36,10 +36,20 @@ Kurs.uebung(document.getElementById('aufgaben'), [
       { gruppe: 'b)', frage: 'Beobachtung:', optionen: ['Man erhält wieder f.', 'Man erhält f⁻¹ noch einmal.', 'Man erhält −f.', 'Man erhält 1 : f.'], richtig: 'Man erhält wieder f.' },
       { gruppe: 'b)', frage: 'Begründung:', optionen: ['Zweimal an der Winkelhalbierenden spiegeln ergibt den Ausgangsgraphen.', 'Der Graph von f ist symmetrisch zur Winkelhalbierenden.', 'Der Graph von f ist eine Parabel.'], richtig: 'Zweimal an der Winkelhalbierenden spiegeln ergibt den Ausgangsgraphen.' }
     ] },
-  { titel: 'Aufgabe 2', stufe: '●●○', stelle: 'Umkehrbarkeit mit der Ableitung', art: 'auslage',
+  { titel: 'Aufgabe 2', stufe: '●●○', stelle: 'Buch S. 166/5 a, S. 167/6 c, S. 166/7 f', art: 'ergebnis',
+    hinweis: 'Bilden Sie die Ableitung im Heft und geben Sie sie ein.',
+    felder: [
+      { gruppe: '166/5 a)', frage: "\\( f'(x) = \\)", terme: ['7/(7x+5)', '7/(5+7x)'] },
+      { gruppe: '167/6 c)', frage: "\\( f'(x) = \\)", terme: ['1'] },
+      { gruppe: '166/7 f)', frage: "\\( f'(x) = \\)", terme: (function () {
+          var a = ['cosxlnx', 'lnxcosx'], b = ['sinx/x', 'sinx1/x', '1/xsinx'], t = [];
+          a.forEach(function (p) { b.forEach(function (q) { t.push(p + '+' + q, q + '+' + p); }); });
+          return t; })() }
+    ] },
+  { titel: 'Aufgabe 3', stufe: '●●○', stelle: 'Umkehrbarkeit mit der Ableitung', art: 'auslage',
     text: 'a) Zeigen Sie, dass \\( f(x) = x^3 + 2x \\) auf \\( \\mathbb{R} \\) umkehrbar ist.<br>' +
           'b) Bestimmen Sie die Monotonieintervalle von \\( g(x) = x^3 - 12x \\), auf denen \\(g\\) umkehrbar ist.' },
-  { titel: 'Aufgabe 3', stufe: '●●●', stelle: 'Umkehrfunktion einer e-Funktion', art: 'auslage', vertiefen: true,
+  { titel: 'Aufgabe 4', stufe: '●●●', stelle: 'Umkehrfunktion einer e-Funktion', art: 'auslage', vertiefen: true,
     text: 'Bestimmen Sie den Term der Umkehrfunktion von \\( f(x) = e^x + 1 \\) und geben Sie ihre Definitionsmenge an.<br>' +
           '<span class="hinweis-klein">Tipp: \\( \\ln \\) ist die Umkehrfunktion von \\( e^x \\). Aus \\( e^y = a \\) folgt \\( y = \\ln(a) \\).</span>' }
 ]);
