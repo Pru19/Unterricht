@@ -313,6 +313,30 @@ function geschafft() {
   speichern(stand);
   document.body.classList.add('geschafft');
   zeigeKaesten();
+  weiterFrei();
+}
+
+/* Eine Seite, die auf der Übersicht abgehakt ist (gelöst oder von Hand),
+   steht beim Öffnen vollständig da: alle Schritte offen, alle Kästen sichtbar,
+   „Weiter“ frei. Die Eingabefelder bleiben leer. Was eine Seite erst nach dem
+   Lösen zeichnet, zeichnet sie in ihrer Funktion window.kursKomplett nach. */
+function komplett() {
+  document.body.classList.add('geschafft', 'komplett');
+  Array.prototype.forEach.call(document.querySelectorAll('.schritt'), function (e) { e.classList.add('offen'); });
+  Array.prototype.forEach.call(document.querySelectorAll('.ausblenden'), function (e) { e.classList.add('zeigen'); });
+  zeigeKaesten();
+  weiterFrei();
+  var main = document.querySelector('main');
+  if (main) {
+    var p = document.createElement('p');
+    p.className = 'komplett-hinweis';
+    p.textContent = 'Diese Seite ist abgehakt. Deshalb ist alles aufgeklappt; die Aufgaben können Sie trotzdem noch einmal bearbeiten.';
+    main.insertBefore(p, main.firstChild);
+  }
+  if (typeof window.kursKomplett === 'function') window.kursKomplett();
+}
+
+function weiterFrei() {
   var w = document.querySelector('.blaettern .weiter');
   if (w) {
     var t = document.querySelector('.blaettern .gesperrt-text');
@@ -570,6 +594,7 @@ function start() {
   rahmen();
   var ziel = document.getElementById('uebersicht');
   if (ziel) home(ziel);
+  else if (fortschritt()[dateiname()]) komplett();
   formeln(document.body);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

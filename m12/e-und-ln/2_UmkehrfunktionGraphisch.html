@@ -285,6 +285,14 @@ function checkInverseFreeText() {
     tipp('tipp-spiegel', true);
   }
 }
+
+/* abgehakte Seite: Graphen im gelösten Zustand (kurs.js, komplett) */
+window.kursKomplett = function () {
+  gefunden = gefunden.map(function () { return true; });
+  zeichneWerte();
+  abgelesen = true;
+  zeichneUmkehr(true);
+};
 </script>
 </body>
 </html>
