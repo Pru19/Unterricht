@@ -59,6 +59,8 @@ h1 .nr,h2 .nr{color:var(--akzent); font-variant-numeric:tabular-nums; margin-rig
 .aufgabe > h2{font-size:1.08rem; margin:0 0 .35rem; line-height:1.3}
 .aufgabe p{margin:.4rem 0}
 .leise,.hinweis-klein{color:var(--leise); font-size:.88rem}
+.term-feld{display:inline-flex; flex-direction:column; align-items:center; gap:.15rem}
+.term-vorschau{min-height:1.4rem; font-size:1.05rem}
 .komplett-hinweis{color:var(--leise); font-size:.88rem; margin:0 0 .6rem}
 
 .abbildung{text-align:center; margin:.5rem 0}

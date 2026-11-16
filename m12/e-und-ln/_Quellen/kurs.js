@@ -507,8 +507,9 @@ function uebung(ziel, aufgaben) {
         if (f.optionen) {
           h += '<select data-feld="' + j + '"><option value="">…</option>' +
                f.optionen.map(function (o) { return '<option>' + o + '</option>'; }).join('') + '</select>';
-        } else if (f.terme) {          /* Term statt Zahl, etwa √(x+1) */
-          h += '<input type="text" class="term" autocomplete="off" autocapitalize="off" data-feld="' + j + '">';
+        } else if (f.terme) {          /* Term statt Zahl, etwa √(x+1); darunter als Formel */
+          h += '<span class="term-feld"><input type="text" class="term" autocomplete="off" autocapitalize="off" data-feld="' + j + '">' +
+               '<span class="term-vorschau" aria-live="polite"></span></span>';
         } else {
           h += '<input type="text" inputmode="decimal" autocomplete="off" data-feld="' + j + '">';
         }
@@ -545,18 +546,22 @@ function uebung(ziel, aufgaben) {
     var i = +sec.getAttribute('data-nr'), a = aufgaben[i];
     if (a.art === 'ergebnis') {
       sec.querySelector('.pruefen').addEventListener('click', function () {
-        var alle = true;
+        var alle = true, hinweis = '';
         Array.prototype.forEach.call(sec.querySelectorAll('[data-feld]'), function (inp) {
           var f = a.felder[+inp.getAttribute('data-feld')], ok;
           if (f.optionen) ok = inp.value === f.richtig;
-          else if (f.terme) ok = f.terme.map(term).indexOf(term(inp.value)) >= 0;
+          else if (f.terme) {
+            ok = f.terme.map(term).indexOf(term(inp.value)) >= 0;
+            /* √x+1 statt √(x+1): nur das x steht unter der Wurzel */
+            if (!ok && /√[^(]|√\(\)/.test(term(inp.value))) hinweis = 'Was unter die Wurzel gehört, steht in Klammern hinter √. Die Vorschau unter dem Feld zeigt, was Sie eingegeben haben.';
+          }
           else { var z = zahl(inp.value); ok = !isNaN(z) && Math.abs(z - f.wert) <= (f.toleranz || 1e-9); }
           inp.className = ok ? 'richtig' : 'falsch';
           if (!ok) alle = false;
         });
         var rm = sec.querySelector('.rueckmeldung');
         rm.className = 'rueckmeldung ' + (alle ? 'gut' : 'nochmal');
-        rm.textContent = alle ? 'Richtig!' : 'Noch nicht alles richtig. Prüfen Sie Ihre Rechnung.';
+        rm.textContent = alle ? 'Richtig!' : (hinweis || 'Noch nicht alles richtig. Prüfen Sie Ihre Rechnung.');
         erledigt[i] = alle;
         pruefeAlles();
       });
@@ -574,7 +579,39 @@ function uebung(ziel, aufgaben) {
       });
     }
   });
+  /* Vorschau: der eingegebene Term als Formel, damit man sieht, was unter
+     der Wurzel und im Exponenten steht */
+  Array.prototype.forEach.call(ziel.querySelectorAll('input.term'), function (inp) {
+    var v = inp.parentNode.querySelector('.term-vorschau');
+    inp.addEventListener('input', function () {
+      v.innerHTML = inp.value.trim() ? formel(alsTex(inp.value)) : '';
+    });
+  });
   formeln(ziel);
+}
+
+/* Eingabe wie √(x+1) oder x^2-1 als TeX für die Vorschau */
+function alsTex(s) {
+  s = String(s).replace(/\s+/g, '').replace(/−/g, '-').replace(/²/g, '^2').replace(/³/g, '^3').replace(/[·*]/g, '\\cdot ');
+  function klammer(i) {               /* Ende der Klammer, die bei i öffnet */
+    for (var t = 0, k = i; k < s.length; k++) {
+      if (s[k] === '(') t++;
+      else if (s[k] === ')' && --t === 0) return k;
+    }
+    return s.length;
+  }
+  var aus = '';
+  for (var i = 0; i < s.length; i++) {
+    var c = s[i];
+    if ((c === '√' || c === '^') && s[i + 1] === '(') {
+      var e = klammer(i + 1), innen = alsTex(s.slice(i + 2, e));
+      aus += c === '√' ? '\\sqrt{' + innen + '}' : '^{' + innen + '}';
+      i = e;
+    } else if (c === '√') {
+      aus += '\\sqrt{' + (s[i + 1] || '\\,') + '}'; i++;
+    } else aus += c;
+  }
+  return aus;
 }
 
 /* Term vergleichbar machen: wie normal(), dazu ohne Malpunkt, ² als ^2, Wurzel als √ */
