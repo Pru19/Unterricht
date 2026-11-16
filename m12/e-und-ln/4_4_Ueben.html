@@ -7,8 +7,16 @@
 <link rel="stylesheet" href="_Quellen/kurs.css?v=2026-11-16">
 <script src="_Quellen/kurs-mathjax.js?v=2026-11-16"></script>
 <script src="_Quellen/mathjax/tex-svg.js"></script>
+<script src="_Quellen/mathlive/mathlive.min.js"></script>
 </head>
 <body>
+<script>
+  /* Formeleditor: Schriften aus dem eigenen Ordner, ohne Klänge; erst im body, MathLive braucht ihn */
+  MathfieldElement.fontsDirectory = new URL('_Quellen/mathlive/fonts/', location.href).href;
+  MathfieldElement.soundsDirectory = null;
+  MathfieldElement.plonkSound = null;
+  MathfieldElement.keypressSound = null;
+</script>
 <div class="huelle">
 <!-- Kopf und Blättern setzt _Quellen/kurs.js aus seiner Seitenliste. -->
 <main>
@@ -28,8 +36,8 @@
    steht hier; die Lösungen liegen aus (AB11 Lösungen zu den Übungen). */
 Kurs.uebung(document.getElementById('aufgaben'), [
   { titel: 'Aufgabe 1', stufe: '●○○', stelle: 'Buch S. 156/12', art: 'ergebnis',
-    hinweis: 'Rechnen Sie im Heft und geben Sie die Ergebnisse ein. Wurzel und Hochzahl finden Sie in den Bausteinen; die Wurzel bringt ihre Klammer gleich mit.',
-    zeichen: '√ ^ ( ) ² −',
+    hinweis: 'Rechnen Sie im Heft und geben Sie die Ergebnisse ein. Wurzel und Hochzahl erscheinen mit einem Kästchen: Schreiben Sie hinein und gehen Sie mit der Pfeiltaste nach rechts wieder heraus.',
+    zeichen: '√ ^ ²',
     felder: [
       { gruppe: 'a)', frage: '\\( f^{-1}(x) = \\)', terme: ['√(x+1)', '√(1+x)', '(x+1)^(1/2)', '(x+1)^0.5', '(x+1)^0,5'] },
       { gruppe: 'b)', frage: '\\( (f^{-1})^{-1}(x) = \\)', terme: ['x^2-1', '-1+x^2'] },

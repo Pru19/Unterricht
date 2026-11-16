@@ -59,6 +59,13 @@ h1 .nr,h2 .nr{color:var(--akzent); font-variant-numeric:tabular-nums; margin-rig
 .aufgabe > h2{font-size:1.08rem; margin:0 0 .35rem; line-height:1.3}
 .aufgabe p{margin:.4rem 0}
 .leise,.hinweis-klein{color:var(--leise); font-size:.88rem}
+math-field.term{min-width:7.5rem; font-size:1.25rem; padding:.15rem .5rem; border:1.5px solid var(--linie);
+  border-radius:10px; background:var(--feld); color:var(--text); --caret-color:var(--akzent);
+  --selection-background-color:var(--akzent-hell); --placeholder-color:var(--leise); --smart-fence-color:var(--leise)}
+math-field.term:focus-within{outline:2px solid var(--akzent); outline-offset:1px; border-color:var(--akzent)}
+math-field.term.richtig{border-color:var(--gut); background:var(--gut-hell)}
+math-field.term.falsch{border-color:var(--falsch); background:var(--falsch-hell)}
+math-field.term::part(menu-toggle),math-field.term::part(virtual-keyboard-toggle){display:none}
 .term-feld{display:inline-flex; flex-direction:column; align-items:center; gap:.15rem}
 .term-vorschau{min-height:1.4rem; font-size:1.05rem}
 .komplett-hinweis{color:var(--leise); font-size:.88rem; margin:0 0 .6rem}

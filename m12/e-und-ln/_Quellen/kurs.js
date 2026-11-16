@@ -446,7 +446,7 @@ function bausteine(wurzel) {
     var bereich = leiste.closest('.aufgabe') || document.body;
     var zuletzt = null;
     bereich.addEventListener('focusin', function (e) {
-      if (e.target.matches('input[type=text]')) zuletzt = e.target;
+      if (e.target.matches('input[type=text], math-field')) zuletzt = e.target;
     });
     leiste.getAttribute('data-zeichen').split(' ').forEach(function (z) {
       if (!z) return;
@@ -457,8 +457,14 @@ function bausteine(wurzel) {
          klappt die Tastatur zu */
       b.addEventListener('mousedown', function (e) { e.preventDefault(); });
       b.addEventListener('click', function () {
-        var f = zuletzt || bereich.querySelector('input[type=text]');
+        var f = zuletzt || bereich.querySelector('input[type=text], math-field');
         if (!f) return;
+        if (f.tagName === 'MATH-FIELD') {     /* Formeleditor: Wurzel und Hochzahl mit Kästchen */
+          var tex = { '√': '\\sqrt{#0}', '^': '^{#0}', '²': '^2', '−': '-' }[z] || z;
+          f.executeCommand(['insert', tex, { focus: true, selectionMode: 'placeholder' }]);
+          f.focus();
+          return;
+        }
         var a = f.selectionStart != null ? f.selectionStart : f.value.length;
         var e = f.selectionEnd != null ? f.selectionEnd : f.value.length;
         /* Die Wurzel kommt mit Klammer, der Cursor steht darin: So landet
@@ -507,7 +513,9 @@ function uebung(ziel, aufgaben) {
         if (f.optionen) {
           h += '<select data-feld="' + j + '"><option value="">…</option>' +
                f.optionen.map(function (o) { return '<option>' + o + '</option>'; }).join('') + '</select>';
-        } else if (f.terme) {          /* Term statt Zahl, etwa √(x+1); darunter als Formel */
+        } else if (f.terme && window.MathfieldElement) {   /* Formeleditor: Wurzel mit Kästchen */
+          h += '<math-field class="term" data-feld="' + j + '" math-virtual-keyboard-policy="auto"></math-field>';
+        } else if (f.terme) {          /* ohne MathLive: Textfeld, darunter als Formel */
           h += '<span class="term-feld"><input type="text" class="term" autocomplete="off" autocapitalize="off" data-feld="' + j + '">' +
                '<span class="term-vorschau" aria-live="polite"></span></span>';
         } else {
@@ -551,12 +559,17 @@ function uebung(ziel, aufgaben) {
           var f = a.felder[+inp.getAttribute('data-feld')], ok;
           if (f.optionen) ok = inp.value === f.richtig;
           else if (f.terme) {
-            ok = f.terme.map(term).indexOf(term(inp.value)) >= 0;
+            var wert = inp.tagName === 'MATH-FIELD' ? ausLatex(inp.value) : inp.value;
+            ok = f.terme.map(term).indexOf(term(wert)) >= 0;
             /* √x+1 statt √(x+1): nur das x steht unter der Wurzel */
-            if (!ok && /√[^(]|√\(\)/.test(term(inp.value))) hinweis = 'Was unter die Wurzel gehört, steht in Klammern hinter √. Die Vorschau unter dem Feld zeigt, was Sie eingegeben haben.';
+            if (!ok && term(wert).indexOf('√') >= 0 && f.terme.some(function (l) { return l.indexOf('√') >= 0; }))
+              hinweis = inp.tagName === 'MATH-FIELD'
+                ? 'Prüfen Sie, was im Kästchen unter der Wurzel steht.'
+                : 'Was unter die Wurzel gehört, steht in Klammern hinter √. Die Vorschau unter dem Feld zeigt, was Sie eingegeben haben.';
           }
           else { var z = zahl(inp.value); ok = !isNaN(z) && Math.abs(z - f.wert) <= (f.toleranz || 1e-9); }
-          inp.className = ok ? 'richtig' : 'falsch';
+          inp.classList.remove('richtig', 'falsch');
+          inp.classList.add(ok ? 'richtig' : 'falsch');
           if (!ok) alle = false;
         });
         var rm = sec.querySelector('.rueckmeldung');
@@ -588,6 +601,34 @@ function uebung(ziel, aufgaben) {
     });
   });
   formeln(ziel);
+}
+
+/* LaTeX aus dem Formeleditor in die Schreibweise der Lösungen:
+   \sqrt{x+1} → √(x+1), x^{2} → x^2, ohne \left, \right, \cdot */
+function ausLatex(t) {
+  t = String(t).replace(/\\left|\\right|\\,|\\;|\\!|\\ /g, '').replace(/\\cdot|\\times/g, '')
+    .replace(/\\placeholder\{\}/g, '').replace(/\s+/g, '');
+  var aus = '';
+  for (var i = 0; i < t.length; i++) {
+    var c = t[i];
+    if (t.slice(i, i + 5) === '\\sqrt' && t[i + 5] === '{') {
+      var e = klammerZu(t, i + 5), innen = ausLatex(t.slice(i + 6, e));
+      aus += '√(' + innen + ')'; i = e;
+    } else if (c === '^' && t[i + 1] === '{') {
+      var e2 = klammerZu(t, i + 1), hoch = ausLatex(t.slice(i + 2, e2));
+      aus += hoch.length === 1 ? '^' + hoch : '^(' + hoch + ')'; i = e2;
+    } else if (c === '{' || c === '}') {
+      /* Gruppenklammern fallen weg */
+    } else aus += c;
+  }
+  return aus;
+}
+function klammerZu(t, i) {             /* Ende der geschweiften Klammer, die bei i öffnet */
+  for (var tiefe = 0, k = i; k < t.length; k++) {
+    if (t[k] === '{') tiefe++;
+    else if (t[k] === '}' && --tiefe === 0) return k;
+  }
+  return t.length;
 }
 
 /* Eingabe wie √(x+1) oder x^2-1 als TeX für die Vorschau */
