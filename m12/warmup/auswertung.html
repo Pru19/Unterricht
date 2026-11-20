@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warm-up Auswertung</title>
+<!-- Vorlage für _Skripte/baue_warmup.py --seite. Daten an der Marke DATEN: Nummern mit
+     Bereich und der Stundenplan je Kurs, keine Lösungen, keine Namen. Die Forms-Datei
+     wird nur im Browser gelesen; die Seite speichert und überträgt nichts. -->
+<style>
+:root{--bg:#f6f6f3;--karte:#fff;--text:#1f2328;--grau:#646a73;--linie:#dcdfe3;--akzent:#2f5fb3;--akzent-text:#fff;
+--gut:#1f7a4d;--gut-bg:#e6f4ec;--mittel:#9a6a00;--mittel-bg:#fbf1d6;--schlecht:#b4372c;--schlecht-bg:#fbecea;--balken:#2f5fb3;--balken-2:#c9d6ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141619;--karte:#1d2024;--text:#e7e9ec;--grau:#9aa1aa;--linie:#353a41;
+--akzent:#7aa5ff;--akzent-text:#0d1420;--gut:#6fd09c;--gut-bg:#17311f;--mittel:#e8c15a;--mittel-bg:#33290f;--schlecht:#ff8f84;--schlecht-bg:#3a1f1c;--balken:#7aa5ff;--balken-2:#2c3a55}}
+:root[data-theme="dark"]{--bg:#141619;--karte:#1d2024;--text:#e7e9ec;--grau:#9aa1aa;--linie:#353a41;--akzent:#7aa5ff;--akzent-text:#0d1420;
+--gut:#6fd09c;--gut-bg:#17311f;--mittel:#e8c15a;--mittel-bg:#33290f;--schlecht:#ff8f84;--schlecht-bg:#3a1f1c;--balken:#7aa5ff;--balken-2:#2c3a55}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header.kopf{background:var(--karte);border-bottom:1px solid var(--linie)}
+header.kopf .innen,main{max-width:1100px;margin:0 auto;padding:12px 16px}
+h1{font-size:1.25rem;margin:0}
+h2{font-size:1.05rem;margin:22px 0 8px}
+h3{font-size:.95rem;margin:14px 0 6px}
+.unter{color:var(--grau);font-size:.9rem;margin:2px 0 0}
+.karte{background:var(--karte);border:1px solid var(--linie);border-radius:12px;padding:14px 16px;margin:12px 0}
+.ablage{display:block;border:2px dashed var(--linie);border-radius:12px;padding:26px 16px;text-align:center;background:var(--karte);cursor:pointer}
+.ablage.ueber{border-color:var(--akzent)}
+.leise{color:var(--grau);font-size:.88rem}
+.zeile{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+button,select,input{font:inherit;color:inherit}
+.knopf{background:var(--akzent);color:var(--akzent-text);border:0;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:600}
+.knopf.neben{background:none;color:var(--text);border:1px solid var(--linie);font-weight:400}
+select,input[type=date]{padding:5px 8px;border:1px solid var(--linie);border-radius:8px;background:var(--karte)}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kachel{background:var(--karte);border:1px solid var(--linie);border-radius:10px;padding:10px 12px}
+.kachel .wert{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.kachel .was{color:var(--grau);font-size:.82rem}
+table{border-collapse:collapse;width:100%}
+th,td{padding:6px 8px;border-bottom:1px solid var(--linie);text-align:left;vertical-align:middle}
+th{font-size:.8rem;color:var(--grau);font-weight:600}
+td.z,th.z{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.klickbar{cursor:pointer}tr.klickbar:hover{background:var(--bg)}
+.quote{display:inline-block;min-width:3.4em;text-align:center;border-radius:6px;padding:1px 6px;font-variant-numeric:tabular-nums;font-weight:600}
+.q-gut{background:var(--gut-bg);color:var(--gut)}.q-mittel{background:var(--mittel-bg);color:var(--mittel)}.q-schlecht{background:var(--schlecht-bg);color:var(--schlecht)}
+.q-leer{color:var(--grau)}
+.balken{display:flex;align-items:center;gap:8px}
+.balken .spur{flex:1;height:10px;border-radius:5px;background:var(--balken-2);overflow:hidden;min-width:60px}
+.balken .voll{height:100%;background:var(--balken)}
+.verlauf{display:block;width:100%;height:auto}
+.verlauf .achse{stroke:var(--linie)}.verlauf .linie{fill:none;stroke:var(--balken);stroke-width:2}
+.verlauf .punkt{fill:var(--balken)}.verlauf text{fill:var(--grau);font-size:11px;font-family:system-ui,sans-serif}
+.verlauf .saeule{fill:var(--balken)}
+.raster2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.problem{color:var(--schlecht)}
+.bogen{background:#fff;color:#111;border:1px solid var(--linie);border-radius:12px;padding:22px 26px;margin:14px 0}
+.bogen h2{margin:0 0 2px;font-size:1.25rem}
+.bogen .leise{color:#555}
+.bogen table th{color:#555}
+.bogen .linien div{border-bottom:1px solid #999;height:28px}
+.bogen .frage{font-weight:600;margin:14px 0 2px}
+.bogen .quote.q-gut{background:#e6f4ec;color:#1f7a4d}.bogen .quote.q-mittel{background:#fbf1d6;color:#7a5400}.bogen .quote.q-schlecht{background:#fbecea;color:#9e2d22}
+.bogen .balken .spur{background:#dde4f1}.bogen .balken .voll{background:#2f5fb3}
+.bogen .verlauf .saeule{fill:#2f5fb3}.bogen .verlauf text{fill:#555}.bogen .verlauf .achse{stroke:#bbb}
+[hidden]{display:none!important}
+@media (max-width:760px){.raster2{grid-template-columns:1fr}}
+@media print{
+  body{background:#fff}
+  header.kopf,.nicht-drucken,#ansicht>*:not(.druck){display:none!important}
+  main{padding:0;max-width:none}
+  .bogen{border:0;border-radius:0;margin:0;padding:0 4mm;break-after:page}
+  .bogen:last-child{break-after:auto}
+}
+</style>
+</head>
+<body>
+<header class="kopf"><div class="innen"><h1>Warm-up · Auswertung</h1>
+<p class="unter">Die Forms-Datei wird nur in diesem Browser gelesen. Nichts wird gespeichert oder übertragen. Das Warm-up ist keine Note.</p></div></header>
+<main>
+  <section class="nicht-drucken">
+    <label class="ablage" id="ablage"><input type="file" id="datei" accept=".xlsx,.csv" multiple hidden>
+      <strong>Forms-Export hierher ziehen</strong> oder klicken und auswählen<br>
+      <span class="leise">In Forms: Antworten → In Excel öffnen bzw. Antworten herunterladen (.xlsx). Mehrere Kurse auf einmal gehen auch.</span></label>
+    <div class="karte zeile" id="filter" hidden>
+      <label>Kurs <select id="f-kurs"></select></label>
+      <label>von <input type="date" id="f-von"></label>
+      <label>bis <input type="date" id="f-bis"></label>
+      <span class="leise" id="f-info"></span>
+    </div>
+  </section>
+  <div id="ansicht"></div>
+</main>
+<script>
+const D = {"nr":{"GA01":["Bruchrechnen mit Variablen","GW Algebra",1],"GA02":["Prozentrechnung","GW Algebra",1],"GA03":["Lineare Gleichung","GW Algebra",1],"GA04":["Ausmultiplizieren, binomische Formeln","GW Algebra",1],"GA05":["Ausklammern, Faktorisieren","GW Algebra",1],"GA07":["Bruchgleichung","GW Algebra",1],"GA08":["Formel nach einer Variablen auflösen","GW Algebra",1],"GA09":["Potenzgesetze","GW Algebra",1],"GA10":["Lineares Gleichungssystem","GW Algebra",1],"GA12":["Quadratische Gleichung","GW Algebra",1],"GA13":["Wurzel und Bruch als Potenz","GW Algebra",1],"GA14":["Logarithmus, Exponentialgleichung","GW Algebra",1],"GA15":["Anteil berechnen","GW Algebra",1],"GF01":["Geradengleichung aus dem Graphen","GW Funktionen",1],"GF02":["Schnittpunkt zweier Geraden","GW Funktionen",1],"GF03":["Hyperbel: Asymptoten, Definitionsmenge","GW Funktionen",1],"GF06":["Graph und Term zuordnen","GW Funktionen",1],"GF07":["Exponentielles Wachstum","GW Funktionen",1],"GF08":["Sinus und Kosinus: besondere Werte","GW Funktionen",1],"GF09":["Amplitude und Periode","GW Funktionen",1],"GF10":["Parabel: Verschiebung und Streckung","GW Funktionen",1],"GF11":["Wertemenge","GW Funktionen",1],"GG01":["Winkel","GW Geometrie",1],"GG02":["Kreis","GW Geometrie",1],"GG03":["Prisma und Zylinder","GW Geometrie",1],"GG04":["Strahlensatz, Ähnlichkeit","GW Geometrie",1],"GG05":["Satz des Pythagoras","GW Geometrie",1],"GG06":["Sinus, Kosinus, Tangens im rechtwinkligen Dreieck","GW Geometrie",1],"GG07":["Pyramide, Kegel, Kugel","GW Geometrie",1],"GS01":["Laplace-Wahrscheinlichkeit","GW Stochastik",1],"GS02":["Einfache Kombinatorik","GW Stochastik",1],"GS03":["Vierfeldertafel","GW Stochastik",1],"GS04":["Baumdiagramm, Pfadregeln","GW Stochastik",1],"GS05":["Gegenereignis","GW Stochastik",1],"GS06":["Mittelwert","GW Stochastik",1],"OA01":["Mittlere Änderungsrate","OS Analysis",2],"OA02":["Ableitungswert","OS Analysis",2],"OA03":["Tangentengleichung","OS Analysis",2],"OA04":["Steigungswinkel","OS Analysis",2],"OA05":["Nullstellen","OS Analysis",2],"OA06":["Extremstellen","OS Analysis",2],"OA07":["Wendestellen","OS Analysis",2],"OA08":["Symmetrie rechnerisch","OS Analysis",2],"OA09":["Grenzverhalten","OS Analysis",2],"OA10":["Gebrochen-rationale Funktion: Polstellen, Nullstellen","OS Analysis",2],"OA11":["Gebrochen-rationale Funktion: Asymptoten","OS Analysis",2],"OA12":["Verschieben, Strecken, Spiegeln","OS Analysis",2],"OA13":["Punkt auf dem Graphen","OS Analysis",2],"OG01":["Besondere Lage von Punkten","OS Geometrie",2],"OG02":["Symmetrische Punkte","OS Geometrie",2],"OG03":["Verbindungsvektor","OS Geometrie",2],"OG04":["Länge, Abstand","OS Geometrie",2],"OG05":["Einheitsvektor","OS Geometrie",2],"OG06":["Vektor mit bestimmter Länge","OS Geometrie",2],"OG07":["Orthogonalität prüfen","OS Geometrie",2],"OG08":["Winkel zwischen Vektoren","OS Geometrie",2],"OG09":["Vektorprodukt","OS Geometrie",2],"OG10":["Flächeninhalt: der richtige Ansatz","OS Geometrie",2],"OG11":["Volumen: der richtige Ansatz","OS Geometrie",2],"OG12":["Mittelpunkt einer Strecke","OS Geometrie",2],"OS01":["Bedingte Wahrscheinlichkeit","OS Stochastik",2],"OS03":["Stochastische Unabhängigkeit prüfen","OS Stochastik",2],"VA01":["Art eines Extrempunkts","OS Analysis",3],"VA02":["Terrassenpunkt","OS Analysis",3],"VA03":["Wendepunkt: was folgt aus f″ und f‴?","OS Analysis",3],"VA04":["Notwendig, aber nicht hinreichend","OS Analysis",3],"VA05":["Verfahren ordnen","OS Analysis",3],"VA06":["Symmetrie an den Exponenten","OS Analysis",3],"VA07":["Grenzverhalten: welcher Summand entscheidet?","OS Analysis",3],"VA08":["Vielfachheit einer Nullstelle","OS Analysis",3],"VA09":["Globales Extremum","OS Analysis",3],"VA10":["Graph von f′ zum Graphen von f","OS Analysis",3],"VA11":["Asymptoten: Gradvergleich","OS Analysis",3],"VA12":["Graph von f′: Aussage über f","OS Analysis",3],"VG01":["Orthogonal oder parallel prüfen","OS Geometrie",3],"VG02":["Wofür das Vektorprodukt?","OS Geometrie",3],"VG03":["Vektor bestimmter Länge: Schritte ordnen","OS Geometrie",3],"VG04":["Formeln zuordnen","OS Geometrie",3],"VG05":["Besondere Lage erkennen","OS Geometrie",3],"VS01":["Bedingte Wahrscheinlichkeit im Sachtext","OS Stochastik",3],"VS02":["Unabhängigkeit: welche Gleichung?","OS Stochastik",3]},"stunden":{"2m3":{"2026-11-23":["GW Algebra","neu","älter"],"2026-11-24":["GW Funktionen","älter","neu"],"2026-11-25":["GW Algebra","neu","älter"],"2026-11-26":["GW Geometrie","älter","neu"],"2026-11-27":["GW Algebra","neu","älter"],"2026-11-30":["GW Stochastik","älter","neu"],"2026-12-01":["GW Algebra","neu","älter"],"2026-12-02":["GW Funktionen","älter","neu"],"2026-12-03":["GW Algebra","neu","älter"],"2026-12-04":["GW Geometrie","älter","neu"],"2026-12-07":["GW Algebra","neu","älter"],"2026-12-08":["GW Stochastik","älter","neu"],"2026-12-09":["GW Algebra","neu","älter"],"2026-12-10":["GW Funktionen","älter","neu"],"2026-12-11":["GW Algebra","neu","älter"],"2026-12-14":["GW Geometrie","älter","neu"],"2026-12-15":["GW Algebra","neu","älter"],"2026-12-16":["GW Stochastik","älter","neu"],"2026-12-17":["GW Algebra","neu","älter"],"2026-12-18":["GW Funktionen","älter","neu"],"2026-12-21":["GW Algebra","neu","älter"],"2026-12-22":["GW Geometrie","älter","neu"],"2026-12-23":["GW Algebra","neu","älter"],"2027-01-11":["GW Stochastik","älter","neu"],"2027-01-12":["GW Algebra","neu","älter"],"2027-01-13":["GW Funktionen","älter","neu"],"2027-01-14":["GW Algebra","neu","älter"],"2027-01-15":["GW Geometrie","älter","neu"],"2027-01-18":["GW Algebra","neu","älter"],"2027-01-19":["GW Stochastik","älter","neu"],"2027-01-20":["GW Algebra","neu","älter"],"2027-01-21":["GW Funktionen","älter","neu"],"2027-01-22":["GW Algebra","neu","älter"],"2027-01-25":["GW Geometrie","älter","neu"],"2027-01-26":["GW Algebra","neu","älter"],"2027-01-27":["GW Stochastik","älter","neu"],"2027-01-28":["GW Algebra","neu","älter"],"2027-01-29":["GW Funktionen","älter","neu"],"2027-02-01":["GW Algebra","neu","älter"],"2027-02-02":["GW Geometrie","älter","neu"],"2027-02-03":["GW Algebra","neu","älter"],"2027-02-04":["GW Stochastik","älter","neu"],"2027-02-05":["GW Algebra","neu","älter"],"2027-02-15":["GW Funktionen","älter","neu"],"2027-02-16":["GW Algebra","neu","älter"],"2027-02-17":["GW Geometrie","älter","neu"],"2027-02-18":["GW Algebra","neu","älter"],"2027-02-19":["GW Stochastik","älter","neu"],"2027-02-22":["GW Algebra","neu","älter"],"2027-02-23":["GW Funktionen","älter","neu"],"2027-02-24":["GW Algebra","neu","älter"],"2027-02-25":["GW Geometrie","älter","neu"],"2027-02-26":["GW Algebra","neu","älter"],"2027-03-01":["GW Stochastik","älter","neu"],"2027-03-02":["GW Algebra","neu","älter"],"2027-03-03":["GW Funktionen","älter","neu"],"2027-03-04":["GW Algebra","neu","älter"],"2027-03-05":["GW Geometrie","älter","neu"],"2027-03-08":["GW Algebra","neu","älter"],"2027-03-09":["GW Stochastik","älter","neu"],"2027-03-10":["GW Algebra","neu","älter"],"2027-03-11":["GW Funktionen","älter","neu"],"2027-03-12":["GW Algebra","neu","älter"],"2027-03-15":["GW Geometrie","älter","neu"],"2027-03-16":["GW Algebra","neu","älter"],"2027-03-17":["GW Stochastik","älter","neu"],"2027-03-18":["GW Algebra","neu","älter"],"2027-03-19":["GW Funktionen","älter","neu"],"2027-04-05":["GW Algebra","neu","älter"],"2027-04-06":["GW Geometrie","älter","neu"],"2027-04-07":["GW Algebra","neu","älter"],"2027-04-08":["GW Stochastik","älter","neu"],"2027-04-09":["GW Algebra","neu","älter"],"2027-04-12":["GW Funktionen","älter","neu"],"2027-04-13":["GW Algebra","neu","älter"],"2027-04-14":["GW Geometrie","älter","neu"],"2027-04-15":["GW Algebra","neu","älter"],"2027-04-16":["GW Stochastik","älter","neu"],"2027-04-19":["GW Algebra","neu","älter"],"2027-04-20":["GW Funktionen","älter","neu"],"2027-04-21":["GW Algebra","neu","älter"],"2027-04-22":["GW Geometrie","älter","neu"],"2027-04-23":["GW Algebra","neu","älter"],"2027-04-26":["GW Stochastik","älter","neu"],"2027-04-27":["GW Algebra","neu","älter"],"2027-04-28":["GW Funktionen","älter","neu"],"2027-04-29":["GW Algebra","neu","älter"],"2027-04-30":["GW Geometrie","älter","neu"],"2027-05-03":["GW Algebra","neu","älter"],"2027-05-04":["GW Stochastik","älter","neu"],"2027-05-05":["GW Algebra","neu","älter"],"2027-05-07":["GW Funktionen","älter","neu"],"2027-05-10":["GW Algebra","neu","älter"],"2027-05-11":["GW Geometrie","älter","neu"],"2027-05-12":["GW Algebra","neu","älter"],"2027-05-13":["GW Stochastik","älter","neu"],"2027-05-14":["GW Algebra","neu","älter"],"2027-05-31":["GW Funktionen","älter","neu"],"2027-06-01":["GW Algebra","neu","älter"],"2027-06-02":["GW Geometrie","älter","neu"],"2027-06-03":["GW Algebra","neu","älter"],"2027-06-04":["GW Stochastik","älter","neu"],"2027-06-07":["GW Algebra","neu","älter"],"2027-06-08":["GW Funktionen","älter","neu"],"2027-06-09":["GW Algebra","neu","älter"],"2027-06-10":["GW Geometrie","älter","neu"],"2027-06-11":["GW Algebra","neu","älter"],"2027-06-14":["GW Stochastik","älter","neu"],"2027-06-15":["GW Algebra","neu","älter"],"2027-06-16":["GW Funktionen","älter","neu"],"2027-06-17":["GW Algebra","neu","älter"],"2027-06-18":["GW Geometrie","älter","neu"],"2027-06-21":["GW Algebra","neu","älter"],"2027-06-22":["GW Stochastik","älter","neu"],"2027-06-23":["GW Algebra","neu","älter"],"2027-06-24":["GW Funktionen","älter","neu"],"2027-06-25":["GW Algebra","neu","älter"],"2027-06-28":["GW Geometrie","älter","neu"],"2027-06-29":["GW Algebra","neu","älter"],"2027-06-30":["GW Stochastik","älter","neu"],"2027-07-01":["GW Algebra","neu","älter"],"2027-07-02":["GW Funktionen","älter","neu"],"2027-07-05":["GW Algebra","neu","älter"],"2027-07-06":["GW Geometrie","älter","neu"],"2027-07-07":["GW Algebra","neu","älter"],"2027-07-08":["GW Stochastik","älter","neu"],"2027-07-09":["GW Algebra","neu","älter"],"2027-07-12":["GW Funktionen","älter","neu"],"2027-07-13":["GW Algebra","neu","älter"],"2027-07-14":["GW Geometrie","älter","neu"],"2027-07-15":["GW Algebra","neu","älter"],"2027-07-16":["GW Stochastik","älter","neu"],"2027-07-19":["GW Algebra","neu","älter"],"2027-07-20":["GW Funktionen","älter","neu"],"2027-07-21":["GW Algebra","neu","älter"],"2027-07-22":["GW Geometrie","älter","neu"],"2027-07-23":["GW Algebra","neu","älter"],"2027-07-26":["GW Stochastik","älter","neu"],"2027-07-27":["GW Algebra","neu","älter"],"2027-07-28":["GW Funktionen","älter","neu"],"2027-07-29":["GW Algebra","neu","älter"],"2027-07-30":["GW Geometrie","älter","neu"]},"2m4":{"2026-11-23":["GW Algebra","neu","älter"],"2026-11-24":["GW Funktionen","älter","neu"],"2026-11-25":["GW Algebra","neu","älter"],"2026-11-26":["GW Geometrie","älter","neu"],"2026-11-27":["GW Algebra","neu","älter"],"2026-11-30":["GW Stochastik","älter","neu"],"2026-12-01":["GW Algebra","neu","älter"],"2026-12-02":["GW Funktionen","älter","neu"],"2026-12-03":["GW Algebra","neu","älter"],"2026-12-04":["GW Geometrie","älter","neu"],"2026-12-07":["GW Algebra","neu","älter"],"2026-12-08":["GW Stochastik","älter","neu"],"2026-12-09":["GW Algebra","neu","älter"],"2026-12-10":["GW Funktionen","älter","neu"],"2026-12-11":["GW Algebra","neu","älter"],"2026-12-14":["GW Geometrie","älter","neu"],"2026-12-15":["GW Algebra","neu","älter"],"2026-12-16":["GW Stochastik","älter","neu"],"2026-12-17":["GW Algebra","neu","älter"],"2026-12-18":["GW Funktionen","älter","neu"],"2026-12-21":["GW Algebra","neu","älter"],"2026-12-22":["GW Geometrie","älter","neu"],"2026-12-23":["GW Algebra","neu","älter"],"2027-01-11":["GW Stochastik","älter","neu"],"2027-01-12":["GW Algebra","neu","älter"],"2027-01-13":["GW Funktionen","älter","neu"],"2027-01-14":["GW Algebra","neu","älter"],"2027-01-15":["GW Geometrie","älter","neu"],"2027-01-18":["GW Algebra","neu","älter"],"2027-01-19":["GW Stochastik","älter","neu"],"2027-01-20":["GW Algebra","neu","älter"],"2027-01-21":["GW Funktionen","älter","neu"],"2027-01-22":["GW Algebra","neu","älter"],"2027-01-25":["GW Geometrie","älter","neu"],"2027-01-26":["GW Algebra","neu","älter"],"2027-01-27":["GW Stochastik","älter","neu"],"2027-01-28":["GW Algebra","neu","älter"],"2027-01-29":["GW Funktionen","älter","neu"],"2027-02-01":["GW Algebra","neu","älter"],"2027-02-02":["GW Geometrie","älter","neu"],"2027-02-03":["GW Algebra","neu","älter"],"2027-02-04":["GW Stochastik","älter","neu"],"2027-02-05":["GW Algebra","neu","älter"],"2027-02-15":["GW Funktionen","älter","neu"],"2027-02-16":["GW Algebra","neu","älter"],"2027-02-17":["GW Geometrie","älter","neu"],"2027-02-18":["GW Algebra","neu","älter"],"2027-02-19":["GW Stochastik","älter","neu"],"2027-02-22":["GW Algebra","neu","älter"],"2027-02-23":["GW Funktionen","älter","neu"],"2027-02-24":["GW Algebra","neu","älter"],"2027-02-25":["GW Geometrie","älter","neu"],"2027-02-26":["GW Algebra","neu","älter"],"2027-03-01":["GW Stochastik","älter","neu"],"2027-03-02":["GW Algebra","neu","älter"],"2027-03-03":["GW Funktionen","älter","neu"],"2027-03-04":["GW Algebra","neu","älter"],"2027-03-05":["GW Geometrie","älter","neu"],"2027-03-08":["GW Algebra","neu","älter"],"2027-03-09":["GW Stochastik","älter","neu"],"2027-03-10":["GW Algebra","neu","älter"],"2027-03-11":["GW Funktionen","älter","neu"],"2027-03-12":["GW Algebra","neu","älter"],"2027-03-15":["GW Geometrie","älter","neu"],"2027-03-16":["GW Algebra","neu","älter"],"2027-03-17":["GW Stochastik","älter","neu"],"2027-03-18":["GW Algebra","neu","älter"],"2027-03-19":["GW Funktionen","älter","neu"],"2027-04-05":["GW Algebra","neu","älter"],"2027-04-06":["GW Geometrie","älter","neu"],"2027-04-07":["GW Algebra","neu","älter"],"2027-04-08":["GW Stochastik","älter","neu"],"2027-04-09":["GW Algebra","neu","älter"],"2027-04-12":["GW Funktionen","älter","neu"],"2027-04-13":["GW Algebra","neu","älter"],"2027-04-14":["GW Geometrie","älter","neu"],"2027-04-15":["GW Algebra","neu","älter"],"2027-04-16":["GW Stochastik","älter","neu"],"2027-04-19":["GW Algebra","neu","älter"],"2027-04-20":["GW Funktionen","älter","neu"],"2027-04-21":["GW Algebra","neu","älter"],"2027-04-22":["GW Geometrie","älter","neu"],"2027-04-23":["GW Algebra","neu","älter"],"2027-04-26":["GW Stochastik","älter","neu"],"2027-04-27":["GW Algebra","neu","älter"],"2027-04-28":["GW Funktionen","älter","neu"],"2027-04-29":["GW Algebra","neu","älter"],"2027-04-30":["GW Geometrie","älter","neu"],"2027-05-03":["GW Algebra","neu","älter"],"2027-05-04":["GW Stochastik","älter","neu"],"2027-05-05":["GW Algebra","neu","älter"],"2027-05-07":["GW Funktionen","älter","neu"],"2027-05-10":["GW Algebra","neu","älter"],"2027-05-11":["GW Geometrie","älter","neu"],"2027-05-12":["GW Algebra","neu","älter"],"2027-05-13":["GW Stochastik","älter","neu"],"2027-05-14":["GW Algebra","neu","älter"],"2027-05-31":["GW Funktionen","älter","neu"],"2027-06-01":["GW Algebra","neu","älter"],"2027-06-02":["GW Geometrie","älter","neu"],"2027-06-03":["GW Algebra","neu","älter"],"2027-06-04":["GW Stochastik","älter","neu"],"2027-06-07":["GW Algebra","neu","älter"],"2027-06-08":["GW Funktionen","älter","neu"],"2027-06-09":["GW Algebra","neu","älter"],"2027-06-10":["GW Geometrie","älter","neu"],"2027-06-11":["GW Algebra","neu","älter"],"2027-06-14":["GW Stochastik","älter","neu"],"2027-06-15":["GW Algebra","neu","älter"],"2027-06-16":["GW Funktionen","älter","neu"],"2027-06-17":["GW Algebra","neu","älter"],"2027-06-18":["GW Geometrie","älter","neu"],"2027-06-21":["GW Algebra","neu","älter"],"2027-06-22":["GW Stochastik","älter","neu"],"2027-06-23":["GW Algebra","neu","älter"],"2027-06-24":["GW Funktionen","älter","neu"],"2027-06-25":["GW Algebra","neu","älter"],"2027-06-28":["GW Geometrie","älter","neu"],"2027-06-29":["GW Algebra","neu","älter"],"2027-06-30":["GW Stochastik","älter","neu"],"2027-07-01":["GW Algebra","neu","älter"],"2027-07-02":["GW Funktionen","älter","neu"],"2027-07-05":["GW Algebra","neu","älter"],"2027-07-06":["GW Geometrie","älter","neu"],"2027-07-07":["GW Algebra","neu","älter"],"2027-07-08":["GW Stochastik","älter","neu"],"2027-07-09":["GW Algebra","neu","älter"],"2027-07-12":["GW Funktionen","älter","neu"],"2027-07-13":["GW Algebra","neu","älter"],"2027-07-14":["GW Geometrie","älter","neu"],"2027-07-15":["GW Algebra","neu","älter"],"2027-07-16":["GW Stochastik","älter","neu"],"2027-07-19":["GW Algebra","neu","älter"],"2027-07-20":["GW Funktionen","älter","neu"],"2027-07-21":["GW Algebra","neu","älter"],"2027-07-22":["GW Geometrie","älter","neu"],"2027-07-23":["GW Algebra","neu","älter"],"2027-07-26":["GW Stochastik","älter","neu"],"2027-07-27":["GW Algebra","neu","älter"],"2027-07-28":["GW Funktionen","älter","neu"],"2027-07-29":["GW Algebra","neu","älter"],"2027-07-30":["GW Geometrie","älter","neu"]},"2m5":{"2026-11-23":["GW Algebra","neu","älter"],"2026-11-24":["GW Funktionen","älter","neu"],"2026-11-30":["GW Algebra","neu","älter"],"2026-12-01":["GW Geometrie","älter","neu"],"2026-12-07":["GW Algebra","neu","älter"],"2026-12-08":["GW Stochastik","älter","neu"],"2026-12-14":["GW Algebra","neu","älter"],"2026-12-15":["GW Funktionen","älter","neu"],"2026-12-21":["GW Algebra","neu","älter"],"2026-12-22":["GW Geometrie","älter","neu"],"2027-01-11":["GW Algebra","neu","älter"],"2027-01-12":["GW Stochastik","älter","neu"],"2027-01-18":["GW Algebra","neu","älter"],"2027-01-19":["GW Funktionen","älter","neu"],"2027-01-25":["GW Algebra","neu","älter"],"2027-01-26":["GW Geometrie","älter","neu"],"2027-02-01":["GW Algebra","neu","älter"],"2027-02-02":["GW Stochastik","älter","neu"],"2027-02-15":["GW Algebra","neu","älter"],"2027-02-16":["GW Funktionen","älter","neu"],"2027-02-22":["GW Algebra","neu","älter"],"2027-02-23":["GW Geometrie","älter","neu"],"2027-03-01":["GW Algebra","neu","älter"],"2027-03-02":["GW Stochastik","älter","neu"],"2027-03-08":["GW Algebra","neu","älter"],"2027-03-09":["GW Funktionen","älter","neu"],"2027-03-15":["GW Algebra","neu","älter"],"2027-03-16":["GW Geometrie","älter","neu"],"2027-04-05":["GW Algebra","neu","älter"],"2027-04-06":["GW Stochastik","älter","neu"],"2027-04-12":["GW Algebra","neu","älter"],"2027-04-13":["GW Funktionen","älter","neu"],"2027-04-19":["GW Algebra","neu","älter"],"2027-04-20":["GW Geometrie","älter","neu"],"2027-04-26":["GW Algebra","neu","älter"],"2027-04-27":["GW Stochastik","älter","neu"],"2027-05-03":["GW Algebra","neu","älter"],"2027-05-04":["GW Funktionen","älter","neu"],"2027-05-10":["GW Algebra","neu","älter"],"2027-05-11":["GW Geometrie","älter","neu"],"2027-05-31":["GW Algebra","neu","älter"],"2027-06-01":["GW Stochastik","älter","neu"],"2027-06-07":["GW Algebra","neu","älter"],"2027-06-08":["GW Funktionen","älter","neu"],"2027-06-14":["GW Algebra","neu","älter"],"2027-06-15":["GW Geometrie","älter","neu"],"2027-06-21":["GW Algebra","neu","älter"],"2027-06-22":["GW Stochastik","älter","neu"],"2027-06-28":["GW Algebra","neu","älter"],"2027-06-29":["GW Funktionen","älter","neu"],"2027-07-05":["GW Algebra","neu","älter"],"2027-07-06":["GW Geometrie","älter","neu"],"2027-07-12":["GW Algebra","neu","älter"],"2027-07-13":["GW Stochastik","älter","neu"],"2027-07-19":["GW Algebra","neu","älter"],"2027-07-20":["GW Funktionen","älter","neu"],"2027-07-26":["GW Algebra","neu","älter"],"2027-07-27":["GW Geometrie","älter","neu"]},"2m6":{"2026-11-23":["GW Algebra","neu","älter"],"2026-11-24":["GW Funktionen","älter","neu"],"2026-11-25":["GW Algebra","neu","älter"],"2026-11-26":["GW Geometrie","älter","neu"],"2026-11-27":["GW Algebra","neu","älter"],"2026-11-30":["GW Stochastik","älter","neu"],"2026-12-01":["GW Algebra","neu","älter"],"2026-12-02":["GW Funktionen","älter","neu"],"2026-12-03":["GW Algebra","neu","älter"],"2026-12-04":["GW Geometrie","älter","neu"],"2026-12-07":["GW Algebra","neu","älter"],"2026-12-08":["GW Stochastik","älter","neu"],"2026-12-09":["GW Algebra","neu","älter"],"2026-12-10":["GW Funktionen","älter","neu"],"2026-12-11":["GW Algebra","neu","älter"],"2026-12-14":["GW Geometrie","älter","neu"],"2026-12-15":["GW Algebra","neu","älter"],"2026-12-16":["GW Stochastik","älter","neu"],"2026-12-17":["GW Algebra","neu","älter"],"2026-12-18":["GW Funktionen","älter","neu"],"2026-12-21":["GW Algebra","neu","älter"],"2026-12-22":["GW Geometrie","älter","neu"],"2026-12-23":["GW Algebra","neu","älter"],"2027-01-11":["GW Stochastik","älter","neu"],"2027-01-12":["GW Algebra","neu","älter"],"2027-01-13":["GW Funktionen","älter","neu"],"2027-01-14":["GW Algebra","neu","älter"],"2027-01-15":["GW Geometrie","älter","neu"],"2027-01-18":["GW Algebra","neu","älter"],"2027-01-19":["GW Stochastik","älter","neu"],"2027-01-20":["GW Algebra","neu","älter"],"2027-01-21":["GW Funktionen","älter","neu"],"2027-01-22":["GW Algebra","neu","älter"],"2027-01-25":["GW Geometrie","älter","neu"],"2027-01-26":["GW Algebra","neu","älter"],"2027-01-27":["GW Stochastik","älter","neu"],"2027-01-28":["GW Algebra","neu","älter"],"2027-01-29":["GW Funktionen","älter","neu"],"2027-02-01":["GW Algebra","neu","älter"],"2027-02-02":["GW Geometrie","älter","neu"],"2027-02-03":["GW Algebra","neu","älter"],"2027-02-04":["GW Stochastik","älter","neu"],"2027-02-05":["GW Algebra","neu","älter"],"2027-02-15":["GW Funktionen","älter","neu"],"2027-02-16":["GW Algebra","neu","älter"],"2027-02-17":["GW Geometrie","älter","neu"],"2027-02-18":["GW Algebra","neu","älter"],"2027-02-19":["GW Stochastik","älter","neu"],"2027-02-22":["GW Algebra","neu","älter"],"2027-02-23":["GW Funktionen","älter","neu"],"2027-02-24":["GW Algebra","neu","älter"],"2027-02-25":["GW Geometrie","älter","neu"],"2027-02-26":["GW Algebra","neu","älter"],"2027-03-01":["GW Stochastik","älter","neu"],"2027-03-02":["GW Algebra","neu","älter"],"2027-03-03":["GW Funktionen","älter","neu"],"2027-03-04":["GW Algebra","neu","älter"],"2027-03-05":["GW Geometrie","älter","neu"],"2027-03-08":["GW Algebra","neu","älter"],"2027-03-09":["GW Stochastik","älter","neu"],"2027-03-10":["GW Algebra","neu","älter"],"2027-03-11":["GW Funktionen","älter","neu"],"2027-03-12":["GW Algebra","neu","älter"],"2027-03-15":["GW Geometrie","älter","neu"],"2027-03-16":["GW Algebra","neu","älter"],"2027-03-17":["GW Stochastik","älter","neu"],"2027-03-18":["GW Algebra","neu","älter"],"2027-03-19":["GW Funktionen","älter","neu"],"2027-04-05":["GW Algebra","neu","älter"],"2027-04-06":["GW Geometrie","älter","neu"],"2027-04-07":["GW Algebra","neu","älter"],"2027-04-08":["GW Stochastik","älter","neu"],"2027-04-09":["GW Algebra","neu","älter"],"2027-04-12":["GW Funktionen","älter","neu"],"2027-04-13":["GW Algebra","neu","älter"],"2027-04-14":["GW Geometrie","älter","neu"],"2027-04-15":["GW Algebra","neu","älter"],"2027-04-16":["GW Stochastik","älter","neu"],"2027-04-19":["GW Algebra","neu","älter"],"2027-04-20":["GW Funktionen","älter","neu"],"2027-04-21":["GW Algebra","neu","älter"],"2027-04-22":["GW Geometrie","älter","neu"],"2027-04-23":["GW Algebra","neu","älter"],"2027-04-26":["GW Stochastik","älter","neu"],"2027-04-27":["GW Algebra","neu","älter"],"2027-04-28":["GW Funktionen","älter","neu"],"2027-04-29":["GW Algebra","neu","älter"],"2027-04-30":["GW Geometrie","älter","neu"],"2027-05-03":["GW Algebra","neu","älter"],"2027-05-04":["GW Stochastik","älter","neu"],"2027-05-05":["GW Algebra","neu","älter"],"2027-05-07":["GW Funktionen","älter","neu"],"2027-05-10":["GW Algebra","neu","älter"],"2027-05-11":["GW Geometrie","älter","neu"],"2027-05-12":["GW Algebra","neu","älter"],"2027-05-13":["GW Stochastik","älter","neu"],"2027-05-14":["GW Algebra","neu","älter"],"2027-05-31":["GW Funktionen","älter","neu"],"2027-06-01":["GW Algebra","neu","älter"],"2027-06-02":["GW Geometrie","älter","neu"],"2027-06-03":["GW Algebra","neu","älter"],"2027-06-04":["GW Stochastik","älter","neu"],"2027-06-07":["GW Algebra","neu","älter"],"2027-06-08":["GW Funktionen","älter","neu"],"2027-06-09":["GW Algebra","neu","älter"],"2027-06-10":["GW Geometrie","älter","neu"],"2027-06-11":["GW Algebra","neu","älter"],"2027-06-14":["GW Stochastik","älter","neu"],"2027-06-15":["GW Algebra","neu","älter"],"2027-06-16":["GW Funktionen","älter","neu"],"2027-06-17":["GW Algebra","neu","älter"],"2027-06-18":["GW Geometrie","älter","neu"],"2027-06-21":["GW Algebra","neu","älter"],"2027-06-22":["GW Stochastik","älter","neu"],"2027-06-23":["GW Algebra","neu","älter"],"2027-06-24":["GW Funktionen","älter","neu"],"2027-06-25":["GW Algebra","neu","älter"],"2027-06-28":["GW Geometrie","älter","neu"],"2027-06-29":["GW Algebra","neu","älter"],"2027-06-30":["GW Stochastik","älter","neu"],"2027-07-01":["GW Algebra","neu","älter"],"2027-07-02":["GW Funktionen","älter","neu"],"2027-07-05":["GW Algebra","neu","älter"],"2027-07-06":["GW Geometrie","älter","neu"],"2027-07-07":["GW Algebra","neu","älter"],"2027-07-08":["GW Stochastik","älter","neu"],"2027-07-09":["GW Algebra","neu","älter"],"2027-07-12":["GW Funktionen","älter","neu"],"2027-07-13":["GW Algebra","neu","älter"],"2027-07-14":["GW Geometrie","älter","neu"],"2027-07-15":["GW Algebra","neu","älter"],"2027-07-16":["GW Stochastik","älter","neu"],"2027-07-19":["GW Algebra","neu","älter"],"2027-07-20":["GW Funktionen","älter","neu"],"2027-07-21":["GW Algebra","neu","älter"],"2027-07-22":["GW Geometrie","älter","neu"],"2027-07-23":["GW Algebra","neu","älter"],"2027-07-26":["GW Stochastik","älter","neu"],"2027-07-27":["GW Algebra","neu","älter"],"2027-07-28":["GW Funktionen","älter","neu"],"2027-07-29":["GW Algebra","neu","älter"],"2027-07-30":["GW Geometrie","älter","neu"]}}};
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const TAG = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+function datumText(iso) { const [j, m, t] = iso.split('-').map(Number); return TAG[new Date(j, m - 1, t).getDay()] + ' ' + t + '.' + m + '.'; }
+const BEREICHE = [
+  ['GW Algebra', 'Grundwissen Algebra'], ['GW Funktionen', 'Grundwissen Funktionen'], ['GW Geometrie', 'Grundwissen Geometrie'], ['GW Stochastik', 'Grundwissen Stochastik'],
+  ['OS Analysis', 'Oberstufe Analysis'], ['OS Geometrie', 'Oberstufe Geometrie'], ['OS Stochastik', 'Oberstufe Stochastik']];
+const PLAETZE = [[1, 'Grundwissen'], [2, 'Oberstufe rechnen'], [3, 'Verfahren']];
+
+/* ---------------------------------------------------------------- Einlesen */
+async function entpacke(buf) {
+  const dv = new DataView(buf);
+  let eocd = -1;
+  for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('keine gültige .xlsx-Datei');
+  const anzahl = dv.getUint16(eocd + 10, true);
+  let p = dv.getUint32(eocd + 16, true);
+  const dateien = {};
+  for (let n = 0; n < anzahl; n++) {
+    const methode = dv.getUint16(p + 10, true), groesse = dv.getUint32(p + 20, true);
+    const nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true);
+    const lokal = dv.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(new Uint8Array(buf, p + 46, nl));
+    const lnl = dv.getUint16(lokal + 26, true), lxl = dv.getUint16(lokal + 28, true);
+    dateien[name] = {methode, roh: new Uint8Array(buf, lokal + 30 + lnl + lxl, groesse)};
+    p += 46 + nl + xl + cl;
+  }
+  const lies = async name => {
+    const d = dateien[name];
+    if (!d) return null;
+    if (d.methode === 0) return new TextDecoder().decode(d.roh);
+    const st = new Blob([d.roh]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return new TextDecoder().decode(await new Response(st).arrayBuffer());
+  };
+  return {namen: Object.keys(dateien), lies};
+}
+function spalteZuZahl(b) { let n = 0; for (const c of b.toUpperCase()) n = n * 26 + c.charCodeAt(0) - 64; return n; }
+async function liesXlsx(buf) {
+  const z = await entpacke(buf);
+  const xml = s => new DOMParser().parseFromString(s, 'application/xml');
+  const alle = (el, n) => Array.from(el.getElementsByTagNameNS('*', n));
+  const text = el => alle(el, 't').map(t => t.textContent).join('');
+  const finde = n => z.namen.find(x => x.replace(/^\//, '').toLowerCase() === n.toLowerCase());
+  const gemeinsam = [];
+  const ss = finde('xl/sharedStrings.xml');
+  if (ss) for (const si of alle(xml(await z.lies(ss)), 'si')) gemeinsam.push(text(si));
+  let blatt = null;
+  try {
+    const wb = xml(await z.lies(finde('xl/workbook.xml')));
+    const rid = alle(wb, 'sheet')[0].getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+    const rels = xml(await z.lies(finde('xl/_rels/workbook.xml.rels')));
+    const ziel = alle(rels, 'Relationship').find(r => r.getAttribute('Id') === rid).getAttribute('Target');
+    blatt = finde(ziel.startsWith('/') ? ziel.slice(1) : 'xl/' + ziel);
+  } catch (e) { /* Rückfall */ }
+  if (!blatt) blatt = z.namen.filter(n => /(^|\/)xl\/worksheets\/[^/]+\.xml$/i.test(n)).sort()[0];
+  if (!blatt) throw new Error('kein Tabellenblatt gefunden');
+  const zeilen = [];
+  for (const row of alle(xml(await z.lies(blatt)), 'row')) {
+    const r = []; let naechste = 0;
+    for (const c of alle(row, 'c')) {
+      const ref = c.getAttribute('r'), t = c.getAttribute('t');
+      const col = ref ? spalteZuZahl(ref.replace(/\d+/g, '')) - 1 : naechste;
+      naechste = col + 1;
+      const v = alle(c, 'v')[0];
+      r[col] = t === 's' ? (v ? gemeinsam[+v.textContent] || '' : '') : t === 'inlineStr' ? text(c) : v ? v.textContent : '';
+    }
+    zeilen.push(Array.from(r, x => x == null ? '' : x));
+  }
+  return zeilen;
+}
+function liesCsv(text) {
+  text = text.replace(/^﻿/, '');
+  const erste = text.split('\n')[0];
+  const trenner = [';', '\t', ','].sort((a, b) => erste.split(b).length - erste.split(a).length)[0];
+  const zeilen = []; let z = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; continue; }
+    if (ch === '"') q = true; else if (ch === trenner) { z.push(f); f = ''; }
+    else if (ch === '\n') { z.push(f.replace(/\r$/, '')); zeilen.push(z); z = []; f = ''; } else f += ch;
+  }
+  if (f || z.length) { z.push(f); zeilen.push(z); }
+  return zeilen;
+}
+
+/* ---------------------------------------------------------------- Codes */
+function pruefsumme(s) { let c = 0; for (let i = 0; i < s.length; i++) c += s.charCodeAt(i) * (i + 1); return String(c % 97).padStart(2, '0'); }
+function code(roh) {
+  const s = String(roh).trim().replace(/\s+/g, '');
+  const k = s.lastIndexOf('-');
+  if (k < 0) return {fehler: 'kein Code'};
+  const rumpf = s.slice(0, k);
+  if (pruefsumme(rumpf) !== s.slice(k + 1)) return {fehler: 'Prüfsumme falsch (Code verändert oder unvollständig)'};
+  const t = rumpf.split('-');
+  const kurs = t[0], d = t[1];
+  if (!/^\d{6}$/.test(d)) return {fehler: 'Datum fehlt'};
+  const datum = '20' + d.slice(0, 2) + '-' + d.slice(2, 4) + '-' + d.slice(4, 6);
+  const stunde = (D.stunden[kurs] || {})[datum];
+  const aufgaben = t.slice(2).map((x, i) => {
+    const m = x.match(/^([A-Z]{2}\d{2})([a-z])([01])$/);
+    if (!m || !D.nr[m[1]]) return null;
+    const [titel, bereich, platz] = D.nr[m[1]];
+    return {nr: m[1], v: m[2], ok: m[3] === '1', titel, bereich, platz, art: stunde ? stunde[i] : ''};
+  });
+  if (aufgaben.some(a => !a)) return {fehler: 'unbekannte Aufgabennummer'};
+  return {kurs, datum, aufgaben};
+}
+
+/* ---------------------------------------------------------------- Daten */
+let ABGABEN = [], PROBLEME = [];
+async function laden(dateien) {
+  for (const f of dateien) {
+    let zeilen;
+    try { zeilen = /\.csv$/i.test(f.name) ? liesCsv(await f.text()) : await liesXlsx(await f.arrayBuffer()); }
+    catch (e) { PROBLEME.push({wer: f.name, was: e.message}); continue; }
+    const kopf = (zeilen[0] || []).map(x => String(x).trim().toLowerCase());
+    const sp = re => kopf.findIndex(h => re.test(h));
+    const iName = sp(/^name$|^vollständiger name$|^full name$/), iMail = sp(/e-?mail/), iZeit = sp(/fertigstellung|completion|abschlusszeit/);
+    for (const z of zeilen.slice(1)) {
+      const wer = (iName >= 0 && z[iName]) || (iMail >= 0 && z[iMail]) || 'ohne Namen';
+      const zelle = z.find(x => /^\s*[^-\s]+-\d{6}-[A-Z]{2}\d{2}/.test(String(x)));
+      if (!zelle) { if (z.some(x => String(x).trim())) PROBLEME.push({wer, was: 'kein Abgabecode in der Zeile'}); continue; }
+      const c = code(zelle);
+      if (c.fehler) { PROBLEME.push({wer, was: c.fehler + ': ' + zelle}); continue; }
+      ABGABEN.push({wer, zeit: iZeit >= 0 ? String(z[iZeit]) : '', ...c});
+    }
+  }
+  // je Person und Stunde zählt die erste Abgabe
+  const gesehen = new Set(), rein = [];
+  for (const a of ABGABEN) {
+    const k = a.wer + '|' + a.kurs + '|' + a.datum;
+    if (gesehen.has(k)) { PROBLEME.push({wer: a.wer, was: 'doppelte Abgabe am ' + datumText(a.datum) + ', die erste zählt'}); continue; }
+    gesehen.add(k); rein.push(a);
+  }
+  ABGABEN = rein;
+  filterAufbauen();
+}
+
+function filterAufbauen() {
+  if (!ABGABEN.length) { zeigen(); return; }
+  const kurse = [...new Set(ABGABEN.map(a => a.kurs))].sort();
+  $('#f-kurs').innerHTML = kurse.map(k => '<option>' + esc(k) + '</option>').join('');
+  const daten = ABGABEN.map(a => a.datum).sort();
+  $('#f-von').value = daten[0]; $('#f-bis').value = daten[daten.length - 1];
+  $('#filter').hidden = false;
+  zeigen();
+}
+['#f-kurs', '#f-von', '#f-bis'].forEach(s => $(s).addEventListener('change', () => zeigen()));
+
+function auswahl() {
+  const kurs = $('#f-kurs').value, von = $('#f-von').value, bis = $('#f-bis').value;
+  const liste = ABGABEN.filter(a => a.kurs === kurs && (!von || a.datum >= von) && (!bis || a.datum <= bis));
+  const stunden = Object.keys(D.stunden[kurs] || {}).filter(d => (!von || d >= von) && (!bis || d <= bis)).sort();
+  return {kurs, von, bis, liste, stunden};
+}
+
+/* ---------------------------------------------------------------- Rechnen */
+function quote(aufgaben) { return aufgaben.length ? aufgaben.filter(a => a.ok).length / aufgaben.length : null; }
+function q(aufgaben, mitZahl) {
+  const w = quote(aufgaben);
+  if (w === null) return '<span class="quote q-leer">–</span>';
+  const kl = w >= 0.75 ? 'q-gut' : w >= 0.5 ? 'q-mittel' : 'q-schlecht';
+  return '<span class="quote ' + kl + '">' + Math.round(w * 100) + '&thinsp;%</span>' +
+    (mitZahl ? ' <span class="leise">' + aufgaben.filter(a => a.ok).length + '/' + aufgaben.length + '</span>' : '');
+}
+function balken(aufgaben) {
+  const w = quote(aufgaben);
+  return '<div class="balken"><div class="spur"><div class="voll" style="width:' + Math.round((w || 0) * 100) + '%"></div></div>' + q(aufgaben, true) + '</div>';
+}
+const alleAufgaben = liste => liste.flatMap(a => a.aufgaben);
+const teile = aufg => ({
+  bereiche: BEREICHE.map(([b, n]) => [n, aufg.filter(a => a.bereich === b && a.platz !== 3)]),
+  verfahren: aufg.filter(a => a.platz === 3),
+  neu: aufg.filter(a => a.platz > 1 && a.art === 'neu'),
+  aelter: aufg.filter(a => a.platz > 1 && a.art === 'älter'),
+  plaetze: PLAETZE.map(([p, n]) => [n, aufg.filter(a => a.platz === p)]),
+});
+
+function verlaufSvg(punkte, hoehe) {
+  // punkte: [{d, w (0..1) | null}]
+  const B = 640, H = hoehe || 150, l = 34, r = 22, o = 10, u = 22;
+  if (!punkte.length) return '';
+  const x = i => l + (punkte.length === 1 ? (B - l - r) / 2 : i * (B - l - r) / (punkte.length - 1));
+  const y = w => o + (1 - w) * (H - o - u);
+  let s = '<svg class="verlauf" viewBox="0 0 ' + B + ' ' + H + '" role="img" aria-label="Verlauf">';
+  for (const w of [0, 0.5, 1]) s += '<line class="achse" x1="' + l + '" x2="' + (B - r) + '" y1="' + y(w) + '" y2="' + y(w) + '"/><text x="' + (l - 6) + '" y="' + (y(w) + 4) + '" text-anchor="end">' + Math.round(w * 100) + '%</text>';
+  const bw = Math.max(3, Math.min(18, (B - l - r) / punkte.length * 0.6));
+  punkte.forEach((p, i) => {
+    if (p.w === null) return;
+    s += '<rect class="saeule" x="' + (x(i) - bw / 2) + '" y="' + Math.min(y(p.w), y(0) - 2) + '" width="' + bw + '" height="' + Math.max(2, y(0) - y(p.w)) + '" rx="2"><title>' + datumText(p.d) + ': ' + Math.round(p.w * 100) + ' %</title></rect>';
+  });
+  const schritt = Math.ceil(punkte.length / 8);
+  punkte.forEach((p, i) => { if (i % schritt === 0 || i === punkte.length - 1) s += '<text x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + datumText(p.d).slice(3) + '</text>'; });
+  return s + '</svg>';
+}
+
+/* ---------------------------------------------------------------- Ansichten */
+function zeigen(person) {
+  const v = $('#ansicht');
+  if (!ABGABEN.length) {
+    v.innerHTML = PROBLEME.length ? problemeHtml() : '';
+    return;
+  }
+  const A = auswahl();
+  $('#f-info').textContent = A.liste.length + ' Abgaben in ' + A.stunden.length + ' Stunden laut Plan';
+  if (person) { v.innerHTML = '<div class="nicht-drucken zeile" style="margin:12px 0"><button class="knopf neben" id="zurueck">← Kursübersicht</button><button class="knopf" onclick="print()">Bogen drucken</button></div><div class="druck">' + bogen(person, A) + '</div>'; $('#zurueck').onclick = () => zeigen(); scrollTo(0, 0); return; }
+  const aufg = alleAufgaben(A.liste), T = teile(aufg);
+  const personen = [...new Set(A.liste.map(a => a.wer))].sort((a, b) => a.localeCompare(b, 'de'));
+  const proStunde = A.stunden.map(d => ({d, w: quote(alleAufgaben(A.liste.filter(a => a.datum === d)))}));
+  // Aufgaben, die dem Kurs schwerfallen
+  const jeNr = {};
+  for (const a of aufg) (jeNr[a.nr] = jeNr[a.nr] || []).push(a);
+  const schwer = Object.entries(jeNr).filter(([, l]) => l.length >= 3).sort((a, b) => quote(a[1]) - quote(b[1])).slice(0, 10);
+  let h = '<div class="kacheln" style="margin-top:12px">' +
+    kachel(personen.length, 'Schülerinnen und Schüler') + kachel(A.liste.length, 'Abgaben') +
+    kachel(quote(aufg) === null ? '–' : Math.round(quote(aufg) * 100) + ' %', 'richtig insgesamt') +
+    kachel(T.neu.length ? Math.round(quote(T.neu) * 100) + ' %' : '–', 'Stoff der Vorwoche (Platz 2, 3)') +
+    kachel(T.aelter.length ? Math.round(quote(T.aelter) * 100) + ' %' : '–', 'älterer Stoff (Platz 2, 3)') + '</div>';
+  h += '<div class="karte"><h3 style="margin-top:0">Verlauf: Anteil richtig je Stunde</h3>' + verlaufSvg(proStunde) + '</div>';
+  h += '<div class="raster2"><div class="karte"><h3 style="margin-top:0">Nach Bereich</h3><table>' +
+    T.bereiche.map(([n, l]) => '<tr><td>' + n + '</td><td>' + balken(l) + '</td></tr>').join('') +
+    '<tr><td>Verfahren</td><td>' + balken(T.verfahren) + '</td></tr></table></div>' +
+    '<div class="karte"><h3 style="margin-top:0">Fällt dem Kurs schwer</h3>' + (schwer.length ? '<table>' +
+    schwer.map(([nr, l]) => '<tr><td>' + nr + '</td><td>' + esc(l[0].titel) + '</td><td class="z">' + q(l, true) + '</td></tr>').join('') + '</table>'
+    : '<p class="leise">Erst ab drei Bearbeitungen je Aufgabe.</p>') + '</div></div>';
+  h += '<div class="karte"><div class="zeile" style="justify-content:space-between"><h3 style="margin:0">Schülerinnen und Schüler</h3>' +
+    '<button class="knopf nicht-drucken" id="alle-drucken">Alle Bögen drucken</button></div><table style="margin-top:6px"><tr><th>Name</th><th class="z">Abgaben</th><th class="z">gesamt</th><th class="z">Grundwissen</th><th class="z">Vorwoche</th><th class="z">älter</th><th class="z">Verfahren</th></tr>' +
+    personen.map((p, i) => {
+      const l = A.liste.filter(a => a.wer === p), au = alleAufgaben(l), t = teile(au);
+      return '<tr class="klickbar" data-i="' + i + '"><td>' + esc(p) + '</td><td class="z">' + l.length + '/' + A.stunden.filter(d => d <= heute()).length +
+        '</td><td class="z">' + q(au) + '</td><td class="z">' + q(t.plaetze[0][1]) + '</td><td class="z">' + q(t.neu) + '</td><td class="z">' + q(t.aelter) + '</td><td class="z">' + q(t.verfahren) + '</td></tr>';
+    }).join('') + '</table><p class="leise">Zeile anklicken: Bogen für das Feedbackgespräch.</p></div>';
+  if (PROBLEME.length) h += problemeHtml();
+  h += '<div class="druck" hidden id="alle-boegen"></div>';
+  v.innerHTML = h;
+  v.querySelectorAll('tr.klickbar').forEach(tr => tr.onclick = () => zeigen(personen[+tr.dataset.i]));
+  $('#alle-drucken').onclick = () => {
+    const box = $('#alle-boegen'); box.innerHTML = personen.map(p => bogen(p, A)).join(''); box.hidden = false;
+    setTimeout(() => { print(); box.hidden = true; }, 50);
+  };
+}
+function heute() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function kachel(wert, was) { return '<div class="kachel"><div class="wert">' + wert + '</div><div class="was">' + was + '</div></div>'; }
+function problemeHtml() {
+  return '<div class="karte nicht-drucken"><h3 style="margin-top:0" class="problem">Nicht gezählt (' + PROBLEME.length + ')</h3><table>' +
+    PROBLEME.map(p => '<tr><td>' + esc(p.wer) + '</td><td>' + esc(p.was) + '</td></tr>').join('') + '</table></div>';
+}
+
+function bogen(person, A) {
+  const l = A.liste.filter(a => a.wer === person).sort((a, b) => a.datum.localeCompare(b.datum));
+  const au = alleAufgaben(l), T = teile(au);
+  const bisher = A.stunden.filter(d => d <= heute());
+  const zeitraum = (A.von ? datumText(A.von) : '') + ' bis ' + (A.bis ? datumText(A.bis) : '');
+  const punkte = bisher.map(d => { const x = l.find(a => a.datum === d); return {d, w: x ? quote(x.aufgaben) : null}; });
+  const falsch = l.flatMap(a => a.aufgaben.filter(x => !x.ok).map(x => ({...x, datum: a.datum})));
+  let h = '<section class="bogen"><h2>Warm-up: ' + esc(person) + '</h2><p class="leise">Kurs ' + esc(A.kurs) + ' · ' + zeitraum +
+    ' · ' + l.length + ' von ' + bisher.length + ' Stunden abgegeben · Das Warm-up ist keine Note.</p>';
+  h += '<h3>Insgesamt</h3>' + balken(au);
+  h += '<h3>Nach Bereich</h3><table>' + T.bereiche.filter(([, x]) => x.length).map(([n, x]) => '<tr><td style="width:45%">' + n + '</td><td>' + balken(x) + '</td></tr>').join('') +
+    (T.verfahren.length ? '<tr><td>Verfahren</td><td>' + balken(T.verfahren) + '</td></tr>' : '') +
+    (T.neu.length ? '<tr><td>Stoff der Vorwoche (Oberstufe und Verfahren)</td><td>' + balken(T.neu) + '</td></tr>' : '') +
+    (T.aelter.length ? '<tr><td>älterer Stoff (Oberstufe und Verfahren)</td><td>' + balken(T.aelter) + '</td></tr>' : '') + '</table>';
+  h += '<h3>Verlauf: Anteil richtig je Stunde</h3>' + verlaufSvg(punkte, 120) + '<p class="leise">Leere Stellen: keine Abgabe.</p>';
+  if (falsch.length) h += '<h3>Nicht gelöst</h3><table><tr><th>Stunde</th><th>Nr.</th><th>Aufgabe</th><th>Bereich</th></tr>' +
+    falsch.map(x => '<tr><td>' + datumText(x.datum) + '</td><td>' + x.nr + '</td><td>' + esc(x.titel) + '</td><td>' + esc(x.platz === 3 ? 'Verfahren' : x.bereich) + '</td></tr>').join('') + '</table>';
+  h += '<h3>Zum Nachdenken vor dem Gespräch</h3>' +
+    ['Was gelingt Ihnen schon sicher?', 'Bei welchen Aufgaben passieren Ihnen immer wieder Fehler? Woran liegt das?', 'Was nehmen Sie sich bis zum nächsten Gespräch vor?']
+      .map(f => '<p class="frage">' + f + '</p><div class="linien"><div></div><div></div><div></div></div>').join('');
+  return h + '</section>';
+}
+
+/* ---------------------------------------------------------------- Ablage */
+const ablage = $('#ablage');
+$('#datei').addEventListener('change', e => { ABGABEN = []; PROBLEME = []; laden([...e.target.files]); });
+['dragenter', 'dragover'].forEach(t => ablage.addEventListener(t, e => { e.preventDefault(); ablage.classList.add('ueber'); }));
+['dragleave', 'drop'].forEach(t => ablage.addEventListener(t, e => { e.preventDefault(); ablage.classList.remove('ueber'); }));
+ablage.addEventListener('drop', e => { ABGABEN = []; PROBLEME = []; laden([...e.dataTransfer.files]); });
+</script>
+</body>
+</html>
