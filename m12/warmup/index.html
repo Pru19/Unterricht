@@ -530,13 +530,13 @@ class Karte {
     if (v.form === 'zuordnen') return this.zuordnung.every(r => r !== null);
   }
   pruefeBereit() { if (!this.fertig) this.knopf.disabled = !this.bereit(); }
-  pruefen(ohne) {
+  pruefen(ohne, grund) {
     if (this.fertig) return;
     if (aktiv) { const g = aktiv.feld; fokus(null); g.zeichnen(); }
     this.fertig = true; this.knopf.remove();
     let r;
     if (ohne) {
-      r = {ok: false, fb: 'Nicht bearbeitet.', richtig: this.richtigOhne()};
+      r = {ok: false, fb: grund || 'Nicht bearbeitet.', richtig: this.richtigOhne()};
       this.el.querySelectorAll('.kf').forEach(f => f._feld && f._feld.sperren());
       this.el.querySelectorAll('.eingabe button').forEach(b => b.disabled = true);
     } else r = this['pruefen_' + ({'lücken': 'luecken'}[this.v.form] || this.v.form)]();
@@ -590,6 +590,13 @@ function abschluss() {
   endeEl.scrollIntoView({behavior: 'smooth', block: 'center'});
 }
 
+// Nach fünf Minuten: nicht Geprüftes zählt als nicht gelöst, nur noch abgeben.
+function zeitUm() {
+  if (abgegeben) return;
+  karten.filter(k => !k.fertig).forEach(k => k.pruefen(true, 'Die Zeit ist um. Die Aufgabe zählt als nicht gelöst.'));
+  abschluss();
+}
+
 function uhr() {
   const u = document.getElementById('uhr'); u.hidden = false;
   const start = Date.now();
@@ -597,7 +604,7 @@ function uhr() {
     const rest = Math.max(0, 300 - Math.floor((Date.now() - start) / 1000));
     u.textContent = rest ? Math.floor(rest / 60) + ':' + String(rest % 60).padStart(2, '0') : 'Zeit um';
     u.classList.toggle('um', !rest);
-    if (!rest) clearInterval(uhrTimer);
+    if (!rest) { clearInterval(uhrTimer); zeitUm(); }
   };
   tick(); uhrTimer = setInterval(tick, 1000);
 }
