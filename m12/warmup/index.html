@@ -311,7 +311,7 @@ class Karte {
   constructor(platz, nr, N, v, art) {
     this.platz = platz; this.nr = nr; this.N = N; this.v = v; this.fertig = false; this.ok = false;
     const [bk, ...rest] = N.bereich.split(' ');
-    const bezeichnung = (platz === 3 ? 'Verfahren' : BEREICH[bk] || bk) + ' · ' + rest.join(' ');
+    const bezeichnung = (platz === 3 ? 'Vorgehen' : BEREICH[bk] || bk) + ' · ' + rest.join(' ');
     const s = this.el = el('section', 'aufgabe');
     s.dataset.platz = platz;
     s.append(el('header', null, '<span class="nr">' + platz + '</span><span>' + bezeichnung + '</span><span class="kennung">' + nr + ' ' + v.id + '</span>'));
