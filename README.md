@@ -14,6 +14,7 @@ das Arbeitsblatt verlinkt sie per QR-Code.
 | [`ph09/energieumwandlungen/`](https://pru19.github.io/Unterricht/ph09/energieumwandlungen/) | Physik 9 | Energieumwandlungen – zuordnen, Ketten bauen, Bilderserie, beschreiben |
 | [`ph09/unfallgutachter/`](https://pru19.github.io/Unterricht/ph09/unfallgutachter/) | Physik 9 | Arbeit – Lernspiel *Unfallgutachter*: drei Fälle, Beweisfahrt in fünf Leveln |
 | [`m12/e-und-ln/`](https://pru19.github.io/Unterricht/m12/e-und-ln/) | Mathematik 12 | Lernkurs *e und ln*: natürliche Exponentialfunktion, Umkehrfunktion, natürliche Logarithmusfunktion; begleitet von einem Theorieblatt |
+| [`m12/warmup/`](https://pru19.github.io/Unterricht/m12/warmup/) | Mathematik 12 | Warm-up zu Stundenbeginn: drei Aufgaben je Stunde nach Wochenplan, Rückmeldung sofort, Abgabecode für Forms; dazu Auswertung und Anleitung |
 
 Aufbau: je Fach und Jahrgangsstufe ein Ordner (`ph09/`, `m07/`, …), darin je
 Übung einer mit einer `index.html`.
@@ -24,6 +25,10 @@ Keine Anmeldung, keine Auswertung, keine Übertragung. Die Seiten laden nichts
 von fremden Servern nach. Gespeichert wird nichts, außer beim Lernkurs
 (`m12/e-und-ln/`): Er merkt sich, welche Seiten gelöst sind, und zwar nur im
 Browser des Geräts.
+
+Beim **Warm-up** (`m12/warmup/`) gibt die Klasse am Ende einen Code aus
+Aufgabennummern und richtig/falsch in ein Forms-Formular der Schule ein; den
+Namen liefert dort die Schulanmeldung. Die Seite selbst überträgt nichts.
 
 `.nojekyll` im Wurzelverzeichnis sorgt dafür, dass GitHub Pages auch Ordner mit
 Unterstrich ausliefert (`m12/e-und-ln/_Quellen/`).
